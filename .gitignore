@@ -1,0 +1,20 @@
+# Entorno virtual
+.venv/
+__pycache__/
+
+# Archivos de Python
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos de Flet/compilaciones
+build/
+dist/
+*.spec
+
+# Configuración de VSCode
+.vscode/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db

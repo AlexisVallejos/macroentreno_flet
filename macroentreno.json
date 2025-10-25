@@ -1,0 +1,64 @@
+{
+  "diary": [
+    {
+      "date": "2025-10-18",
+      "meal": "almuerzo",
+      "name": "Pollo (100g)",
+      "grams": 100,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {}
+    },
+    {
+      "date": "2025-10-18",
+      "meal": "almuerzo",
+      "name": "Pollo (100g)",
+      "grams": 100,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {}
+    },
+    {
+      "date": "2025-10-18",
+      "meal": "almuerzo",
+      "name": "Pollo (100g)",
+      "grams": 100,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {}
+    },
+    {
+      "date": "2025-10-18",
+      "meal": "almuerzo",
+      "name": "Pollo (100g)",
+      "grams": 100,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {}
+    },
+    {
+      "date": "2025-10-25",
+      "meal": "almuerzo",
+      "name": "Pollo (100g)",
+      "grams": 100,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {}
+    }
+  ],
+  "workouts": [],
+  "user": {
+    "name": "Alexis",
+    "kcal_goal": 1800
+  }
+}
