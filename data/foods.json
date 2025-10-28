@@ -1,0 +1,128 @@
+[
+  {
+    "id": "local-chicken-breast",
+    "name": "Pollo pechuga cocida",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 165,
+      "p": 31,
+      "c": 0,
+      "g": 3.6
+    }
+  },
+  {
+    "id": "local-whole-egg",
+    "name": "Huevo entero",
+    "portion": {
+      "grams": 100,
+      "description": "aprox. 2 huevos (100 g)"
+    },
+    "macros": {
+      "kcal": 143,
+      "p": 13,
+      "c": 1.1,
+      "g": 9.5
+    }
+  },
+  {
+    "id": "local-egg-white",
+    "name": "Clara de huevo",
+    "portion": {
+      "grams": 100,
+      "description": "aprox. 3 claras (100 g)"
+    },
+    "macros": {
+      "kcal": 52,
+      "p": 11,
+      "c": 0.7,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-brown-rice-cooked",
+    "name": "Arroz integral cocido",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 123,
+      "p": 2.7,
+      "c": 25.6,
+      "g": 1
+    }
+  },
+  {
+    "id": "local-oats",
+    "name": "Avena en hojuelas",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 389,
+      "p": 16.9,
+      "c": 66.3,
+      "g": 6.9
+    }
+  },
+  {
+    "id": "local-sweet-potato",
+    "name": "Batata horneada",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 90,
+      "p": 2,
+      "c": 20.7,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-avocado",
+    "name": "Palta",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 160,
+      "p": 2,
+      "c": 8.5,
+      "g": 14.7
+    }
+  },
+  {
+    "id": "local-banana",
+    "name": "Banana",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 89,
+      "p": 1.1,
+      "c": 22.8,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-greek-yogurt",
+    "name": "Yogur griego descremado",
+    "portion": {
+      "grams": 170,
+      "description": "1 pote (170 g)"
+    },
+    "macros": {
+      "kcal": 100,
+      "p": 17.3,
+      "c": 6.1,
+      "g": 0.7
+    }
+  }
+]

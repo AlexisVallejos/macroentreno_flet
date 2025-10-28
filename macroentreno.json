@@ -1,59 +1,25 @@
 {
   "diary": [
     {
-      "date": "2025-10-18",
-      "meal": "almuerzo",
-      "name": "Pollo (100g)",
-      "grams": 100,
-      "kcal": 165.0,
-      "p": 31.0,
-      "c": 0.0,
-      "g": 3.6,
-      "micros": {}
-    },
-    {
-      "date": "2025-10-18",
-      "meal": "almuerzo",
-      "name": "Pollo (100g)",
-      "grams": 100,
-      "kcal": 165.0,
-      "p": 31.0,
-      "c": 0.0,
-      "g": 3.6,
-      "micros": {}
-    },
-    {
-      "date": "2025-10-18",
-      "meal": "almuerzo",
-      "name": "Pollo (100g)",
-      "grams": 100,
-      "kcal": 165.0,
-      "p": 31.0,
-      "c": 0.0,
-      "g": 3.6,
-      "micros": {}
-    },
-    {
-      "date": "2025-10-18",
-      "meal": "almuerzo",
-      "name": "Pollo (100g)",
-      "grams": 100,
-      "kcal": 165.0,
-      "p": 31.0,
-      "c": 0.0,
-      "g": 3.6,
-      "micros": {}
-    },
-    {
       "date": "2025-10-25",
       "meal": "almuerzo",
-      "name": "Pollo (100g)",
-      "grams": 100,
+      "name": "Pollo pechuga cocida",
+      "grams": 100.0,
       "kcal": 165.0,
       "p": 31.0,
       "c": 0.0,
       "g": 3.6,
-      "micros": {}
+      "micros": {},
+      "food": {
+        "id": "local-chicken-breast",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Pollo pechuga cocida"
+      },
+      "entry_id": "entry-3cc4a47d9f274fda8d4a12e6f002a56a"
     }
   ],
   "workouts": [],
