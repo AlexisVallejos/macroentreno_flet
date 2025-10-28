@@ -22,13 +22,22 @@ MEAL_OPTIONS = [
     ("snack", "Snack"),
 ]
 
+PRIMARY_COLOR = "#007AFF"
+SECONDARY_COLOR = "#5AC8FA"
+ACCENT_GREEN = "#34C759"
+BACKGROUND_COLOR = "#0A0A0A"
+CARD_BG = "#1C1C1E"
+TEXT_PRIMARY = "#FFFFFF"
+TEXT_MUTED = "#8E8E93"
+ALERT_RED = "ALERT_RED"
+
 MACRO_CARD_STYLES = [
     {
         "title": "Calorias",
         "key": "kcal",
         "unit": "kcal",
-        "accent": "#FFB74D",
-        "bg": "#3F3219",
+        "accent": PRIMARY_COLOR,
+        "bg": CARD_BG,
         "icon": ft.Icons.LOCAL_FIRE_DEPARTMENT,
         "format": lambda v: f"{v:.0f}",
     },
@@ -36,8 +45,8 @@ MACRO_CARD_STYLES = [
         "title": "Proteinas",
         "key": "p",
         "unit": "g",
-        "accent": "#64D8CB",
-        "bg": "#23454D",
+        "accent": ACCENT_GREEN,
+        "bg": CARD_BG,
         "icon": ft.Icons.FITNESS_CENTER,
         "format": lambda v: f"{v:.1f}",
     },
@@ -45,8 +54,8 @@ MACRO_CARD_STYLES = [
         "title": "Carbohidratos",
         "key": "c",
         "unit": "g",
-        "accent": "#AED581",
-        "bg": "#2F4528",
+        "accent": SECONDARY_COLOR,
+        "bg": CARD_BG,
         "icon": ft.Icons.SSID_CHART,
         "format": lambda v: f"{v:.1f}",
     },
@@ -54,17 +63,17 @@ MACRO_CARD_STYLES = [
         "title": "Grasas",
         "key": "g",
         "unit": "g",
-        "accent": "#FF8A65",
-        "bg": "#4A2D32",
+        "accent": "#FF9F0A",
+        "bg": CARD_BG,
         "icon": ft.Icons.WATER_DROP,
         "format": lambda v: f"{v:.1f}",
     },
 ]
 
-QUICK_CARD_BG = "#2B3650"
-ENTRY_GROUP_BG = "#253049"
-ENTRY_ITEM_BG = "#31415F"
-TEXT_MUTED = "#A8B4C8"
+QUICK_CARD_BG = "#1F1F21"
+ENTRY_GROUP_BG = "#121214"
+ENTRY_ITEM_BG = "#1E1E20"
+CUSTOM_CARD_BG = "#1C1C1E"
 
 
 def MacrosView():
@@ -82,8 +91,13 @@ def MacrosView():
         value=default_meal,
         width=200,
         options=[ft.dropdown.Option(label, key) for key, label in MEAL_OPTIONS],
+        color=TEXT_PRIMARY,
+        bgcolor=CARD_BG,
+        border_color="#2C2C2E",
+        focused_border_color=PRIMARY_COLOR,
     )
     quick_section_column = ft.Column(spacing=10)
+    custom_library_column = ft.Column(spacing=10)
 
     def _format_meal(meal_key: str) -> str:
         lookup = {key: label for key, label in MEAL_OPTIONS}
@@ -97,6 +111,115 @@ def MacrosView():
             totals["c"] += float(entry.get("c", 0) or 0)
             totals["g"] += float(entry.get("g", 0) or 0)
         return totals
+
+    def refresh_custom_library():
+        foods = list_custom_foods()
+        custom_library_column.controls.clear()
+        if not foods:
+            custom_library_column.controls.append(
+                ft.Container(
+                    padding=12,
+                    border_radius=12,
+                    border=ft.border.all(1, "#2C2C2E"),
+                    bgcolor=CUSTOM_CARD_BG,
+                    content=ft.Text(
+                        "Todavia no creaste comidas definidas. Usa el boton para guardar tus combinaciones favoritas.",
+                        size=12,
+                        color=TEXT_MUTED,
+                    ),
+                )
+            )
+        else:
+            for food in foods:
+                grams = float(food.get("portion", {}).get("grams") or 100)
+                macros_preview = format_macros(scale_macros(food, grams))
+                custom_library_column.controls.append(
+                    ft.Container(
+                        padding=12,
+                        border_radius=16,
+                        bgcolor=CUSTOM_CARD_BG,
+                        border=ft.border.all(1, "#2C2C2E"),
+                        content=ft.Column(
+                            [
+                                ft.Row(
+                                    [
+                                        ft.Column(
+                                            [
+                                                ft.Text(
+                                                    food["name"],
+                                                    size=13,
+                                                    weight=ft.FontWeight.W_600,
+                                                    color=TEXT_PRIMARY,
+                                                ),
+                                                ft.Text(
+                                                    f"{describe_portion(food)} - {macros_preview}",
+                                                    size=11,
+                                                    color=TEXT_MUTED,
+                                                ),
+                                            ],
+                                            spacing=4,
+                                            expand=True,
+                                        ),
+                                        ft.Row(
+                                            [
+                                                ft.IconButton(
+                                                    icon=ft.Icons.ADD_CIRCLE,
+                                                    tooltip="Agregar al diario",
+                                                    icon_color=ACCENT_GREEN,
+                                                    on_click=lambda ev, f=food: add_custom_food_to_meal(f, ev.page),
+                                                ),
+                                                ft.IconButton(
+                                                    icon=ft.Icons.EDIT,
+                                                    tooltip="Editar comida definida",
+                                                    icon_color=PRIMARY_COLOR,
+                                                    on_click=lambda ev, f=food: show_custom_food_form(ev, f),
+                                                ),
+                                                ft.IconButton(
+                                                    icon=ft.Icons.DELETE,
+                                                    tooltip="Eliminar comida definida",
+                                                    icon_color="ALERT_RED",
+                                                    on_click=lambda ev, f=food: confirm_delete_custom_food(ev, f),
+                                                ),
+                                            ],
+                                            spacing=0,
+                                        ),
+                                    ],
+                                    alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                                ),
+                            ],
+                            spacing=8,
+                        ),
+                    )
+                )
+        if custom_library_column.page:
+            custom_library_column.update()
+
+    def add_custom_food_to_meal(food: dict, page: ft.Page):
+        target_meal = quick_meal_dropdown.value or default_meal
+        grams = float(food.get("portion", {}).get("grams") or 100)
+        macros = scale_macros(food, grams)
+        add_food_entry(
+            today,
+            target_meal,
+            food["name"],
+            grams,
+            macros["kcal"],
+            macros["p"],
+            macros["c"],
+            macros["g"],
+            food_ref={
+                "id": food["id"],
+                "source": food.get("source", "custom"),
+                "portion": food.get("portion"),
+                "lookup_name": food["name"],
+            },
+        )
+        page.snack_bar = ft.SnackBar(
+            ft.Text(f"{food['name']} agregada a {_format_meal(target_meal)}")
+        )
+        page.snack_bar.open = True
+        page.update()
+        refresh_entries()
 
     def chunk_controls(controls, size=2):
         rows = []
@@ -118,9 +241,9 @@ def MacrosView():
                 ft.Container(
                     expand=1,
                     bgcolor=config["bg"],
-                    border_radius=14,
-                    padding=14,
-                    border=ft.border.all(1, "#4F5D73"),
+                    border_radius=16,
+                    padding=16,
+                    border=ft.border.all(1, "#2C2C2E"),
                     shadow=ft.BoxShadow(
                         blur_radius=8,
                         spread_radius=0,
@@ -132,7 +255,7 @@ def MacrosView():
                             ft.Row(
                                 [
                                     ft.Icon(config["icon"], color=config["accent"], size=22),
-                                    ft.Text(config["title"], size=12, weight=ft.FontWeight.W_600),
+                                    ft.Text(config["title"], size=12, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
                                 ],
                                 spacing=6,
                             ),
@@ -140,6 +263,7 @@ def MacrosView():
                                 f"{config['format'](value)} {config['unit']}",
                                 size=20,
                                 weight=ft.FontWeight.BOLD,
+                                color=TEXT_PRIMARY,
                             ),
                         ],
                         spacing=8,
@@ -147,6 +271,191 @@ def MacrosView():
                 )
             )
         return cards
+
+    def show_custom_food_form(
+        event: ft.ControlEvent,
+        food: dict | None = None,
+        on_saved=None,
+    ):
+        page_local = event.page
+        food_snapshot = food.copy() if food else None
+        editing_custom = food_snapshot is not None
+
+        name_field = ft.TextField(
+            label="Nombre",
+            value=(food_snapshot or {}).get("name", ""),
+        )
+        portion_grams_field = ft.TextField(
+            label="Porción base (g)",
+            value=f"{float((food_snapshot or {}).get('portion', {}).get('grams', 100)):.0f}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+        )
+        portion_desc_field = ft.TextField(
+            label="Descripción de la porción (opcional)",
+            value=(food_snapshot or {}).get("portion", {}).get("description", ""),
+        )
+        kcal_field = ft.TextField(
+            label="Calorías (kcal)",
+            value=f"{float((food_snapshot or {}).get('macros', {}).get('kcal', 0)):.0f}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+        )
+        p_field = ft.TextField(
+            label="Proteínas (g)",
+            value=f"{float((food_snapshot or {}).get('macros', {}).get('p', 0)):.1f}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+        )
+        c_field = ft.TextField(
+            label="Carbohidratos (g)",
+            value=f"{float((food_snapshot or {}).get('macros', {}).get('c', 0)):.1f}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+        )
+        g_field = ft.TextField(
+            label="Grasas (g)",
+            value=f"{float((food_snapshot or {}).get('macros', {}).get('g', 0)):.1f}",
+            keyboard_type=ft.KeyboardType.NUMBER,
+        )
+        error_field = ft.Text("", color=ALERT_RED, size=12)
+
+        def parse_value(field: ft.TextField, default=None):
+            raw = (field.value or "").strip()
+            if raw == "":
+                return default
+            try:
+                return float(raw.replace(",", "."))
+            except ValueError:
+                return None
+
+        def submit_custom(_: ft.ControlEvent):
+            name_value = (name_field.value or "").strip()
+            grams_val = parse_value(portion_grams_field, default=None)
+            kcal_val = parse_value(kcal_field, default=None)
+            p_val = parse_value(p_field, default=None)
+            c_val = parse_value(c_field, default=None)
+            g_val = parse_value(g_field, default=None)
+
+            if not name_value:
+                error_field.value = "Ingresa el nombre de la comida."
+            elif grams_val is None or grams_val <= 0:
+                error_field.value = "Ingresa una porción base válida."
+            elif None in (kcal_val, p_val, c_val, g_val):
+                error_field.value = "Revisa los valores nutricionales."
+            else:
+                description_val = (portion_desc_field.value or "").strip() or None
+                if editing_custom:
+                    updated = update_custom_food(
+                        food_snapshot["id"],
+                        name=name_value,
+                        grams=grams_val,
+                        kcal=kcal_val,
+                        p=p_val,
+                        c=c_val,
+                        g=g_val,
+                        description=description_val,
+                    )
+                    if not updated:
+                        error_field.value = "No se pudo actualizar la comida definida."
+                        if error_field.page:
+                            error_field.update()
+                        return
+                    target_id = updated["id"]
+                    message = "Comida definida actualizada"
+                else:
+                    created = create_custom_food(
+                        name=name_value,
+                        grams=grams_val,
+                        kcal=kcal_val or 0.0,
+                        p=p_val or 0.0,
+                        c=c_val or 0.0,
+                        g=g_val or 0.0,
+                        description=description_val,
+                    )
+                    target_id = created["id"]
+                    message = "Comida definida creada"
+                page_local.close(custom_dialog)
+                refresh_custom_library()
+                if on_saved:
+                    on_saved(target_id)
+                page_local.snack_bar = ft.SnackBar(ft.Text(message))
+                page_local.snack_bar.open = True
+                page_local.update()
+                return
+
+            if error_field.page:
+                error_field.update()
+
+        def cancel_custom(_=None):
+            page_local.close(custom_dialog)
+
+        custom_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(
+                "Editar comida definida" if editing_custom else "Nueva comida definida"
+            ),
+            content=ft.Container(
+                width=360,
+                content=ft.Column(
+                    [
+                        name_field,
+                        portion_grams_field,
+                        portion_desc_field,
+                        kcal_field,
+                        p_field,
+                        c_field,
+                        g_field,
+                        error_field,
+                    ],
+                    spacing=10,
+                    tight=True,
+                ),
+            ),
+            actions=[
+                ft.TextButton("Cancelar", on_click=cancel_custom),
+                ft.ElevatedButton("Guardar", icon=ft.Icons.CHECK, on_click=submit_custom),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page_local.open(custom_dialog)
+
+    def confirm_delete_custom_food(event: ft.ControlEvent, food: dict, on_deleted=None):
+        page_local = event.page
+
+        def do_delete(_):
+            removed = delete_custom_food(food.get("id"))
+            page_local.close(confirm_dialog)
+            if removed:
+                refresh_custom_library()
+                if on_deleted:
+                    on_deleted()
+                page_local.snack_bar = ft.SnackBar(
+                    ft.Text(f"{food.get('name', 'Comida')} eliminada")
+                )
+            else:
+                page_local.snack_bar = ft.SnackBar(
+                    ft.Text("No se pudo eliminar la comida definida.")
+                )
+            page_local.snack_bar.open = True
+            page_local.update()
+
+        def cancel_delete(_=None):
+            page_local.close(confirm_dialog)
+
+        confirm_dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("Eliminar comida definida"),
+            content=ft.Text(f"¿Seguro deseas eliminar {food.get('name', 'esta comida')}?"),
+            actions=[
+                ft.TextButton("Cancelar", on_click=cancel_delete),
+                ft.ElevatedButton(
+                    "Eliminar",
+                    icon=ft.Icons.DELETE,
+                    bgcolor=ALERT_RED,
+                    color=ft.Colors.WHITE,
+                    on_click=do_delete,
+                ),
+            ],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page_local.open(confirm_dialog)
 
     def open_food_dialog(event: ft.ControlEvent, existing: dict | None = None):
         page = event.page
@@ -254,7 +563,7 @@ def MacrosView():
         custom_foods_column = ft.Column(spacing=4, expand=True, scroll=ft.ScrollMode.AUTO)
         selected_custom = {"food": custom_state["current"]}
 
-        error_text = ft.Text("", color=ft.Colors.RED, size=12)
+        error_text = ft.Text("", color=ALERT_RED, size=12)
 
         def parse_float_field(field: ft.TextField, default=None):
             raw = (field.value or "").strip()
@@ -307,26 +616,6 @@ def MacrosView():
             else:
                 for food in foods:
                     macros_preview = format_macros(food.get("macros", {}))
-                    actions = ft.Row(
-                        [
-                            ft.IconButton(
-                                icon=ft.Icons.EDIT,
-                                icon_color=ft.Colors.PRIMARY,
-                                tooltip="Editar comida definida",
-                                icon_size=18,
-                                on_click=lambda ev, food=food: open_custom_editor(ev, food),
-                            ),
-                            ft.IconButton(
-                                icon=ft.Icons.DELETE,
-                                icon_color=ft.Colors.RED,
-                                tooltip="Eliminar comida definida",
-                                icon_size=18,
-                                on_click=lambda ev, food=food: confirm_delete_custom(ev, food),
-                            ),
-                        ],
-                        spacing=0,
-                        alignment=ft.MainAxisAlignment.END,
-                    )
                     custom_foods_column.controls.append(
                         ft.ListTile(
                             title=ft.Text(food["name"]),
@@ -336,7 +625,36 @@ def MacrosView():
                             ),
                             dense=True,
                             on_click=lambda _, food=food: select_custom_food(food),
-                            trailing=actions,
+                            trailing=ft.Row(
+                                [
+                                    ft.IconButton(
+                                        icon=ft.Icons.EDIT,
+                                        icon_color=ft.Colors.PRIMARY,
+                                        tooltip="Editar comida definida",
+                                        icon_size=18,
+                                        on_click=lambda ev, food=food: show_custom_food_form(
+                                            ev,
+                                            food,
+                                            on_saved=lambda target_id: refresh_custom_foods(
+                                                select_id=target_id
+                                            ),
+                                        ),
+                                    ),
+                                    ft.IconButton(
+                                        icon=ft.Icons.DELETE,
+                                        icon_color=ALERT_RED,
+                                        tooltip="Eliminar comida definida",
+                                        icon_size=18,
+                                        on_click=lambda ev, food=food: confirm_delete_custom_food(
+                                            ev,
+                                            food,
+                                            on_deleted=lambda: refresh_custom_foods(select_id=None),
+                                        ),
+                                    ),
+                                ],
+                                spacing=0,
+                                alignment=ft.MainAxisAlignment.END,
+                            ),
                         )
                     )
             if custom_foods_column.page:
@@ -345,8 +663,11 @@ def MacrosView():
         def select_custom_food(food: dict | None):
             selected_custom["food"] = food
             if food:
+                custom_state["current"] = food
                 custom_selected_text.value = f"{food['name']} ({describe_portion(food)})"
                 custom_selected_text.color = ft.Colors.PRIMARY
+                manual_save_checkbox.label = "Actualizar comida definida"
+                manual_save_checkbox.value = True
                 grams_reference = None
                 if editing and current_custom_id == food.get("id"):
                     grams_reference = (entry_snapshot or {}).get("grams")
@@ -360,12 +681,17 @@ def MacrosView():
                     grams_value = 100.0
                 custom_grams_field.value = f"{grams_value:.0f}"
             else:
+                custom_state["current"] = None
                 custom_selected_text.value = "Selecciona una comida definida"
                 custom_selected_text.color = TEXT_MUTED
+                manual_save_checkbox.label = "Guardar como comida definida"
+                manual_save_checkbox.value = False
             if custom_selected_text.page:
                 custom_selected_text.update()
             if custom_grams_field.page:
                 custom_grams_field.update()
+            if manual_save_checkbox.page:
+                manual_save_checkbox.update()
 
         def refresh_custom_foods(select_id: str | None = None):
             foods = list_custom_foods()
@@ -382,183 +708,8 @@ def MacrosView():
                         break
                 else:
                     select_custom_food(None)
+            refresh_custom_library()
 
-        def open_custom_editor(ev: ft.ControlEvent, food: dict | None = None):
-            editor_page = ev.page
-            food_snapshot = food.copy() if food else None
-            editing_custom = food_snapshot is not None
-
-            name_field = ft.TextField(
-                label="Nombre",
-                value=(food_snapshot or {}).get("name", ""),
-            )
-            portion_grams_field = ft.TextField(
-                label="Porcion base (g)",
-                value=f"{float((food_snapshot or {}).get('portion', {}).get('grams', 100)):.0f}",
-                keyboard_type=ft.KeyboardType.NUMBER,
-            )
-            portion_desc_field = ft.TextField(
-                label="Descripcion de la porcion (opcional)",
-                value=(food_snapshot or {}).get("portion", {}).get("description", ""),
-            )
-            kcal_field = ft.TextField(
-                label="Calorias (kcal)",
-                value=f"{float((food_snapshot or {}).get('macros', {}).get('kcal', 0)):.0f}",
-                keyboard_type=ft.KeyboardType.NUMBER,
-            )
-            p_field = ft.TextField(
-                label="Proteinas (g)",
-                value=f"{float((food_snapshot or {}).get('macros', {}).get('p', 0)):.1f}",
-                keyboard_type=ft.KeyboardType.NUMBER,
-            )
-            c_field = ft.TextField(
-                label="Carbohidratos (g)",
-                value=f"{float((food_snapshot or {}).get('macros', {}).get('c', 0)):.1f}",
-                keyboard_type=ft.KeyboardType.NUMBER,
-            )
-            g_field = ft.TextField(
-                label="Grasas (g)",
-                value=f"{float((food_snapshot or {}).get('macros', {}).get('g', 0)):.1f}",
-                keyboard_type=ft.KeyboardType.NUMBER,
-            )
-            error_field = ft.Text("", color=ft.Colors.RED, size=12)
-
-            def submit_custom(_: ft.ControlEvent):
-                name_value = (name_field.value or "").strip()
-                grams_val = parse_float_field(portion_grams_field, default=None)
-                kcal_val = parse_float_field(kcal_field, default=None)
-                p_val = parse_float_field(p_field, default=None)
-                c_val = parse_float_field(c_field, default=None)
-                g_val = parse_float_field(g_field, default=None)
-
-                if not name_value:
-                    error_field.value = "Ingresa el nombre de la comida."
-                elif grams_val is None or grams_val <= 0:
-                    error_field.value = "Ingresa una porcion base valida."
-                elif None in (kcal_val, p_val, c_val, g_val):
-                    error_field.value = "Revisa los valores nutricionales."
-                else:
-                    description_val = (portion_desc_field.value or "").strip() or None
-                    if editing_custom:
-                        updated = update_custom_food(
-                            food_snapshot["id"],
-                            name=name_value,
-                            grams=grams_val,
-                            kcal=kcal_val,
-                            p=p_val,
-                            c=c_val,
-                            g=g_val,
-                            description=description_val,
-                        )
-                        if not updated:
-                            error_field.value = "No se pudo actualizar la comida definida."
-                            if error_field.page:
-                                error_field.update()
-                            return
-                        target_id = updated["id"]
-                        if current_custom_id == target_id:
-                            custom_state["current"] = updated
-                        message = "Comida definida actualizada"
-                    else:
-                        created = create_custom_food(
-                            name=name_value,
-                            grams=grams_val,
-                            kcal=kcal_val or 0.0,
-                            p=p_val or 0.0,
-                            c=c_val or 0.0,
-                            g=g_val or 0.0,
-                            description=description_val,
-                        )
-                        target_id = created["id"]
-                        message = "Comida definida creada"
-                    editor_dialog.open = False
-                    editor_page.update()
-                    refresh_custom_foods(select_id=target_id)
-                    editor_page.snack_bar = ft.SnackBar(ft.Text(message))
-                    editor_page.snack_bar.open = True
-                    editor_page.update()
-                    return
-
-                if error_field.page:
-                    error_field.update()
-
-            def cancel_custom(_=None):
-                editor_dialog.open = False
-                editor_page.update()
-
-            editor_dialog = ft.AlertDialog(
-                modal=True,
-                title=ft.Text("Editar comida definida" if editing_custom else "Nueva comida definida"),
-                content=ft.Container(
-                    width=360,
-                    content=ft.Column(
-                        [
-                            name_field,
-                            portion_grams_field,
-                            portion_desc_field,
-                            kcal_field,
-                            p_field,
-                            c_field,
-                            g_field,
-                            error_field,
-                        ],
-                        spacing=10,
-                        tight=True,
-                    ),
-                ),
-                actions=[
-                    ft.TextButton("Cancelar", on_click=cancel_custom),
-                    ft.ElevatedButton(
-                        "Guardar",
-                        icon=ft.Icons.CHECK,
-                        on_click=submit_custom,
-                    ),
-                ],
-                actions_alignment=ft.MainAxisAlignment.END,
-            )
-            editor_page.dialog = editor_dialog
-            editor_dialog.open = True
-            editor_page.update()
-
-        def confirm_delete_custom(ev: ft.ControlEvent, food: dict):
-            page_local = ev.page
-
-            def do_delete(_):
-                removed = delete_custom_food(food.get("id"))
-                confirm_dialog.open = False
-                if removed:
-                    page_local.snack_bar = ft.SnackBar(ft.Text(f"{food.get('name', 'Comida')} eliminada"))
-                    refresh_custom_foods()
-                    if selected_custom.get("food") and selected_custom["food"].get("id") == food.get("id"):
-                        select_custom_food(None)
-                else:
-                    page_local.snack_bar = ft.SnackBar(ft.Text("No se pudo eliminar la comida."))
-                page_local.snack_bar.open = True
-                page_local.update()
-
-            def cancel_delete(_=None):
-                confirm_dialog.open = False
-                page_local.update()
-
-            confirm_dialog = ft.AlertDialog(
-                modal=True,
-                title=ft.Text("Eliminar comida definida"),
-                content=ft.Text(f"Seguro deseas eliminar {food.get('name', 'esta comida')}?"),
-                actions=[
-                    ft.TextButton("Cancelar", on_click=cancel_delete),
-                    ft.ElevatedButton(
-                        "Eliminar",
-                        icon=ft.Icons.DELETE,
-                        bgcolor=ft.Colors.RED,
-                        color=ft.Colors.WHITE,
-                        on_click=do_delete,
-                    ),
-                ],
-                actions_alignment=ft.MainAxisAlignment.END,
-            )
-            page_local.dialog = confirm_dialog
-            confirm_dialog.open = True
-            page_local.update()
 
         def on_tab_change(ev):
             page.update()
@@ -764,8 +915,7 @@ def MacrosView():
             refresh_entries()
 
         def close_dialog(_=None):
-            dialog.open = False
-            page.update()
+            page.close(dialog)
 
         catalog_tab_content = ft.Column(
             [
@@ -804,7 +954,13 @@ def MacrosView():
                         ft.OutlinedButton(
                             "Nueva comida",
                             icon=ft.Icons.ADD,
-                            on_click=lambda ev: open_custom_editor(ev, None),
+                            on_click=lambda ev: show_custom_food_form(
+                                ev,
+                                None,
+                                on_saved=lambda target_id: refresh_custom_foods(
+                                    select_id=target_id
+                                ),
+                            ),
                         ),
                     ],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -859,23 +1015,19 @@ def MacrosView():
         )
 
         set_catalog_results(search_foods("", limit=12))
-        refresh_custom_foods(current_custom_id)
 
-        page.dialog = dialog
-        dialog.open = True
-        page.update()
+        page.open(dialog)
+        refresh_custom_foods(current_custom_id)
 
     def confirm_edit(event: ft.ControlEvent, entry_data: dict):
         page_local = event.page
 
         def proceed_edit(_):
-            confirm_dialog.open = False
-            page_local.update()
+            page_local.close(confirm_dialog)
             open_food_dialog(event, entry_data)
 
         def cancel_edit(_=None):
-            confirm_dialog.open = False
-            page_local.update()
+            page_local.close(confirm_dialog)
 
         confirm_dialog = ft.AlertDialog(
             modal=True,
@@ -889,9 +1041,7 @@ def MacrosView():
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page_local.dialog = confirm_dialog
-        confirm_dialog.open = True
-        page_local.update()
+        page_local.open(confirm_dialog)
 
     def confirm_delete(event: ft.ControlEvent, entry_id: str, entry_name: str, meal_key: str):
         page = event.page
@@ -899,15 +1049,14 @@ def MacrosView():
         def do_delete(_):
             if entry_id:
                 delete_food_entry(entry_id)
-            confirm_dialog.open = False
+            page.close(confirm_dialog)
             page.snack_bar = ft.SnackBar(ft.Text("Comida eliminada"))
             page.snack_bar.open = True
             page.update()
             refresh_entries()
 
         def cancel(_):
-            confirm_dialog.open = False
-            page.update()
+            page.close(confirm_dialog)
 
         confirm_dialog = ft.AlertDialog(
             modal=True,
@@ -917,13 +1066,11 @@ def MacrosView():
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel),
-                ft.ElevatedButton("Eliminar", icon=ft.Icons.DELETE, on_click=do_delete, bgcolor=ft.Colors.RED, color=ft.Colors.WHITE),
+                ft.ElevatedButton("Eliminar", icon=ft.Icons.DELETE, on_click=do_delete, bgcolor=ALERT_RED, color=ft.Colors.WHITE),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
-        page.dialog = confirm_dialog
-        confirm_dialog.open = True
-        page.update()
+        page.open(confirm_dialog)
 
     def refresh_entries():
         items = get_day_entries(today)
@@ -959,6 +1106,7 @@ def MacrosView():
                     border_radius=14,
                     bgcolor=ENTRY_GROUP_BG,
                     border=ft.border.all(1, "#3E4B66"),
+                    border=ft.border.all(1, "#2C2C2E"),
                     shadow=ft.BoxShadow(
                         blur_radius=8,
                         spread_radius=0,
@@ -990,7 +1138,7 @@ def MacrosView():
                                 [
                                     ft.Column(
                                         [
-                                            ft.Text(entry["name"], weight=ft.FontWeight.BOLD, size=13),
+                                            ft.Text(entry["name"], weight=ft.FontWeight.BOLD, size=13, color=TEXT_PRIMARY),
                                             ft.Text(
                                                 format_macros(
                                                     {
@@ -1011,13 +1159,13 @@ def MacrosView():
                                         [
                                             ft.IconButton(
                                                 icon=ft.Icons.EDIT,
-                                                icon_color=ft.Colors.BLUE,
+                                                icon_color=PRIMARY_COLOR,
                                                 tooltip="Editar",
                                                 on_click=lambda ev, data=entry_data: confirm_edit(ev, data),
                                             ),
                                             ft.IconButton(
                                                 icon=ft.Icons.DELETE,
-                                                icon_color=ft.Colors.RED,
+                                                icon_color="ALERT_RED",
                                                 tooltip="Eliminar",
                                                 on_click=lambda ev, entry_id=entry_id, entry_name=entry_name, meal_key=meal_value: confirm_delete(ev, entry_id, entry_name, meal_key),
                                             ),
@@ -1041,7 +1189,7 @@ def MacrosView():
                             padding=12,
                             border_radius=12,
                             bgcolor=ENTRY_ITEM_BG,
-                            border=ft.border.all(1, "#4A5875"),
+                            border=ft.border.all(1, "#2C2C2E"),
                             content=entry_controls,
                         )
                     )
@@ -1051,7 +1199,7 @@ def MacrosView():
                         padding=14,
                         border_radius=16,
                         bgcolor=ENTRY_GROUP_BG,
-                        border=ft.border.all(1, "#3E4B66"),
+                        border=ft.border.all(1, "#2C2C2E"),
                         shadow=ft.BoxShadow(
                             blur_radius=8,
                             spread_radius=0,
@@ -1066,6 +1214,7 @@ def MacrosView():
                                             _format_meal(meal_key),
                                             size=14,
                                             weight=ft.FontWeight.W_600,
+                                            color=TEXT_PRIMARY,
                                         ),
                                         ft.Text(
                                             format_macros(meal_totals),
@@ -1120,7 +1269,7 @@ def MacrosView():
                 bgcolor=QUICK_CARD_BG,
                 border_radius=14,
                 padding=12,
-                border=ft.border.all(1, "#3E4A65"),
+                border=ft.border.all(1, "#2C2C2E"),
                 shadow=ft.BoxShadow(
                     blur_radius=6,
                     spread_radius=0,
@@ -1130,9 +1279,9 @@ def MacrosView():
                 on_click=lambda e, f=food, g=grams: quick_add(f, g, e.page),
                 content=ft.Column(
                     [
-                        ft.Text(food["name"], size=13, weight=ft.FontWeight.W_600),
+                        ft.Text(food["name"], size=13, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
                         ft.Text(describe_portion(food), size=11, color=TEXT_MUTED),
-                        ft.Text(format_macros(macros_preview), size=11),
+                        ft.Text(format_macros(macros_preview), size=11, color=TEXT_PRIMARY),
                     ],
                     spacing=4,
                 ),
@@ -1159,15 +1308,16 @@ def MacrosView():
             )
         )
 
+    refresh_custom_library()
     refresh_entries()
 
     return ft.Column(
         [
-            ft.Text(today.strftime("%A %d/%m"), size=18, weight=ft.FontWeight.BOLD),
+            ft.Text(today.strftime("%A %d/%m"), size=18, weight=ft.FontWeight.BOLD, color=TEXT_PRIMARY),
             totals_info_text,
-            ft.Text("Resumen diario", size=15, weight=ft.FontWeight.W_600),
+            ft.Text("Resumen diario", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
             macro_summary_column,
-            ft.Text("Comidas frecuentes", size=15, weight=ft.FontWeight.W_600),
+            ft.Text("Comidas frecuentes", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
             ft.Row(
                 [
                     ft.Text("Agregar rapido en:", size=12, color=TEXT_MUTED),
@@ -1176,6 +1326,23 @@ def MacrosView():
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             ),
             quick_section_column,
+            ft.Row(
+                [
+                    ft.Text("Tus comidas definidas", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
+                    ft.FilledTonalButton(
+                        "Crear comida",
+                        icon=ft.Icons.ADD,
+                        on_click=lambda ev: show_custom_food_form(ev, None),
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            ),
+            ft.Text(
+                "Guarda combinaciones listas y agrégalas con un toque.",
+                size=11,
+                color=TEXT_MUTED,
+            ),
+            custom_library_column,
             ft.Divider(color="#30384C"),
             ft.Text("Diario de comidas", size=15, weight=ft.FontWeight.W_600),
             entries_column,

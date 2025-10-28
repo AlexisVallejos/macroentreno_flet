@@ -7,6 +7,11 @@ def main(page: ft.Page):
     page.title = "MacroEntreno Argento"
     page.window_min_width, page.window_min_height = 380, 700
     page.theme_mode = ft.ThemeMode.DARK
+    primary_blue = "#007AFF"
+    secondary_blue = "#5AC8FA"
+    page.theme = ft.Theme(color_scheme_seed=primary_blue)
+    page.bgcolor = "#0A0A0A"
+    page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
     # Estado simple de navegacion
     routes = ["home", "workouts", "add", "progress", "macros", "micros"]
@@ -112,6 +117,9 @@ def main(page: ft.Page):
         ],
         selected_index=0,
         on_change=on_nav_change,
+        bgcolor="#1C1C1E",
+        indicator_color=primary_blue,
+        shadow_color=secondary_blue,
     )
 
     def render():
