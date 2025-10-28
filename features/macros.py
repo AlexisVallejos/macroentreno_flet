@@ -1092,28 +1092,28 @@ def MacrosView():
         entries_column.controls.clear()
         if not items:
             entries_column.controls.append(
-                ft.Container(
-                    content=ft.Column(
-                        [
-                            ft.Icon(ft.Icons.RESTAURANT_OUTLINED, size=48, color=TEXT_MUTED),
-                            ft.Text("Todavia no agregaste comidas hoy.", color=TEXT_MUTED),
-                        ],
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        spacing=8,
-                    ),
-                    padding=24,
-                    border_radius=14,
-                    bgcolor=ENTRY_GROUP_BG,
-                    border=ft.border.all(1, "#3E4B66"),
-                    border=ft.border.all(1, "#2C2C2E"),
-                    shadow=ft.BoxShadow(
-                        blur_radius=8,
-                        spread_radius=0,
-                        offset=ft.Offset(0, 2),
-                        color="#000000",
-                    ),
-                )
+       ft.Container(
+    content=ft.Column(
+        [
+            ft.Icon(ft.Icons.RESTAURANT_OUTLINED, size=48, color=TEXT_MUTED),
+            ft.Text("Todavía no agregaste comidas hoy.", color=TEXT_MUTED),
+        ],
+        alignment=ft.MainAxisAlignment.CENTER,
+        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        spacing=8,
+    ),
+    padding=24,
+    border_radius=14,
+    bgcolor=ENTRY_GROUP_BG,
+    border=ft.border.all(1, "#2C2C2E"),  # ← sólo una línea
+    shadow=ft.BoxShadow(
+        blur_radius=8,
+        spread_radius=0,
+        offset=ft.Offset(0, 2),
+        color="#000000",
+    ),
+)
+
             )
         else:
             groups = {}
