@@ -20,11 +20,117 @@
         "lookup_name": "Pollo pechuga cocida"
       },
       "entry_id": "entry-3cc4a47d9f274fda8d4a12e6f002a56a"
+    },
+    {
+      "date": "2025-10-28",
+      "meal": "almuerzo",
+      "name": "Pollo pechuga cocida",
+      "grams": 100.0,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {},
+      "food": {
+        "id": "local-chicken-breast",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Pollo pechuga cocida"
+      },
+      "entry_id": "entry-6d8cab8aa9ed4dba9774195e0e0437c1"
+    },
+    {
+      "date": "2025-10-28",
+      "meal": "almuerzo",
+      "name": "Palta",
+      "grams": 100.0,
+      "kcal": 160.0,
+      "p": 2.0,
+      "c": 8.5,
+      "g": 14.7,
+      "micros": {},
+      "food": {
+        "id": "local-avocado",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Palta"
+      },
+      "entry_id": "entry-52c153621e614197b78a60d00461d377"
+    },
+    {
+      "date": "2025-10-28",
+      "meal": "almuerzo",
+      "name": "Batata horneada",
+      "grams": 100.0,
+      "kcal": 90.0,
+      "p": 2.0,
+      "c": 20.7,
+      "g": 0.1,
+      "micros": {},
+      "food": {
+        "id": "local-sweet-potato",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Batata horneada"
+      },
+      "entry_id": "entry-0c71026b55714e1b934edd37e938dd54"
+    },
+    {
+      "date": "2025-10-28",
+      "meal": "Almuerzo",
+      "name": "Pollo pechuga cocida",
+      "grams": 100.0,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {},
+      "food": {
+        "id": "local-chicken-breast",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Pollo pechuga cocida"
+      },
+      "entry_id": "entry-e55e68b61f324f0e8ea37fe726e5d71a"
+    },
+    {
+      "date": "2025-10-28",
+      "meal": "Merienda",
+      "name": "Banana",
+      "grams": 100.0,
+      "kcal": 89.0,
+      "p": 1.1,
+      "c": 22.8,
+      "g": 0.3,
+      "micros": {},
+      "food": {
+        "id": "local-banana",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Banana"
+      },
+      "entry_id": "entry-22930c97f3d8434daafe95b45b53c8ba"
     }
   ],
   "workouts": [],
   "user": {
     "name": "Alexis",
     "kcal_goal": 1800
-  }
+  },
+  "custom_foods": []
 }
