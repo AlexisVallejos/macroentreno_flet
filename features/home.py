@@ -1,67 +1,196 @@
-import flet as ft
 import datetime as dt
-from services.reports import weekly_macros_summary
+import flet as ft
+
 from data.storage import get_user
+from services.reports import weekly_macros_summary
+
+
+PRIMARY_COLOR = "#007AFF"
+SECONDARY_COLOR = "#5AC8FA"
+PROTEIN_COLOR = "#34C759"
+CARB_COLOR = SECONDARY_COLOR
+FAT_COLOR = "#FF9F0A"
+TEXT_PRIMARY = "#FFFFFF"
+TEXT_MUTED = "#8E8E93"
+CARD_BG = "#1C1C1E"
+CARD_BORDER = "#2C2C2E"
+
+
+def _format_day_label(date_str: str) -> str:
+    return dt.datetime.fromisoformat(date_str).strftime("%a").upper()
+
+
+def _build_macro_chart(week_summary: list[dict]) -> ft.Control:
+    macro_values = []
+    for day in week_summary:
+        macro_values.extend([day["p"], day["c"], day["g"]])
+    max_macro = max(macro_values or [1]) or 1
+    target_height = 140
+    scale = target_height / max_macro
+
+    bars = []
+    bar_width = 18
+    for day in week_summary:
+        proteins = max(int(day["p"] * scale), 4)
+        carbs = max(int(day["c"] * scale), 4)
+        fats = max(int(day["g"] * scale), 4)
+
+        bar_stack = ft.Column(
+            controls=[
+                ft.Container(height=fats, width=bar_width, bgcolor=FAT_COLOR, border_radius=6),
+                ft.Container(height=carbs, width=bar_width, bgcolor=CARB_COLOR, border_radius=6),
+                ft.Container(height=proteins, width=bar_width, bgcolor=PROTEIN_COLOR, border_radius=6),
+            ],
+            spacing=6,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+        )
+
+        bars.append(
+            ft.Column(
+                controls=[
+                    bar_stack,
+                    ft.Text(_format_day_label(day["date"]), size=12, color=TEXT_MUTED),
+                ],
+                spacing=8,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            )
+        )
+
+    legend = ft.Row(
+        controls=[
+            ft.Row(
+                [
+                    ft.Container(width=10, height=10, bgcolor=PROTEIN_COLOR, border_radius=5),
+                    ft.Text("Proteinas", size=11, color=TEXT_MUTED),
+                ],
+                spacing=6,
+            ),
+            ft.Row(
+                [
+                    ft.Container(width=10, height=10, bgcolor=CARB_COLOR, border_radius=5),
+                    ft.Text("Carbohidratos", size=11, color=TEXT_MUTED),
+                ],
+                spacing=6,
+            ),
+            ft.Row(
+                [
+                    ft.Container(width=10, height=10, bgcolor=FAT_COLOR, border_radius=5),
+                    ft.Text("Grasas", size=11, color=TEXT_MUTED),
+                ],
+                spacing=6,
+            ),
+        ],
+        spacing=20,
+        wrap=True,
+        alignment=ft.MainAxisAlignment.START,
+    )
+
+    chart = ft.Column(
+        controls=[
+            ft.Row(
+                controls=bars,
+                alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                vertical_alignment=ft.CrossAxisAlignment.END,
+            ),
+            legend,
+        ],
+        spacing=16,
+    )
+    return chart
+
 
 def HomeView(go_to):
     user = get_user()
-    greeting = ft.Text(f"HOLA, {user['name'].upper()}", size=18, weight=ft.FontWeight.W_600)
+    greeting = ft.Text(
+        f"HOLA, {user['name'].upper()}",
+        size=18,
+        weight=ft.FontWeight.W_600,
+        color=TEXT_PRIMARY,
+    )
 
     week = weekly_macros_summary(dt.date.today(), 7)
+    chart = _build_macro_chart(week)
 
-    bars = []
-    for d in week:
-        p_h = int(d["p"])
-        c_h = int(d["c"])
-        g_h = int(d["g"])
-
-        col = ft.Column(
-            controls=[
-                ft.Container(height=max(p_h, 4), width=10, bgcolor="#43B4E8", border_radius=5),
-                ft.Container(height=max(c_h, 4), width=10, bgcolor="#F3C44C", border_radius=5),
-                ft.Container(height=max(g_h, 4), width=10, bgcolor="#F58A5E", border_radius=5),
-            ],
-            spacing=2,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        )
-        label = ft.Text(dt.datetime.fromisoformat(d["date"]).strftime("%a"), size=12)
-        bars.append(ft.Column([col, label], horizontal_alignment=ft.CrossAxisAlignment.CENTER))
-
-    chart = ft.Row(bars, alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
-
-    cards = ft.Column([
-        ft.Container(
-            content=ft.Column([
-                ft.Text("TUS MACRONUTRIENTES", size=16, weight=ft.FontWeight.BOLD),
-                ft.Text("Vista semanal - Últimos 7 días", size=12, color=ft.Colors.GREY),
-                chart
-            ], spacing=10),
-            padding=15, bgcolor=ft.Colors.WHITE, border_radius=16
-        ),
-        ft.Container(
-            content=ft.Column([
-                ft.Text("Ejercicio de hoy", size=16, weight=ft.FontWeight.BOLD),
-                ft.Text("PECHO Y BÍCEPS (ejemplo)", size=14)
-            ], spacing=5),
-            padding=15,
-            bgcolor=ft.Colors.BLUE_GREY,
-            opacity=0.10,                # en vez de with_opacity
-            border_radius=16
-        ),
-        ft.Row([
+    cards = ft.Column(
+        controls=[
             ft.Container(
-                expand=1, padding=12, border_radius=14,
-                bgcolor=ft.Colors.BLACK, opacity=0.08,
-                content=ft.Column([ft.Text("Tus Macronutrientes"), ft.Text("HOY")]),
-                on_click=lambda e: go_to("macros"),
+                content=ft.Column(
+                    controls=[
+                        ft.Text(
+                            "TUS MACRONUTRIENTES",
+                            size=16,
+                            weight=ft.FontWeight.BOLD,
+                            color=TEXT_PRIMARY,
+                        ),
+                        ft.Text(
+                            "Vista semanal - ultimos 7 dias",
+                            size=12,
+                            color=TEXT_MUTED,
+                        ),
+                        chart,
+                    ],
+                    spacing=16,
+                ),
+                padding=20,
+                bgcolor=CARD_BG,
+                border_radius=18,
+                border=ft.border.all(1, CARD_BORDER),
             ),
             ft.Container(
-                expand=1, padding=12, border_radius=14,
-                bgcolor=ft.Colors.BLACK, opacity=0.08,
-                content=ft.Column([ft.Text("Tus Micronutrientes"), ft.Text("HOY")]),
-                on_click=lambda e: go_to("micros"),
+                content=ft.Column(
+                    controls=[
+                        ft.Text("Ejercicio de hoy", size=16, weight=ft.FontWeight.BOLD, color=TEXT_PRIMARY),
+                        ft.Text("PECHO Y BICEPS (ejemplo)", size=14, color=TEXT_MUTED),
+                    ],
+                    spacing=6,
+                ),
+                padding=18,
+                bgcolor=CARD_BG,
+                border_radius=18,
+                border=ft.border.all(1, CARD_BORDER),
             ),
-        ], spacing=12),
-    ], spacing=16)
+            ft.Row(
+                controls=[
+                    ft.Container(
+                        expand=1,
+                        padding=18,
+                        border_radius=18,
+                        bgcolor=CARD_BG,
+                        border=ft.border.all(1, CARD_BORDER),
+                        content=ft.Column(
+                            controls=[
+                                ft.Text("Tus Macronutrientes", color=TEXT_PRIMARY, weight=ft.FontWeight.W_600),
+                                ft.Text("HOY", color=TEXT_MUTED),
+                            ],
+                            spacing=4,
+                        ),
+                        on_click=lambda e: go_to("macros"),
+                    ),
+                    ft.Container(
+                        expand=1,
+                        padding=18,
+                        border_radius=18,
+                        bgcolor=CARD_BG,
+                        border=ft.border.all(1, CARD_BORDER),
+                        content=ft.Column(
+                            controls=[
+                                ft.Text("Tus Micronutrientes", color=TEXT_PRIMARY, weight=ft.FontWeight.W_600),
+                                ft.Text("HOY", color=TEXT_MUTED),
+                            ],
+                            spacing=4,
+                        ),
+                        on_click=lambda e: go_to("micros"),
+                    ),
+                ],
+                spacing=12,
+            ),
+        ],
+        spacing=16,
+    )
 
-    return ft.Column([greeting, cards], scroll=ft.ScrollMode.AUTO, spacing=16)
+    return ft.ListView(
+        controls=[greeting, cards],
+        expand=True,
+        spacing=20,
+        padding=ft.padding.only(left=16, right=16, top=0, bottom=24),
+    )

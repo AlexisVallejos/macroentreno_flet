@@ -5,7 +5,9 @@ import urllib.parse
 import urllib.request
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
+
+from services.fatsecret import FatSecretClient, FatSecretError
 
 
 LOCAL_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "foods.json"
@@ -41,8 +43,16 @@ def search_foods(query: str, limit: int = 8) -> List[Dict]:
     query = (query or "").strip()
 
     foods: List[Dict] = []
+
+    client = _get_fatsecret_client()
+    if client and query:
+        try:
+            foods = client.search_foods(query, limit)
+        except FatSecretError:
+            foods = []
+
     api_key = os.getenv("FOODDATA_API_KEY")
-    if api_key and query:
+    if not foods and api_key and query:
         try:
             foods = _search_usda(query, api_key, limit)
         except FoodLookupError:
@@ -196,6 +206,40 @@ def _normalise_food(item: Dict, source: str) -> Dict:
         },
     }
     return normalised
+
+
+_cached_client: Optional[FatSecretClient] = None
+_cached_client_config: Optional[Tuple[str, str, Optional[str], Optional[str]]] = None
+
+
+def _get_fatsecret_client() -> Optional[FatSecretClient]:
+    global _cached_client, _cached_client_config
+
+    key = os.getenv("FATSECRET_CONSUMER_KEY")
+    secret = os.getenv("FATSECRET_CONSUMER_SECRET")
+    if not key or not secret:
+        _cached_client = None
+        _cached_client_config = None
+        return None
+
+    region = os.getenv("FATSECRET_REGION") or "AR"
+    language = os.getenv("FATSECRET_LANGUAGE") or "es"
+    config: Tuple[str, str, Optional[str], Optional[str]] = (key, secret, region, language)
+
+    if _cached_client is None or _cached_client_config != config:
+        try:
+            _cached_client = FatSecretClient(
+                key,
+                secret,
+                default_region=region,
+                default_language=language,
+            )
+            _cached_client_config = config
+        except ValueError:
+            _cached_client = None
+            _cached_client_config = None
+
+    return _cached_client
 
 
 def format_macros(macros: Dict[str, float]) -> str:
