@@ -164,4 +164,4 @@ def main(page: ft.Page):
 
 
 # Punto de entrada Flet
-ft.app(target=main)
+ft.app(target=main, assets_dir="assets")
