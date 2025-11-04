@@ -1,7 +1,22 @@
+from pathlib import Path
+
 import flet as ft
 from features.home import HomeView
 from features.macros import MacrosView
+from features.progress import ProgressView
+from features.workouts import WorkoutsView
 
+try:
+    from dotenv import load_dotenv
+except ImportError:  # pragma: no cover - optional dependency
+    load_dotenv = None
+
+if load_dotenv:
+    base_dir = Path(__file__).resolve().parent
+    for env_file in (".env.local", ".env"):
+        candidate = base_dir / env_file
+        if candidate.exists():
+            load_dotenv(candidate, override=False)
 
 def main(page: ft.Page):
     page.title = "MacroEntreno Argento"
@@ -133,13 +148,9 @@ def main(page: ft.Page):
                 make_placeholder("Micronutrientes", "Modulo en construccion. Proximamente.")
             )
         elif current_route == "workouts":
-            content.controls.append(
-                make_placeholder("Mis ejercicios", "Aun no cargaste rutinas. Proximamente.")
-            )
+            content.controls.append(WorkoutsView())
         elif current_route == "progress":
-            content.controls.append(
-                make_placeholder("Mi progreso", "Visualizacion disponible en breve.")
-            )
+            content.controls.append(ProgressView())
         else:
             content.controls.append(make_placeholder("Proximamente", "Seccion en desarrollo."))
         page.update()

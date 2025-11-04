@@ -153,16 +153,39 @@ def HomeView(go_to):
                 controls=[
                     ft.Container(
                         expand=1,
-                        padding=18,
+                        height=140,
                         border_radius=18,
-                        bgcolor=CARD_BG,
+                        shadow=ft.BoxShadow(
+                            blur_radius=10,
+                            spread_radius=0,
+                            offset=ft.Offset(0, 6),
+                            color="#00000066",
+                        ),
                         border=ft.border.all(1, CARD_BORDER),
-                        content=ft.Column(
+                        clip_behavior=ft.ClipBehavior.HARD_EDGE,
+                        content=ft.Stack(
                             controls=[
-                                ft.Text("Tus Macronutrientes", color=TEXT_PRIMARY, weight=ft.FontWeight.W_600),
-                                ft.Text("HOY", color=TEXT_MUTED),
-                            ],
-                            spacing=4,
+                                ft.Image(
+                                    src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=60",
+                                    fit=ft.ImageFit.COVER,
+                                    expand=True,
+                                ),
+                                ft.Container(
+                                    padding=18,
+                                    alignment=ft.alignment.bottom_left,
+                                    content=ft.Column(
+                                        controls=[
+                                            ft.Text(
+                                                "Tus Macronutrientes",
+                                                color=TEXT_PRIMARY,
+                                                weight=ft.FontWeight.W_600,
+                                            ),
+                                            ft.Text("HOY", color=TEXT_PRIMARY, size=11),
+                                        ],
+                                        spacing=4,
+                                    ),
+                                ),
+                            ]
                         ),
                         on_click=lambda e: go_to("macros"),
                     ),

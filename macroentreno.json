@@ -104,6 +104,48 @@
         "lookup_name": "Banana"
       },
       "entry_id": "entry-28003f3dec7449b192efa6dea7c591ef"
+    },
+    {
+      "date": "2025-11-02",
+      "meal": "almuerzo",
+      "name": "Arroz largo fino Molino Ala (crudo)",
+      "grams": 100.0,
+      "kcal": 348.0,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6,
+      "micros": {},
+      "food": {
+        "id": "local-arroz-largo-fino",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz largo fino Molino Ala (crudo)"
+      },
+      "entry_id": "entry-7c2c803e121f4c34a1b507e488bec08d"
+    },
+    {
+      "date": "2025-11-03",
+      "meal": "almuerzo",
+      "name": "Arroz integral Dos Hermanos (crudo)",
+      "grams": 180.0,
+      "kcal": 648.0,
+      "p": 13.5,
+      "c": 133.2,
+      "g": 5.0,
+      "micros": {},
+      "food": {
+        "id": "local-arroz-integral-doshermanos",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz integral Dos Hermanos (crudo)"
+      },
+      "entry_id": "entry-588d56efba974538bf8d3d8d291cec11"
     }
   ],
   "workouts": [],

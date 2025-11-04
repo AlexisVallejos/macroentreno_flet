@@ -1,5 +1,6 @@
 import datetime as dt
 from copy import deepcopy
+from typing import Optional
 import flet as ft
 from data.storage import (
     add_food_entry,
@@ -8,11 +9,23 @@ from data.storage import (
     delete_food_entry,
     get_custom_food,
     get_day_entries,
+    get_recent_entries,
     list_custom_foods,
     update_custom_food,
     update_food_entry,
 )
-from services.foods import describe_portion, format_macros, scale_macros, search_foods
+from services.foods import (
+    describe_portion,
+    format_macros,
+    scale_macros,
+    search_foods,
+    search_local_foods,
+)
+from services.platform_locations import (
+    get_platform_locale_summary,
+    PlatformLocationConfigError,
+    PlatformLocationError,
+)
 
 
 MEAL_OPTIONS = [
@@ -102,8 +115,44 @@ def MacrosView():
     entries_column = ft.Column(spacing=12)
     totals_info_text = ft.Text("", size=13, color=TEXT_MUTED)
     macro_summary_column = ft.Column(spacing=10)
-    favorites = search_foods("", limit=8)
     recent_searches: list[dict] = []
+
+    try:
+        locale_summaries = get_platform_locale_summary(limit=6)
+        locale_error = None
+    except PlatformLocationConfigError:
+        locale_summaries = []
+        locale_error = "Configura FATSECRET_PLATFORM_CLIENT_ID y FATSECRET_PLATFORM_CLIENT_SECRET para ver localizaciones."
+    except PlatformLocationError as exc:
+        locale_summaries = []
+        locale_error = str(exc)
+
+    localization_section: Optional[ft.Container] = None
+    if locale_summaries or locale_error:
+        locale_texts: list[ft.Control] = []
+        if locale_summaries:
+            for item in locale_summaries:
+                locale_texts.append(ft.Text(item, size=12, color=TEXT_PRIMARY))
+        elif locale_error:
+            locale_texts.append(ft.Text(locale_error, size=12, color=TEXT_MUTED))
+
+        localization_section = ft.Container(
+            bgcolor=CARD_BG,
+            border_radius=12,
+            padding=12,
+            content=ft.Column(
+                [
+                    ft.Text(
+                        "Localizaciones disponibles (Platform)",
+                        size=14,
+                        weight=ft.FontWeight.W_600,
+                        color=TEXT_PRIMARY,
+                    ),
+                    ft.Column(locale_texts, spacing=4),
+                ],
+                spacing=8,
+            ),
+        )
 
     meal_order = {key: idx for idx, (key, _) in enumerate(MEAL_OPTIONS)}
     default_meal = MEAL_OPTIONS[1][0] if len(MEAL_OPTIONS) > 1 else MEAL_OPTIONS[0][0]
@@ -328,21 +377,21 @@ def MacrosView():
             value=(food_snapshot or {}).get("name", ""),
         )
         portion_grams_field = ft.TextField(
-            label="Porción base (g)",
+            label="Porcion base (g)",
             value=f"{float((food_snapshot or {}).get('portion', {}).get('grams', 100)):.0f}",
             keyboard_type=ft.KeyboardType.NUMBER,
         )
         portion_desc_field = ft.TextField(
-            label="Descripción de la porción (opcional)",
+            label="Descripcion de la porcion (opcional)",
             value=(food_snapshot or {}).get("portion", {}).get("description", ""),
         )
         kcal_field = ft.TextField(
-            label="Calorías (kcal)",
+            label="Calorias (kcal)",
             value=f"{float((food_snapshot or {}).get('macros', {}).get('kcal', 0)):.0f}",
             keyboard_type=ft.KeyboardType.NUMBER,
         )
         p_field = ft.TextField(
-            label="Proteínas (g)",
+            label="Proteinas (g)",
             value=f"{float((food_snapshot or {}).get('macros', {}).get('p', 0)):.1f}",
             keyboard_type=ft.KeyboardType.NUMBER,
         )
@@ -378,7 +427,7 @@ def MacrosView():
             if not name_value:
                 error_field.value = "Ingresa el nombre de la comida."
             elif grams_val is None or grams_val <= 0:
-                error_field.value = "Ingresa una porción base válida."
+                error_field.value = "Ingresa una porcion base valida."
             elif None in (kcal_val, p_val, c_val, g_val):
                 error_field.value = "Revisa los valores nutricionales."
             else:
@@ -484,7 +533,7 @@ def MacrosView():
         confirm_dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text("Eliminar comida definida"),
-            content=ft.Text(f"¿Seguro deseas eliminar {food.get('name', 'esta comida')}?"),
+            content=ft.Text(f"?Seguro deseas eliminar {food.get('name', 'esta comida')}?"),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel_delete),
                 ft.ElevatedButton(
@@ -535,7 +584,7 @@ def MacrosView():
             on_submit=lambda ev: update_catalog_results(ev.control.value),
         )
         catalog_serving_dropdown = ft.Dropdown(
-            label="Tamaño de porción",
+            label="Tamano de porcion",
             options=[],
             visible=False,
             on_change=lambda ev: on_serving_change(ev.control.value),
@@ -544,6 +593,8 @@ def MacrosView():
             label="Cantidad (g)",
             value="100" if not editing else f"{float(entry_snapshot.get('grams', 100)):.0f}",
             keyboard_type=ft.KeyboardType.NUMBER,
+            on_change=lambda ev: on_catalog_grams_change(),
+            on_submit=lambda ev: on_catalog_grams_change(),
         )
         catalog_selected_text = ft.Text(
             "Selecciona un alimento del catalogo" if not current_ref else current_ref.get("lookup_name", ""),
@@ -569,7 +620,7 @@ def MacrosView():
             bgcolor=CARD_BG,
             visible=False,
         )
-        selected_catalog = {"food": None, "serving": None, "serving_id": None}
+        selected_catalog = {"food": None, "serving": None, "serving_id": None, "override_grams": None}
 
         manual_name_field = ft.TextField(
             label="Nombre del alimento",
@@ -640,8 +691,44 @@ def MacrosView():
             except ValueError:
                 return None
 
+        def on_catalog_grams_change():
+            grams = parse_float_field(catalog_grams_field, default=None)
+            if grams is None or grams <= 0:
+                selected_catalog["override_grams"] = None
+            else:
+                selected_catalog["override_grams"] = grams
+            food = selected_catalog.get("food")
+            serving = selected_catalog.get("serving")
+            if food and serving:
+                render_catalog_detail(food, serving, selected_catalog["override_grams"])
+
         current_search_query = {"value": ""}
         last_catalog_results = {"foods": []}
+        catalog_mode = {"value": "international"}
+
+        def apply_catalog_mode(value: str, *, refresh: bool = True):
+            value = value if value in {"international", "argentina"} else "international"
+            if catalog_mode["value"] == value and not refresh:
+                return
+            catalog_mode["value"] = value
+            catalog_mode_group.value = value
+            if catalog_mode_group.page:
+                catalog_mode_group.update()
+            if refresh:
+                update_catalog_results(current_search_query["value"])
+
+        catalog_mode_group = ft.RadioGroup(
+            value=catalog_mode["value"],
+            on_change=lambda e: apply_catalog_mode(e.control.value),
+            content=ft.Row(
+                [
+                    ft.Radio(value="international", label="Internacionales"),
+                    ft.Radio(value="argentina", label="Productos argentinos"),
+                ],
+                spacing=12,
+            ),
+        )
+        apply_catalog_mode(catalog_mode["value"], refresh=False)
 
         def clear_catalog_detail():
             catalog_detail_column.controls.clear()
@@ -654,22 +741,40 @@ def MacrosView():
             if catalog_detail_container.page:
                 catalog_detail_container.update()
 
-        def render_catalog_detail(food: dict | None, serving: dict | None):
+        def render_catalog_detail(food: dict | None, serving: dict | None, override_grams: float | None = None):
             if not food or not serving:
                 clear_catalog_detail()
                 return
 
-            macros = serving.get("macros", {})
-            kcal = float(macros.get("kcal", 0.0))
-            protein = float(macros.get("p", 0.0))
-            carbs = float(macros.get("c", 0.0))
-            fats = float(macros.get("g", 0.0))
+            portion_info = food.get("portion", {}) or {}
+            macros = serving.get("macros", {}) or {}
+            base_grams = float(serving.get("grams") or portion_info.get("grams") or 0.0)
+            base_desc = serving.get("description") or portion_info.get("description") or "porcion sugerida"
+            base_macros = food.get("macros", macros)
+            base_macros_formatted = format_macros(base_macros)
+
+            display_grams = override_grams if override_grams and override_grams > 0 else base_grams
+            if display_grams and display_grams > 0:
+                scaled_macros = scale_macros(food, display_grams)
+            else:
+                display_grams = base_grams
+                scaled_macros = {
+                    "kcal": float(macros.get("kcal", 0.0)),
+                    "p": float(macros.get("p", 0.0)),
+                    "c": float(macros.get("c", 0.0)),
+                    "g": float(macros.get("g", 0.0)),
+                }
+
+            protein = float(scaled_macros.get("p", 0.0))
+            carbs = float(scaled_macros.get("c", 0.0))
+            fats = float(scaled_macros.get("g", 0.0))
             macro_energy = protein * 4 + carbs * 4 + fats * 9
             if macro_energy <= 0:
                 macro_energy = 1.0
             perc_protein = (protein * 4 / macro_energy) * 100
             perc_carbs = (carbs * 4 / macro_energy) * 100
             perc_fats = (fats * 9 / macro_energy) * 100
+            scaled_macros_formatted = format_macros(scaled_macros)
 
             market = food.get("market", {}) or {}
             region_label = market.get("region")
@@ -717,21 +822,29 @@ def MacrosView():
 
             catalog_detail_column.controls.clear()
             catalog_detail_column.controls.append(ft.Column(header_controls, spacing=2, tight=True))
+            base_info = f"Porcion seleccionada: {base_desc}"
+            if base_grams > 0:
+                base_info += f" ({base_grams:.0f} g)"
             catalog_detail_column.controls.append(
-                ft.Text(
-                    f"{kcal:.0f} calorias en {serving.get('description', 'la porcion seleccionada')}",
-                    size=13,
-                    weight=ft.FontWeight.W_600,
-                    color=TEXT_PRIMARY,
-                )
+                ft.Text(base_info, size=12, color=TEXT_MUTED)
             )
             catalog_detail_column.controls.append(
                 ft.Text(
-                    f"Proteinas {protein:.1f} g | Carbohidratos {carbs:.1f} g | Grasas {fats:.1f} g",
-                    size=11,
+                    f"Macros por porcion: {base_macros_formatted}",
+                    size=12,
                     color=TEXT_PRIMARY,
                 )
             )
+            show_override = display_grams and abs(display_grams - base_grams) > 0.5
+            grams_label = display_grams or base_grams
+            if grams_label and grams_label > 0 and show_override:
+                catalog_detail_column.controls.append(
+                    ft.Text(
+                        f"Macros para {grams_label:.0f} g: {scaled_macros_formatted}",
+                        size=12,
+                        color=TEXT_PRIMARY,
+                    )
+                )
             catalog_detail_column.controls.append(
                 ft.Text(
                     f"Distribucion estimada: P {perc_protein:.0f}% / C {perc_carbs:.0f}% / G {perc_fats:.0f}%",
@@ -759,6 +872,7 @@ def MacrosView():
             selected_catalog["food"] = None
             selected_catalog["serving"] = None
             selected_catalog["serving_id"] = None
+            selected_catalog["override_grams"] = None
             catalog_selected_text.value = "Selecciona un alimento del catalogo"
             catalog_selected_text.color = TEXT_MUTED
             if catalog_selected_text.page:
@@ -774,34 +888,58 @@ def MacrosView():
 
         def set_catalog_results(foods, query: str):
             catalog_results_column.controls.clear()
-            show_recents = bool(recent_searches)
+            mode = catalog_mode["value"]
 
             def make_tile(food: dict, icon: str | None = None):
                 macros_preview = format_macros(food.get("macros", {}))
-                subtitle = f"{describe_portion(food)} - {macros_preview}"
+                subtitle_parts: list[str] = []
+                brand = food.get("brand")
+                if brand:
+                    subtitle_parts.append(str(brand))
+                category = food.get("category")
+                if category and mode == "argentina":
+                    subtitle_parts.append(str(category))
+                subtitle_parts.append(f"{describe_portion(food)} - {macros_preview}")
                 market = food.get("market", {}) or {}
                 region = market.get("region")
-                if region:
-                    subtitle = f"{subtitle} - {region.upper()}"
+                if region and mode != "argentina":
+                    subtitle_parts.append(region.upper())
+                subtitle = " | ".join(subtitle_parts)
+                leading_icon = icon
+                if leading_icon is None and mode == "argentina":
+                    leading_icon = ft.Icons.FLAG
                 return ft.ListTile(
-                    leading=ft.Icon(icon) if icon else None,
+                    leading=ft.Icon(leading_icon) if leading_icon else None,
                     title=ft.Text(food.get("name", "Alimento")),
                     subtitle=ft.Text(subtitle, size=12),
                     dense=True,
                     on_click=lambda _, food=food: select_catalog_food(food),
                 )
 
-            if show_recents:
+            def is_argentina_item(food: dict) -> bool:
+                tags = {str(tag).lower() for tag in food.get("tags", []) or []}
+                if tags:
+                    return "argentina" in tags
+                return (food.get("source") or "").lower() == "local"
+
+            recent_filtered: list[dict] = []
+            for item in recent_searches[:3]:
+                if mode == "argentina" and is_argentina_item(item):
+                    recent_filtered.append(item)
+                elif mode == "international" and not is_argentina_item(item):
+                    recent_filtered.append(item)
+
+            if recent_filtered:
                 catalog_results_column.controls.append(
                     ft.Text("Buscados recientemente", size=12, color=TEXT_MUTED)
                 )
-                for food in recent_searches[:3]:
+                for food in recent_filtered:
                     catalog_results_column.controls.append(make_tile(food, ft.Icons.HISTORY))
                 if foods:
                     catalog_results_column.controls.append(ft.Divider(color="#30384C"))
 
-            recent_keys = {(item.get("id"), item.get("name")) for item in recent_searches[:3]}
-            filtered_foods = []
+            recent_keys = {(item.get("id"), item.get("name")) for item in recent_filtered}
+            filtered_foods: list[dict] = []
             for food in foods:
                 key = (food.get("id"), food.get("name"))
                 if key in recent_keys:
@@ -811,16 +949,34 @@ def MacrosView():
             if filtered_foods:
                 for food in filtered_foods:
                     catalog_results_column.controls.append(make_tile(food))
-            elif query:
+            else:
+                message = "Sin coincidencias en el catalogo seleccionado."
+                if not query:
+                    message = "No hay sugerencias disponibles para este catalogo."
                 catalog_results_column.controls.append(
-                    ft.Text("Sin coincidencias", size=12, color=TEXT_MUTED)
+                    ft.Text(message, size=12, color=TEXT_MUTED)
                 )
+
             if catalog_results_column.page:
                 catalog_results_column.update()
 
         def update_catalog_results(query: str):
             current_search_query["value"] = (query or "").strip()
-            foods = search_foods(query, limit=12)
+            mode = catalog_mode["value"]
+            if mode == "argentina":
+                foods = search_local_foods(current_search_query["value"], limit=20, tags=("argentina",))
+            else:
+                foods = search_foods(current_search_query["value"], limit=12)
+                has_non_local = any((item.get("source") or "").lower() != "local" for item in foods)
+                if has_non_local:
+                    filtered = []
+                    for item in foods:
+                        tags = {str(tag).lower() for tag in item.get("tags", []) or []}
+                        if "argentina" in tags and (item.get("source") or "").lower() == "local":
+                            continue
+                        filtered.append(item)
+                    if filtered:
+                        foods = filtered
             last_catalog_results["foods"] = foods
             set_catalog_results(foods, current_search_query["value"])
 
@@ -850,6 +1006,9 @@ def MacrosView():
                 catalog_grams_field.value = grams_formatted.rstrip("0").rstrip(".") if "." in grams_formatted else grams_formatted
                 if catalog_grams_field.page:
                     catalog_grams_field.update()
+                selected_catalog["override_grams"] = grams
+            else:
+                selected_catalog["override_grams"] = None
 
             portion_desc = target.get("description") or food.get("portion", {}).get("description") or "porcion sugerida"
             food["portion"] = {
@@ -867,7 +1026,7 @@ def MacrosView():
             selected_catalog["serving"] = target
             selected_catalog["serving_id"] = serving_id
 
-            render_catalog_detail(food, target)
+            render_catalog_detail(food, target, selected_catalog["override_grams"])
 
         def update_serving_controls(food: dict, preferred_id: str | None = None):
             servings = food.get("servings") or []
@@ -911,11 +1070,30 @@ def MacrosView():
             selected_catalog["food"] = food
             selected_catalog["serving"] = None
             selected_catalog["serving_id"] = None
+            selected_catalog["override_grams"] = None
             catalog_selected_text.value = f"{food['name']} ({describe_portion(food)})"
             catalog_selected_text.color = ft.Colors.PRIMARY
             if catalog_selected_text.page:
                 catalog_selected_text.update()
             update_serving_controls(food, preferred_id=food.get("preferred_serving_id"))
+            preferred_grams = food.get("preferred_grams")
+            if preferred_grams:
+                try:
+                    preferred_grams_val = float(preferred_grams)
+                except (TypeError, ValueError):
+                    preferred_grams_val = None
+                if preferred_grams_val and preferred_grams_val > 0:
+                    grams_text = f"{preferred_grams_val:.1f}" if preferred_grams_val < 10 else f"{preferred_grams_val:.0f}"
+                    catalog_grams_field.value = grams_text.rstrip("0").rstrip(".") if "." in grams_text else grams_text
+                    if catalog_grams_field.page:
+                        catalog_grams_field.update()
+                    selected_catalog["override_grams"] = preferred_grams_val
+                    if selected_catalog.get("serving"):
+                        render_catalog_detail(
+                            selected_catalog["food"],
+                            selected_catalog["serving"],
+                            selected_catalog["override_grams"],
+                        )
             record_recent_search(food)
             if last_catalog_results["foods"]:
                 set_catalog_results(last_catalog_results["foods"], current_search_query["value"])
@@ -1013,6 +1191,9 @@ def MacrosView():
                 snapshot["preferred_serving_id"] = selected_id
             snapshot["portion"] = dict(food.get("portion", {}))
             snapshot["macros"] = dict(food.get("macros", {}))
+            override = selected_catalog.get("override_grams")
+            if override and override > 0:
+                snapshot["preferred_grams"] = float(override)
             identifier = snapshot.get("id") or snapshot.get("name")
             filtered = []
             for item in recent_searches:
@@ -1253,6 +1434,7 @@ def MacrosView():
         catalog_tab_content = ft.Column(
             [
                 catalog_search_field,
+                catalog_mode_group,
                 ft.Container(catalog_results_column, height=200),
                 catalog_selected_text,
                 catalog_serving_dropdown,
@@ -1350,10 +1532,8 @@ def MacrosView():
         )
 
         clear_catalog_selection()
-        initial_foods = search_foods("", limit=12)
-        last_catalog_results["foods"] = initial_foods
         current_search_query["value"] = ""
-        set_catalog_results(initial_foods, "")
+        update_catalog_results("")
 
         page.open(dialog)
         refresh_custom_foods(current_custom_id)
@@ -1372,7 +1552,7 @@ def MacrosView():
             modal=True,
             title=ft.Text("Editar comida"),
             content=ft.Text(
-                f"¿Deseas editar {entry_data.get('name', 'esta comida')}?"
+                f"?Deseas editar {entry_data.get('name', 'esta comida')}?"
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel_edit),
@@ -1436,7 +1616,7 @@ def MacrosView():
     content=ft.Column(
         [
             ft.Icon(ft.Icons.RESTAURANT_OUTLINED, size=48, color=TEXT_MUTED),
-            ft.Text("Todavía no agregaste comidas hoy.", color=TEXT_MUTED),
+            ft.Text("Todavia no agregaste comidas hoy.", color=TEXT_MUTED),
         ],
         alignment=ft.MainAxisAlignment.CENTER,
         horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -1445,7 +1625,7 @@ def MacrosView():
     padding=24,
     border_radius=14,
     bgcolor=ENTRY_GROUP_BG,
-    border=ft.border.all(1, "#2C2C2E"),  # ← sólo una línea
+    border=ft.border.all(1, "#2C2C2E"),  # solo una linea
     shadow=ft.BoxShadow(
         blur_radius=8,
         spread_radius=0,
@@ -1573,80 +1753,76 @@ def MacrosView():
         if entries_column.page:
             entries_column.update()
 
-    def quick_add(food: dict, grams: float, page: ft.Page):
-        target_meal = quick_meal_dropdown.value or default_meal
-        macros = scale_macros(food, grams)
-        add_food_entry(
-            today,
-            target_meal,
-            food["name"],
-            grams,
-            macros["kcal"],
-            macros["p"],
-            macros["c"],
-            macros["g"],
-            food_ref={
-                "id": food["id"],
-                "source": food.get("source"),
-                "portion": food.get("portion"),
-                "lookup_name": food["name"],
-            },
-        )
-        page.snack_bar = ft.SnackBar(
-            ft.Text(f"{food['name']} agregada a {_format_meal(target_meal)}")
-        )
-        page.snack_bar.open = True
-        page.update()
-        refresh_entries()
+        refresh_recent_section()
 
-    quick_controls = []
-    for food in favorites:
-        grams = float(food.get("portion", {}).get("grams") or 100)
-        macros_preview = scale_macros(food, grams)
-        quick_controls.append(
-            ft.Container(
-                expand=1,
-                bgcolor=QUICK_CARD_BG,
-                border_radius=14,
-                padding=12,
-                border=ft.border.all(1, "#2C2C2E"),
-                shadow=ft.BoxShadow(
-                    blur_radius=6,
-                    spread_radius=0,
-                    offset=ft.Offset(0, 2),
-                    color="#000000",
-                ),
-                on_click=lambda e, f=food, g=grams: quick_add(f, g, e.page),
-                content=ft.Column(
-                    [
-                        ft.Text(food["name"], size=13, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
-                        ft.Text(describe_portion(food), size=11, color=TEXT_MUTED),
-                        ft.Text(format_macros(macros_preview), size=11, color=TEXT_PRIMARY),
-                    ],
-                    spacing=4,
-                ),
-            )
-        )
+    def refresh_recent_section():
+        recent_entries = get_recent_entries(limit=4)
+        quick_section_column.controls.clear()
 
-    quick_section_column.controls.clear()
-    if quick_controls:
-        quick_section_column.controls.extend(chunk_controls(quick_controls))
-        quick_section_column.controls.append(
-            ft.Text(
-                "Toca una tarjeta para agregarla con la porcion sugerida.",
-                size=11,
-                color=TEXT_MUTED,
+        if recent_entries:
+            cards = []
+            for entry in recent_entries:
+                macros_dict = {
+                    "kcal": float(entry.get("kcal", 0)),
+                    "p": float(entry.get("p", 0)),
+                    "c": float(entry.get("c", 0)),
+                    "g": float(entry.get("g", 0)),
+                }
+                grams = float(entry.get("grams") or 0)
+                grams_text = f"{grams:.0f} g" if grams > 0 else "cantidad variable"
+                meal_label = _format_meal(entry.get("meal", ""))
+                cards.append(
+                    ft.Container(
+                        expand=1,
+                        bgcolor=QUICK_CARD_BG,
+                        border_radius=14,
+                        padding=12,
+                        border=ft.border.all(1, "#2C2C2E"),
+                        shadow=ft.BoxShadow(
+                            blur_radius=6,
+                            spread_radius=0,
+                            offset=ft.Offset(0, 2),
+                            color="#000000",
+                        ),
+                        content=ft.Column(
+                            [
+                                ft.Text(
+                                    entry.get("name", "Comida reciente"),
+                                    size=13,
+                                    weight=ft.FontWeight.W_600,
+                                    color=TEXT_PRIMARY,
+                                ),
+                                ft.Text(
+                                    f"{meal_label} - {grams_text}",
+                                    size=11,
+                                    color=TEXT_MUTED,
+                                ),
+                                ft.Text(
+                                    format_macros(macros_dict),
+                                    size=11,
+                                    color=TEXT_PRIMARY,
+                                ),
+                            ],
+                            spacing=4,
+                        ),
+                    )
+                )
+            quick_section_column.controls.extend(chunk_controls(cards))
+            quick_section_column.controls.append(
+                ft.Text("Tus ultimas comidas registradas.", size=11, color=TEXT_MUTED)
             )
-        )
-    else:
-        quick_section_column.controls.append(
-            ft.Container(
-                padding=12,
-                bgcolor=QUICK_CARD_BG,
-                border_radius=12,
-                content=ft.Text("Sin alimentos precargados", size=12, color=TEXT_MUTED),
+        else:
+            quick_section_column.controls.append(
+                ft.Container(
+                    padding=12,
+                    bgcolor=QUICK_CARD_BG,
+                    border_radius=12,
+                    content=ft.Text("Aun no hay comidas registradas recientemente.", size=12, color=TEXT_MUTED),
+                )
             )
-        )
+
+        if quick_section_column.page:
+            quick_section_column.update()
 
     refresh_custom_library()
     refresh_entries()
@@ -1657,28 +1833,29 @@ def MacrosView():
             totals_info_text,
             ft.Text("Resumen diario", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
             macro_summary_column,
-            ft.Text("Comidas frecuentes", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
-            ft.Row(
-                [
-                    ft.Text("Agregar rapido en:", size=12, color=TEXT_MUTED),
-                    quick_meal_dropdown,
-                ],
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-            ),
+            *([localization_section] if localization_section else []),
+            ft.Text("Comidas recientes", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
             quick_section_column,
             ft.Row(
                 [
                     ft.Text("Tus comidas definidas", size=15, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY),
-                    ft.FilledTonalButton(
-                        "Crear comida",
-                        icon=ft.Icons.ADD,
-                        on_click=lambda ev: show_custom_food_form(ev, None),
+                    ft.Row(
+                        [
+                            ft.Text("Guardar en:", size=12, color=TEXT_MUTED),
+                            quick_meal_dropdown,
+                            ft.FilledTonalButton(
+                                "Crear comida",
+                                icon=ft.Icons.ADD,
+                                on_click=lambda ev: show_custom_food_form(ev, None),
+                            ),
+                        ],
+                        spacing=8,
                     ),
                 ],
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             ),
             ft.Text(
-                "Guarda combinaciones listas y agrégalas con un toque.",
+                "Guarda combinaciones listas y agregalas con un toque.",
                 size=11,
                 color=TEXT_MUTED,
             ),

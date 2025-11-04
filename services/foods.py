@@ -5,8 +5,9 @@ import urllib.parse
 import urllib.request
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
+from data.argentina_meta import ARGENTINA_PRODUCTS_META
 from services.fatsecret import FatSecretClient, FatSecretError
 
 
@@ -64,6 +65,13 @@ def search_foods(query: str, limit: int = 8) -> List[Dict]:
     return foods
 
 
+def search_local_foods(query: str, limit: int = 12, *, tags: Optional[Iterable[str]] = None) -> List[Dict]:
+    """
+    Returns items from the bundled local catalogue.
+    """
+    return _search_local(query, limit, tags=tags)
+
+
 def scale_macros(food: Dict, grams: float) -> Dict[str, float]:
     """
     Scale the macros of the provided food dictionary to the desired grams.
@@ -94,12 +102,13 @@ def describe_portion(food: Dict) -> str:
     return "porcion estandar"
 
 
-def _search_local(query: str, limit: int) -> List[Dict]:
+def _search_local(query: str, limit: int, tags: Optional[Iterable[str]] = None) -> List[Dict]:
     items = _load_local_foods()
     if not items:
         return []
 
-    query_l = query.lower()
+    query_l = (query or "").lower()
+    tag_filter = {str(tag).lower() for tag in tags} if tags else None
 
     def score(item: Dict) -> float:
         name = item.get("name", "").lower()
@@ -107,15 +116,29 @@ def _search_local(query: str, limit: int) -> List[Dict]:
             return 1.0
         if query_l in name:
             return 0.9 + len(query_l) / max(len(name), 1)
-        # simple bag-of-words overlap
         name_words = name.split()
         matches = sum(1 for w in name_words if w.startswith(query_l))
         return matches / len(name_words) if name_words else 0.0
 
-    ranked = sorted(items, key=score, reverse=True)
-    if query_l:
-        ranked = [item for item in ranked if score(item) > 0]
-    return [_normalise_food(item, source="local") for item in ranked[:limit]]
+    def matches_tags(item_id: Optional[str]) -> bool:
+        if not tag_filter:
+            return True
+        meta = ARGENTINA_PRODUCTS_META.get(item_id or "")
+        meta_tags = set(tag.lower() for tag in (meta.get("tags") if meta else []) or [])
+        return bool(meta_tags & tag_filter)
+
+    scored: List[Tuple[float, Dict]] = []
+    for item in items:
+        if not matches_tags(item.get("id")):
+            continue
+        sc = score(item)
+        if query_l and sc <= 0:
+            continue
+        scored.append((sc, item))
+
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    ranked_items = [item for _, item in scored]
+    return [_normalise_food(item, source="local") for item in ranked_items[:limit]]
 
 
 def _search_usda(query: str, api_key: str, limit: int) -> List[Dict]:
@@ -205,6 +228,30 @@ def _normalise_food(item: Dict, source: str) -> Dict:
             "g": float(macros.get("g", 0.0)),
         },
     }
+    brand = item.get("brand")
+    if brand:
+        normalised["brand"] = str(brand)
+    item_tags = item.get("tags")
+    if isinstance(item_tags, (list, tuple)):
+        normalised["tags"] = [str(tag) for tag in item_tags]
+    category = item.get("category")
+    if category:
+        normalised["category"] = str(category)
+
+    if source == "local":
+        meta = ARGENTINA_PRODUCTS_META.get(normalised["id"])
+        if meta:
+            meta_brand = meta.get("brand")
+            if meta_brand and not normalised.get("brand"):
+                normalised["brand"] = meta_brand
+            meta_category = meta.get("category")
+            if meta_category and not normalised.get("category"):
+                normalised["category"] = meta_category
+            meta_tags = meta.get("tags") or []
+            existing = list(normalised.get("tags", []))
+            merged = existing + [tag for tag in meta_tags if tag not in existing]
+            if merged:
+                normalised["tags"] = merged
     return normalised
 
 
