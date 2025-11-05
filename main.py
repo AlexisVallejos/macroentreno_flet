@@ -39,9 +39,9 @@ def main(page: ft.Page):
         return ft.Container(
             content=ft.Column(
                 [
-                    ft.Icon(ft.Icons.BUILD_CIRCLE_OUTLINED, size=48),
+                    ft.Icon(ft.icons.BUILD_CIRCLE_OUTLINED, size=48),
                     ft.Text(title, size=18, weight=ft.FontWeight.W_600),
-                    ft.Text(message, size=13, color=ft.Colors.GREY),
+                    ft.Text(message, size=13, color=ft.colors.GREY),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -96,19 +96,19 @@ def main(page: ft.Page):
                 [
                     ft.Text("Agregar", size=18, weight=ft.FontWeight.W_600),
                     ft.ListTile(
-                        leading=ft.Icon(ft.Icons.SCALE),
+                        leading=ft.Icon(ft.icons.SCALE),
                         title=ft.Text("Agregar macronutrientes"),
                         subtitle=ft.Text("Registrar comidas y macros"),
                         on_click=lambda _: handle_add_action("macros"),
                     ),
                     ft.ListTile(
-                        leading=ft.Icon(ft.Icons.SCIENCE),
+                        leading=ft.Icon(ft.icons.SCIENCE),
                         title=ft.Text("Agregar micronutrientes"),
                         subtitle=ft.Text("Control de vitaminas y minerales"),
                         on_click=lambda _: handle_add_action("micros"),
                     ),
                     ft.ListTile(
-                        leading=ft.Icon(ft.Icons.FITNESS_CENTER),
+                        leading=ft.Icon(ft.icons.FITNESS_CENTER),
                         title=ft.Text("Agregar ejercicio"),
                         subtitle=ft.Text("Suma una sesion a tu rutina"),
                         on_click=lambda _: handle_add_action("workouts"),
@@ -124,11 +124,11 @@ def main(page: ft.Page):
     # Barra de navegacion (Flet actual: NavigationBarDestination + Icons)
     nav = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.Icons.HOME, label="Inicio"),
-            ft.NavigationBarDestination(icon=ft.Icons.FITNESS_CENTER, label="Mis Ejercicios"),
-            ft.NavigationBarDestination(icon=ft.Icons.ADD_CIRCLE, label=""),
-            ft.NavigationBarDestination(icon=ft.Icons.ANALYTICS, label="Mi Progreso"),
-            ft.NavigationBarDestination(icon=ft.Icons.SSID_CHART, label="Mis Macros"),
+            ft.NavigationBarDestination(icon=ft.icons.HOME, label="Inicio"),
+            ft.NavigationBarDestination(icon=ft.icons.FITNESS_CENTER, label="Mis Ejercicios"),
+            ft.NavigationBarDestination(icon=ft.icons.ADD_CIRCLE, label=""),
+            ft.NavigationBarDestination(icon=ft.icons.ANALYTICS, label="Mi Progreso"),
+            ft.NavigationBarDestination(icon=ft.icons.SSID_CHART, label="Mis Macros"),
         ],
         selected_index=0,
         on_change=on_nav_change,

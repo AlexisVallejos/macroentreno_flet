@@ -146,6 +146,27 @@
         "lookup_name": "Arroz integral Dos Hermanos (crudo)"
       },
       "entry_id": "entry-588d56efba974538bf8d3d8d291cec11"
+    },
+    {
+      "date": "2025-11-05",
+      "meal": "almuerzo",
+      "name": "Pollo pechuga cocida",
+      "grams": 100.0,
+      "kcal": 165.0,
+      "p": 31.0,
+      "c": 0.0,
+      "g": 3.6,
+      "micros": {},
+      "food": {
+        "id": "local-chicken-breast",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Pollo pechuga cocida"
+      },
+      "entry_id": "entry-e62c41e1532a4e878b413c6708a46856"
     }
   ],
   "workouts": [],

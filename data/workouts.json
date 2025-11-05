@@ -1,0 +1,17 @@
+{
+  "exercises": [
+    {
+      "id": "00d97880-1fc9-4ae7-b531-00a3772f54a6",
+      "name": "pull deck",
+      "muscle_group": "Espalda",
+      "equipment": "Máquina",
+      "sets": 3,
+      "reps": 10,
+      "weight": 0.0,
+      "rpe": null,
+      "notes": null,
+      "favorite": false,
+      "date": "2025-11-03"
+    }
+  ]
+}

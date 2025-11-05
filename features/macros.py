@@ -2,6 +2,9 @@ import datetime as dt
 from copy import deepcopy
 from typing import Optional
 import flet as ft
+ICONS = getattr(ft, 'icons', None) or getattr(ft, 'Icons', None)
+COLORS = getattr(ft, 'colors', None) or getattr(ft, 'Colors', None)
+
 from data.storage import (
     add_food_entry,
     create_custom_food,
@@ -52,7 +55,8 @@ MACRO_CARD_STYLES = [
         "unit": "kcal",
         "accent": PRIMARY_COLOR,
         "bg": CARD_BG,
-        "icon": ft.Icons.LOCAL_FIRE_DEPARTMENT,
+        "icon": ICONS.LOCAL_FIRE_DEPARTMENT,
+
         "format": lambda v: f"{v:.0f}",
     },
     {
@@ -61,7 +65,7 @@ MACRO_CARD_STYLES = [
         "unit": "g",
         "accent": ACCENT_GREEN,
         "bg": CARD_BG,
-        "icon": ft.Icons.FITNESS_CENTER,
+        "icon": ICONS.FITNESS_CENTER,
         "format": lambda v: f"{v:.1f}",
     },
     {
@@ -70,7 +74,7 @@ MACRO_CARD_STYLES = [
         "unit": "g",
         "accent": SECONDARY_COLOR,
         "bg": CARD_BG,
-        "icon": ft.Icons.SSID_CHART,
+        "icon": ICONS.SSID_CHART,
         "format": lambda v: f"{v:.1f}",
     },
     {
@@ -79,14 +83,12 @@ MACRO_CARD_STYLES = [
         "unit": "g",
         "accent": "#FF9F0A",
         "bg": CARD_BG,
-        "icon": ft.Icons.WATER_DROP,
+        "icon": ICONS.WATER_DROP,
         "format": lambda v: f"{v:.1f}",
     },
 ]
 
 QUICK_CARD_BG = "#1F1F21"
-ENTRY_GROUP_BG = "#121214"
-ENTRY_ITEM_BG = "#1E1E20"
 CUSTOM_CARD_BG = "#1C1C1E"
 NUTRIENT_LABELS = {
     "saturated_fat": "Grasa saturada",
@@ -109,6 +111,19 @@ NUTRIENT_LABELS = {
     "zinc": "Zinc",
 }
 
+def _unique_by(items, key):
+    seen = set()
+    out = []
+    for it in items:
+        k = key(it)
+        if k is None:
+            # Si no hay clave, dejamos pasar 1 sola vez el texto/tupla completa
+            k = ("__no_key__", str(it))
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(it)
+    return out
 
 def MacrosView():
     today = dt.date.today()
@@ -234,19 +249,19 @@ def MacrosView():
                                         ft.Row(
                                             [
                                                 ft.IconButton(
-                                                    icon=ft.Icons.ADD_CIRCLE,
+                                                    icon=ICONS.ADD_CIRCLE,
                                                     tooltip="Agregar al diario",
                                                     icon_color=ACCENT_GREEN,
                                                     on_click=lambda ev, f=food: add_custom_food_to_meal(f, ev.page),
                                                 ),
                                                 ft.IconButton(
-                                                    icon=ft.Icons.EDIT,
+                                                    icon=ICONS.EDIT,
                                                     tooltip="Editar comida definida",
                                                     icon_color=PRIMARY_COLOR,
                                                     on_click=lambda ev, f=food: show_custom_food_form(ev, f),
                                                 ),
                                                 ft.IconButton(
-                                                    icon=ft.Icons.DELETE,
+                                                    icon=ICONS.DELETE,
                                                     tooltip="Eliminar comida definida",
                                                     icon_color="ALERT_RED",
                                                     on_click=lambda ev, f=food: confirm_delete_custom_food(ev, f),
@@ -501,7 +516,7 @@ def MacrosView():
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel_custom),
-                ft.ElevatedButton("Guardar", icon=ft.Icons.CHECK, on_click=submit_custom),
+                ft.ElevatedButton("Guardar", icon=ICONS.CHECK, on_click=submit_custom),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
@@ -538,9 +553,9 @@ def MacrosView():
                 ft.TextButton("Cancelar", on_click=cancel_delete),
                 ft.ElevatedButton(
                     "Eliminar",
-                    icon=ft.Icons.DELETE,
+                    icon=ICONS.DELETE,
                     bgcolor=ALERT_RED,
-                    color=ft.Colors.WHITE,
+                    color=COLORS.WHITE,
                     on_click=do_delete,
                 ),
             ],
@@ -579,7 +594,7 @@ def MacrosView():
 
         catalog_search_field = ft.TextField(
             label="Buscar alimento",
-            suffix_icon=ft.Icons.SEARCH,
+            suffix_icon=ICONS.SEARCH,
             on_change=lambda ev: update_catalog_results(ev.control.value),
             on_submit=lambda ev: update_catalog_results(ev.control.value),
         )
@@ -661,7 +676,7 @@ def MacrosView():
             if not custom_state["current"]
             else f"{custom_state['current']['name']} ({describe_portion(custom_state['current'])})",
             size=12,
-            color=TEXT_MUTED if not custom_state["current"] else ft.Colors.PRIMARY,
+            color=TEXT_MUTED if not custom_state["current"] else COLORS.PRIMARY,
         )
         custom_default_grams = float(
             (entry_snapshot or {}).get(
@@ -907,7 +922,7 @@ def MacrosView():
                 subtitle = " | ".join(subtitle_parts)
                 leading_icon = icon
                 if leading_icon is None and mode == "argentina":
-                    leading_icon = ft.Icons.FLAG
+                    leading_icon = ICONS.FLAG
                 return ft.ListTile(
                     leading=ft.Icon(leading_icon) if leading_icon else None,
                     title=ft.Text(food.get("name", "Alimento")),
@@ -934,7 +949,7 @@ def MacrosView():
                     ft.Text("Buscados recientemente", size=12, color=TEXT_MUTED)
                 )
                 for food in recent_filtered:
-                    catalog_results_column.controls.append(make_tile(food, ft.Icons.HISTORY))
+                    catalog_results_column.controls.append(make_tile(food, ICONS.HISTORY))
                 if foods:
                     catalog_results_column.controls.append(ft.Divider(color="#30384C"))
 
@@ -1072,7 +1087,7 @@ def MacrosView():
             selected_catalog["serving_id"] = None
             selected_catalog["override_grams"] = None
             catalog_selected_text.value = f"{food['name']} ({describe_portion(food)})"
-            catalog_selected_text.color = ft.Colors.PRIMARY
+            catalog_selected_text.color = COLORS.PRIMARY
             if catalog_selected_text.page:
                 catalog_selected_text.update()
             update_serving_controls(food, preferred_id=food.get("preferred_serving_id"))
@@ -1119,8 +1134,8 @@ def MacrosView():
                             trailing=ft.Row(
                                 [
                                     ft.IconButton(
-                                        icon=ft.Icons.EDIT,
-                                        icon_color=ft.Colors.PRIMARY,
+                                        icon=ICONS.EDIT,
+                                        icon_color=COLORS.PRIMARY,
                                         tooltip="Editar comida definida",
                                         icon_size=18,
                                         on_click=lambda ev, food=food: show_custom_food_form(
@@ -1132,7 +1147,7 @@ def MacrosView():
                                         ),
                                     ),
                                     ft.IconButton(
-                                        icon=ft.Icons.DELETE,
+                                        icon=ICONS.DELETE,
                                         icon_color=ALERT_RED,
                                         tooltip="Eliminar comida definida",
                                         icon_size=18,
@@ -1156,7 +1171,7 @@ def MacrosView():
             if food:
                 custom_state["current"] = food
                 custom_selected_text.value = f"{food['name']} ({describe_portion(food)})"
-                custom_selected_text.color = ft.Colors.PRIMARY
+                custom_selected_text.color = COLORS.PRIMARY
                 manual_save_checkbox.label = "Actualizar comida definida"
                 manual_save_checkbox.value = True
                 grams_reference = None
@@ -1470,7 +1485,7 @@ def MacrosView():
                         ),
                         ft.OutlinedButton(
                             "Nueva comida",
-                            icon=ft.Icons.ADD,
+                            icon=ICONS.ADD,
                             on_click=lambda ev: show_custom_food_form(
                                 ev,
                                 None,
@@ -1524,7 +1539,7 @@ def MacrosView():
                 ft.TextButton("Cancelar", on_click=close_dialog),
                 ft.ElevatedButton(
                     "Guardar" if editing else "Agregar",
-                    icon=ft.Icons.CHECK,
+                    icon=ICONS.CHECK,
                     on_click=submit,
                 ),
             ],
@@ -1556,7 +1571,7 @@ def MacrosView():
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel_edit),
-                ft.ElevatedButton("Editar", icon=ft.Icons.EDIT, on_click=proceed_edit),
+                ft.ElevatedButton("Editar", icon=ICONS.EDIT, on_click=proceed_edit),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
@@ -1585,7 +1600,7 @@ def MacrosView():
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel),
-                ft.ElevatedButton("Eliminar", icon=ft.Icons.DELETE, on_click=do_delete, bgcolor=ALERT_RED, color=ft.Colors.WHITE),
+                ft.ElevatedButton("Eliminar", icon=ICONS.DELETE, on_click=do_delete, bgcolor=ALERT_RED, color=COLORS.WHITE),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
@@ -1605,35 +1620,33 @@ def MacrosView():
         totals_info_text.value = (
             f"{len(items)} comidas registradas hoy" if items else "Sin registros para hoy"
         )
-        totals_info_text.color = TEXT_MUTED if items else ft.Colors.GREY
+        totals_info_text.color = TEXT_MUTED if items else COLORS.GREY
         if totals_info_text.page:
             totals_info_text.update()
 
         entries_column.controls.clear()
         if not items:
             entries_column.controls.append(
-       ft.Container(
-    content=ft.Column(
-        [
-            ft.Icon(ft.Icons.RESTAURANT_OUTLINED, size=48, color=TEXT_MUTED),
-            ft.Text("Todavia no agregaste comidas hoy.", color=TEXT_MUTED),
-        ],
-        alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        spacing=8,
-    ),
-    padding=24,
-    border_radius=14,
-    bgcolor=ENTRY_GROUP_BG,
-    border=ft.border.all(1, "#2C2C2E"),  # solo una linea
-    shadow=ft.BoxShadow(
-        blur_radius=8,
-        spread_radius=0,
-        offset=ft.Offset(0, 2),
-        color="#000000",
-    ),
-)
-
+                ft.Container(
+                    content=ft.Column(
+                        [
+                            ft.Icon(ICONS.RESTAURANT_OUTLINED, size=48, color=TEXT_MUTED),
+                            ft.Text("Todavia no agregaste comidas hoy.", color=TEXT_MUTED),
+                        ],
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        spacing=8,
+                    ),
+                    padding=24,
+                    border_radius=14,
+                    border=ft.border.all(1, "#2C2C2E"),  # solo una linea
+                    shadow=ft.BoxShadow(
+                        blur_radius=8,
+                        spread_radius=0,
+                        offset=ft.Offset(0, 2),
+                        color="#000000",
+                    ),
+                )
             )
         else:
             groups = {}
@@ -1678,13 +1691,13 @@ def MacrosView():
                                     ft.Column(
                                         [
                                             ft.IconButton(
-                                                icon=ft.Icons.EDIT,
+                                                icon=ICONS.EDIT,
                                                 icon_color=PRIMARY_COLOR,
                                                 tooltip="Editar",
                                                 on_click=lambda ev, data=entry_data: confirm_edit(ev, data),
                                             ),
                                             ft.IconButton(
-                                                icon=ft.Icons.DELETE,
+                                                icon=ICONS.DELETE,
                                                 icon_color="ALERT_RED",
                                                 tooltip="Eliminar",
                                                 on_click=lambda ev, entry_id=entry_id, entry_name=entry_name, meal_key=meal_value: confirm_delete(ev, entry_id, entry_name, meal_key),
@@ -1708,7 +1721,6 @@ def MacrosView():
                         ft.Container(
                             padding=12,
                             border_radius=12,
-                            bgcolor=ENTRY_ITEM_BG,
                             border=ft.border.all(1, "#2C2C2E"),
                             content=entry_controls,
                         )
@@ -1718,7 +1730,6 @@ def MacrosView():
                     ft.Container(
                         padding=14,
                         border_radius=16,
-                        bgcolor=ENTRY_GROUP_BG,
                         border=ft.border.all(1, "#2C2C2E"),
                         shadow=ft.BoxShadow(
                             blur_radius=8,
@@ -1845,7 +1856,7 @@ def MacrosView():
                             quick_meal_dropdown,
                             ft.FilledTonalButton(
                                 "Crear comida",
-                                icon=ft.Icons.ADD,
+                                icon=ICONS.ADD,
                                 on_click=lambda ev: show_custom_food_form(ev, None),
                             ),
                         ],
@@ -1865,7 +1876,7 @@ def MacrosView():
             entries_column,
             ft.ElevatedButton(
                 "Agregar comida",
-                icon=ft.Icons.ADD,
+                icon=ICONS.ADD,
                 on_click=lambda e: open_food_dialog(e, None),
             ),
         ],
