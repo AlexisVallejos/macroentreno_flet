@@ -1,0 +1,2032 @@
+[
+  {
+    "id": "local-chicken-breast",
+    "name": "Pollo pechuga cocida",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 165,
+      "p": 31,
+      "c": 0,
+      "g": 3.6
+    }
+  },
+  {
+    "id": "local-whole-egg",
+    "name": "Huevo entero",
+    "portion": {
+      "grams": 100,
+      "description": "aprox. 2 huevos (100 g)"
+    },
+    "macros": {
+      "kcal": 143,
+      "p": 13,
+      "c": 1.1,
+      "g": 9.5
+    }
+  },
+  {
+    "id": "local-egg-white",
+    "name": "Clara de huevo",
+    "portion": {
+      "grams": 100,
+      "description": "aprox. 3 claras (100 g)"
+    },
+    "macros": {
+      "kcal": 52,
+      "p": 11,
+      "c": 0.7,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-brown-rice-cooked",
+    "name": "Arroz integral cocido",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 123,
+      "p": 2.7,
+      "c": 25.6,
+      "g": 1
+    }
+  },
+  {
+    "id": "local-oats",
+    "name": "Avena en hojuelas",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 389,
+      "p": 16.9,
+      "c": 66.3,
+      "g": 6.9
+    }
+  },
+  {
+    "id": "local-sweet-potato",
+    "name": "Batata horneada",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 90,
+      "p": 2,
+      "c": 20.7,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-avocado",
+    "name": "Palta",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 160,
+      "p": 2,
+      "c": 8.5,
+      "g": 14.7
+    }
+  },
+  {
+    "id": "local-banana",
+    "name": "Banana",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 89,
+      "p": 1.1,
+      "c": 22.8,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-greek-yogurt",
+    "name": "Yogur griego descremado",
+    "portion": {
+      "grams": 170,
+      "description": "1 pote (170 g)"
+    },
+    "macros": {
+      "kcal": 100,
+      "p": 17.3,
+      "c": 6.1,
+      "g": 0.7
+    }
+  },
+  {
+    "id": "local-arroz-largo-fino",
+    "name": "Arroz largo fino Molino Ala (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 348,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6
+    }
+  },
+  {
+    "id": "local-arroz-integral-doshermanos",
+    "name": "Arroz integral Dos Hermanos (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 7.5,
+      "c": 74.0,
+      "g": 2.8
+    }
+  },
+  {
+    "id": "local-arroz-parboil-gallooro",
+    "name": "Arroz parboil Gallo Oro (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 350,
+      "p": 7.1,
+      "c": 75.0,
+      "g": 1.0
+    }
+  },
+  {
+    "id": "local-arroz-yamani",
+    "name": "Arroz yamaní",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 362,
+      "p": 7.4,
+      "c": 76.0,
+      "g": 2.5
+    }
+  },
+  {
+    "id": "local-arroz-carnaroli",
+    "name": "Arroz carnaroli",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 356,
+      "p": 6.5,
+      "c": 79.0,
+      "g": 0.7
+    }
+  },
+  {
+    "id": "local-arroz-jazmin",
+    "name": "Arroz jazmín",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 347,
+      "p": 6.9,
+      "c": 78.0,
+      "g": 0.8
+    }
+  },
+  {
+    "id": "local-arroz-basmati",
+    "name": "Arroz basmati",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 345,
+      "p": 8.2,
+      "c": 77.0,
+      "g": 0.7
+    }
+  },
+  {
+    "id": "local-arroz-doble-carolina",
+    "name": "Arroz doble carolina",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 350,
+      "p": 7.0,
+      "c": 79.0,
+      "g": 0.6
+    }
+  },
+  {
+    "id": "local-arroz-integral-gallo",
+    "name": "Arroz integral Gallo (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 7.5,
+      "c": 74.0,
+      "g": 2.7
+    }
+  },
+  {
+    "id": "local-arroz-quinoa-mix",
+    "name": "Mix arroz y quinoa",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 9.0,
+      "c": 69.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-fideos-spaghetti-donvicente",
+    "name": "Spaghetti Don Vicente (sémola)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 13.0,
+      "c": 74.0,
+      "g": 1.5
+    }
+  },
+  {
+    "id": "local-fideos-mostachol-lucchetti",
+    "name": "Mostacholes Lucchetti",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 12.0,
+      "c": 74.0,
+      "g": 1.5
+    }
+  },
+  {
+    "id": "local-fideos-codito-matarazzo",
+    "name": "Coditos Matarazzo",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 373,
+      "p": 13.0,
+      "c": 75.0,
+      "g": 1.3
+    }
+  },
+  {
+    "id": "local-fideos-tallarin-huevo",
+    "name": "Tallarines al huevo",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 383,
+      "p": 14.0,
+      "c": 70.0,
+      "g": 4.0
+    }
+  },
+  {
+    "id": "local-fideos-integral-tirabuzon",
+    "name": "Tirabuzón integral",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 348,
+      "p": 14.0,
+      "c": 65.0,
+      "g": 2.5
+    }
+  },
+  {
+    "id": "local-fideos-espinaca-queso",
+    "name": "Moños espinaca y queso",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 12.0,
+      "c": 68.0,
+      "g": 3.0
+    }
+  },
+  {
+    "id": "local-fideos-lenteja-roja",
+    "name": "Fideos de lenteja roja",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 340,
+      "p": 22.0,
+      "c": 55.0,
+      "g": 1.5
+    }
+  },
+  {
+    "id": "local-fideos-arroz-sin-gluten",
+    "name": "Fideos de arroz sin gluten",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 7.0,
+      "c": 80.0,
+      "g": 1.0
+    }
+  },
+  {
+    "id": "local-fideos-tinta-calamar",
+    "name": "Fideos con tinta de calamar",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 370,
+      "p": 13.0,
+      "c": 72.0,
+      "g": 2.0
+    }
+  },
+  {
+    "id": "local-noquis-lasaltena",
+    "name": "Ñoquis de papa La Salteña",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 4.0,
+      "c": 31.0,
+      "g": 1.2
+    }
+  },
+  {
+    "id": "local-alfajor-havanna",
+    "name": "Alfajor Havanna dulce de leche",
+    "portion": {
+      "grams": 55,
+      "description": "1 unidad (55 g)"
+    },
+    "macros": {
+      "kcal": 270,
+      "p": 4.0,
+      "c": 36.0,
+      "g": 12.0
+    }
+  },
+  {
+    "id": "local-alfajor-guaymallen-triple",
+    "name": "Alfajor Guaymallén triple dulce de leche",
+    "portion": {
+      "grams": 70,
+      "description": "1 unidad (70 g)"
+    },
+    "macros": {
+      "kcal": 320,
+      "p": 4.0,
+      "c": 50.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-jorgito",
+    "name": "Alfajor Jorgito clásico",
+    "portion": {
+      "grams": 50,
+      "description": "1 unidad (50 g)"
+    },
+    "macros": {
+      "kcal": 230,
+      "p": 4.0,
+      "c": 34.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-alfajor-capitan-espacio",
+    "name": "Alfajor Capitán del Espacio",
+    "portion": {
+      "grams": 50,
+      "description": "1 unidad (50 g)"
+    },
+    "macros": {
+      "kcal": 220,
+      "p": 3.0,
+      "c": 34.0,
+      "g": 8.0
+    }
+  },
+  {
+    "id": "local-alfajor-fantoche-triple",
+    "name": "Alfajor Fantoche triple",
+    "portion": {
+      "grams": 75,
+      "description": "1 unidad (75 g)"
+    },
+    "macros": {
+      "kcal": 330,
+      "p": 5.0,
+      "c": 55.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-cachafaz",
+    "name": "Alfajor Cachafaz dulce de leche",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 260,
+      "p": 4.0,
+      "c": 36.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-milka-oreo",
+    "name": "Alfajor Milka Oreo",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 280,
+      "p": 3.0,
+      "c": 40.0,
+      "g": 12.0
+    }
+  },
+  {
+    "id": "local-alfajor-tofi-xl",
+    "name": "Alfajor Tofi XL",
+    "portion": {
+      "grams": 63,
+      "description": "1 unidad (63 g)"
+    },
+    "macros": {
+      "kcal": 300,
+      "p": 4.0,
+      "c": 45.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-terrabusi",
+    "name": "Alfajor Terrabusi dulce de leche",
+    "portion": {
+      "grams": 50,
+      "description": "1 unidad (50 g)"
+    },
+    "macros": {
+      "kcal": 210,
+      "p": 3.0,
+      "c": 33.0,
+      "g": 7.0
+    }
+  },
+  {
+    "id": "local-alfajor-madero-negro",
+    "name": "Alfajor Madero negro",
+    "portion": {
+      "grams": 52,
+      "description": "1 unidad (52 g)"
+    },
+    "macros": {
+      "kcal": 240,
+      "p": 4.0,
+      "c": 35.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-galletitas-chocolinas",
+    "name": "Galletitas Chocolinas",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 132,
+      "p": 2.0,
+      "c": 22.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-galletitas-criollitas",
+    "name": "Galletitas Criollitas",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 126,
+      "p": 3.0,
+      "c": 20.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-galletitas-opera",
+    "name": "Galletitas Opera rellenas",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 2.0,
+      "c": 23.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-galletitas-sonrisas",
+    "name": "Galletitas Sonrisas",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 2.0,
+      "c": 23.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-galletitas-lincoln",
+    "name": "Galletitas Lincoln",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 125,
+      "p": 2.0,
+      "c": 21.0,
+      "g": 4.0
+    }
+  },
+  {
+    "id": "local-galletitas-cerealitas",
+    "name": "Galletitas Cerealitas integrales",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 135,
+      "p": 3.0,
+      "c": 21.0,
+      "g": 4.0
+    }
+  },
+  {
+    "id": "local-galletitas-donsatur",
+    "name": "Bizcochos Don Satur",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 3.0,
+      "c": 19.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-galletitas-traviata",
+    "name": "Galletitas Traviata",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 120,
+      "p": 2.0,
+      "c": 23.0,
+      "g": 3.0
+    }
+  },
+  {
+    "id": "local-galletitas-melba",
+    "name": "Galletitas Melba",
+    "portion": {
+      "grams": 30,
+      "description": "porción 30 g"
+    },
+    "macros": {
+      "kcal": 118,
+      "p": 2.0,
+      "c": 21.0,
+      "g": 3.5
+    }
+  },
+  {
+    "id": "local-galletitas-pitusas",
+    "name": "Galletitas Pitusas frutilla",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 2.0,
+      "c": 23.0,
+      "g": 5.0
+    }
+  },
+  {
+    "id": "local-arroz-marolio-clasico",
+    "name": "Arroz Marolio clasico (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 350,
+      "p": 7.2,
+      "c": 78.5,
+      "g": 0.6
+    }
+  },
+  {
+    "id": "local-arroz-susarelli-largo",
+    "name": "Arroz Susarelli largo fino (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 352,
+      "p": 7.0,
+      "c": 79.0,
+      "g": 0.5
+    }
+  },
+  {
+    "id": "local-arroz-primor-largo",
+    "name": "Arroz Primor largo fino (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 348,
+      "p": 6.8,
+      "c": 78.5,
+      "g": 0.5
+    }
+  },
+  {
+    "id": "local-arroz-gallo-instant",
+    "name": "Arroz Gallo Oro listo 10 (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 352,
+      "p": 7.2,
+      "c": 76.0,
+      "g": 1.2
+    }
+  },
+  {
+    "id": "local-arroz-caserita-integral",
+    "name": "Arroz integral Caserita (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 358,
+      "p": 8.0,
+      "c": 72.0,
+      "g": 2.6
+    }
+  },
+  {
+    "id": "local-fideos-spaghetti-marolio",
+    "name": "Spaghetti Marolio (secos)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 12.0,
+      "c": 74.0,
+      "g": 2.0
+    }
+  },
+  {
+    "id": "local-fideos-penne-marolio",
+    "name": "Penne rigate Marolio (secos)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 13.0,
+      "c": 73.0,
+      "g": 2.5
+    }
+  },
+  {
+    "id": "local-fideos-tagliatelle-donvicente",
+    "name": "Tagliatelle Don Vicente (secos)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 370,
+      "p": 13.0,
+      "c": 72.0,
+      "g": 2.0
+    }
+  },
+  {
+    "id": "local-fideos-cintas-matarazzo",
+    "name": "Cintas Matarazzo (secos)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 372,
+      "p": 12.0,
+      "c": 73.0,
+      "g": 2.8
+    }
+  },
+  {
+    "id": "local-fideos-sorrentinos-lasaltena",
+    "name": "Sorrentinos La Saltena (listos)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 235,
+      "p": 9.0,
+      "c": 32.0,
+      "g": 7.0
+    }
+  },
+  {
+    "id": "local-alfajor-bonobon",
+    "name": "Alfajor Bon o Bon",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 280,
+      "p": 5.0,
+      "c": 39.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-fulbito",
+    "name": "Alfajor Fulbito",
+    "portion": {
+      "grams": 52,
+      "description": "1 unidad (52 g)"
+    },
+    "macros": {
+      "kcal": 240,
+      "p": 4.0,
+      "c": 36.0,
+      "g": 8.0
+    }
+  },
+  {
+    "id": "local-alfajor-lheritier",
+    "name": "Alfajor Lheritier",
+    "portion": {
+      "grams": 55,
+      "description": "1 unidad (55 g)"
+    },
+    "macros": {
+      "kcal": 255,
+      "p": 4.0,
+      "c": 37.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-alfajor-vauquita",
+    "name": "Alfajor Vauquita",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 250,
+      "p": 6.0,
+      "c": 35.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-alfajor-aguila-negro",
+    "name": "Alfajor Aguila negro",
+    "portion": {
+      "grams": 65,
+      "description": "1 unidad (65 g)"
+    },
+    "macros": {
+      "kcal": 290,
+      "p": 4.0,
+      "c": 42.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-galletitas-pepitos",
+    "name": "Galletitas Pepitos",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 155,
+      "p": 2.0,
+      "c": 25.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-galletitas-toddy",
+    "name": "Galletitas Toddy",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 160,
+      "p": 2.3,
+      "c": 24.0,
+      "g": 6.5
+    }
+  },
+  {
+    "id": "local-galletitas-merengadas",
+    "name": "Galletitas Merengadas",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 1.5,
+      "c": 24.0,
+      "g": 5.0
+    }
+  },
+  {
+    "id": "local-galletitas-saladix-jamon",
+    "name": "Galletitas Saladix sabor jamon",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 2.5,
+      "c": 17.0,
+      "g": 8.0
+    }
+  },
+  {
+    "id": "local-galletitas-donsatur-dulces",
+    "name": "Galletitas Don Satur dulces",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 145,
+      "p": 3.0,
+      "c": 20.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-arroz-lucchetti-largo",
+    "name": "Arroz Lucchetti largo fino (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 349,
+      "p": 7.1,
+      "c": 78.0,
+      "g": 0.6
+    }
+  },
+  {
+    "id": "local-arroz-molto-doble",
+    "name": "Arroz Molto doble carolina (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 351,
+      "p": 7.0,
+      "c": 79.0,
+      "g": 0.5
+    }
+  },
+  {
+    "id": "local-arroz-pampa-integral",
+    "name": "Arroz Pampa integral (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 8.0,
+      "c": 73.0,
+      "g": 3.0
+    }
+  },
+  {
+    "id": "local-arroz-gallo-microondas",
+    "name": "Arroz Gallo microondas 1 minuto",
+    "portion": {
+      "grams": 125,
+      "description": "1 pouch (125 g)"
+    },
+    "macros": {
+      "kcal": 210,
+      "p": 4.2,
+      "c": 45.0,
+      "g": 1.5
+    }
+  },
+  {
+    "id": "local-arroz-susarelli-parboil",
+    "name": "Arroz Susarelli parboil (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 351,
+      "p": 7.2,
+      "c": 76.5,
+      "g": 1.1
+    }
+  },
+  {
+    "id": "local-arroz-marolio-integral",
+    "name": "Arroz Marolio integral (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 358,
+      "p": 7.8,
+      "c": 72.5,
+      "g": 3.1
+    }
+  },
+  {
+    "id": "local-arroz-doshermanos-jazmin",
+    "name": "Arroz Dos Hermanos jazmin (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 348,
+      "p": 7.2,
+      "c": 78.5,
+      "g": 0.8
+    }
+  },
+  {
+    "id": "local-arroz-caserita-parboil",
+    "name": "Arroz Caserita parboil (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 350,
+      "p": 7.0,
+      "c": 76.8,
+      "g": 1.1
+    }
+  },
+  {
+    "id": "local-arroz-ala-integral",
+    "name": "Arroz Molino Ala integral (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 359,
+      "p": 8.1,
+      "c": 72.0,
+      "g": 3.2
+    }
+  },
+  {
+    "id": "local-arroz-arrocel",
+    "name": "Arroz Arrocel largo fino (crudo)",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g crudo"
+    },
+    "macros": {
+      "kcal": 349,
+      "p": 7.1,
+      "c": 78.3,
+      "g": 0.6
+    }
+  },
+  {
+    "id": "local-fideos-guisero-marolio",
+    "name": "Fideos guiseros Marolio",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 370,
+      "p": 12.0,
+      "c": 73.0,
+      "g": 2.0
+    }
+  },
+  {
+    "id": "local-fideos-tallarines-chacabuco",
+    "name": "Tallarines Molino Chacabuco",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 13.0,
+      "c": 73.5,
+      "g": 1.6
+    }
+  },
+  {
+    "id": "local-fideos-spaghetti-molto",
+    "name": "Spaghetti Molto",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 372,
+      "p": 12.5,
+      "c": 74.0,
+      "g": 1.6
+    }
+  },
+  {
+    "id": "local-fideos-ravioles-lasaltena-carne",
+    "name": "Ravioles La Saltena carne",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 235,
+      "p": 10.0,
+      "c": 32.0,
+      "g": 7.0
+    }
+  },
+  {
+    "id": "local-fideos-canelones-lasaltena",
+    "name": "Canelones La Saltena",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 210,
+      "p": 9.0,
+      "c": 30.0,
+      "g": 5.0
+    }
+  },
+  {
+    "id": "local-fideos-cabello-angel-terrar",
+    "name": "Cabello de angel Terrabusi",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 370,
+      "p": 12.0,
+      "c": 74.0,
+      "g": 1.5
+    }
+  },
+  {
+    "id": "local-fideos-spaghetti-lucchetti-prote",
+    "name": "Spaghetti Lucchetti Proteina",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 360,
+      "p": 18.0,
+      "c": 58.0,
+      "g": 3.0
+    }
+  },
+  {
+    "id": "local-fideos-tirabuzon-knorr",
+    "name": "Tirabuzon Knorr",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 369,
+      "p": 12.0,
+      "c": 73.5,
+      "g": 1.7
+    }
+  },
+  {
+    "id": "local-fideos-macarron-terrabusi",
+    "name": "Macarrones Terrabusi",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g secos"
+    },
+    "macros": {
+      "kcal": 371,
+      "p": 12.2,
+      "c": 74.0,
+      "g": 1.6
+    }
+  },
+  {
+    "id": "local-fideos-ravioles-jumbo",
+    "name": "Ravioles Jumbo verdura",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 220,
+      "p": 9.0,
+      "c": 31.0,
+      "g": 5.5
+    }
+  },
+  {
+    "id": "local-alfajor-fulbo-premium",
+    "name": "Alfajor Fulbo premium",
+    "portion": {
+      "grams": 55,
+      "description": "1 unidad (55 g)"
+    },
+    "macros": {
+      "kcal": 245,
+      "p": 4.0,
+      "c": 37.0,
+      "g": 8.5
+    }
+  },
+  {
+    "id": "local-alfajor-milka-mousse",
+    "name": "Alfajor Milka mousse",
+    "portion": {
+      "grams": 58,
+      "description": "1 unidad (58 g)"
+    },
+    "macros": {
+      "kcal": 275,
+      "p": 4.0,
+      "c": 39.0,
+      "g": 11.0
+    }
+  },
+  {
+    "id": "local-alfajor-lapastora-triple",
+    "name": "Alfajor La Pastora triple",
+    "portion": {
+      "grams": 70,
+      "description": "1 unidad (70 g)"
+    },
+    "macros": {
+      "kcal": 320,
+      "p": 5.0,
+      "c": 51.0,
+      "g": 10.0
+    }
+  },
+  {
+    "id": "local-alfajor-mini-tatin",
+    "name": "Alfajor Mini Tatin",
+    "portion": {
+      "grams": 30,
+      "description": "1 unidad (30 g)"
+    },
+    "macros": {
+      "kcal": 135,
+      "p": 2.0,
+      "c": 21.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-alfajor-quetzal",
+    "name": "Alfajor Quetzal",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 265,
+      "p": 4.0,
+      "c": 40.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-alfajor-capitan-negro",
+    "name": "Alfajor Capitan del Espacio negro",
+    "portion": {
+      "grams": 55,
+      "description": "1 unidad (55 g)"
+    },
+    "macros": {
+      "kcal": 240,
+      "p": 3.5,
+      "c": 36.0,
+      "g": 8.5
+    }
+  },
+  {
+    "id": "local-alfajor-block",
+    "name": "Alfajor Block",
+    "portion": {
+      "grams": 62,
+      "description": "1 unidad (62 g)"
+    },
+    "macros": {
+      "kcal": 295,
+      "p": 5.0,
+      "c": 44.0,
+      "g": 10.0
+    }
+  },
+  {
+    "id": "local-alfajor-nevado",
+    "name": "Alfajor Nevado",
+    "portion": {
+      "grams": 60,
+      "description": "1 unidad (60 g)"
+    },
+    "macros": {
+      "kcal": 250,
+      "p": 4.0,
+      "c": 38.0,
+      "g": 9.0
+    }
+  },
+  {
+    "id": "local-alfajor-jubilado",
+    "name": "Alfajor El Jubilado",
+    "portion": {
+      "grams": 55,
+      "description": "1 unidad (55 g)"
+    },
+    "macros": {
+      "kcal": 235,
+      "p": 4.0,
+      "c": 35.0,
+      "g": 8.5
+    }
+  },
+  {
+    "id": "local-alfajor-godet",
+    "name": "Alfajor Godet",
+    "portion": {
+      "grams": 58,
+      "description": "1 unidad (58 g)"
+    },
+    "macros": {
+      "kcal": 255,
+      "p": 4.0,
+      "c": 38.0,
+      "g": 9.5
+    }
+  },
+  {
+    "id": "local-galletitas-goyescas",
+    "name": "Galletitas Goyescas",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 2.0,
+      "c": 23.0,
+      "g": 5.0
+    }
+  },
+  {
+    "id": "local-galletitas-paso-de-los-toros",
+    "name": "Galletitas Paso de los Toros",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 135,
+      "p": 2.0,
+      "c": 22.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-galletitas-cachafaz-avena",
+    "name": "Galletitas Cachafaz avena",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 3.0,
+      "c": 19.0,
+      "g": 6.0
+    }
+  },
+  {
+    "id": "local-galletitas-mananitas",
+    "name": "Galletitas Mananitas",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 145,
+      "p": 3.0,
+      "c": 20.0,
+      "g": 6.5
+    }
+  },
+  {
+    "id": "local-galletitas-roda",
+    "name": "Galletitas Roda",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 132,
+      "p": 2.0,
+      "c": 22.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-galletitas-britannia",
+    "name": "Galletitas Britannia",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 130,
+      "p": 2.0,
+      "c": 21.0,
+      "g": 4.2
+    }
+  },
+  {
+    "id": "local-galletitas-bondiolas",
+    "name": "Bizcochitos Bondiola",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 145,
+      "p": 3.0,
+      "c": 18.0,
+      "g": 7.0
+    }
+  },
+  {
+    "id": "local-galletitas-vainillas",
+    "name": "Vainillas Terrabusi",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 120,
+      "p": 2.0,
+      "c": 24.0,
+      "g": 2.0
+    }
+  },
+  {
+    "id": "local-galletitas-duquesa",
+    "name": "Galletitas Duquesa",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 138,
+      "p": 2.0,
+      "c": 22.0,
+      "g": 4.8
+    }
+  },
+  {
+    "id": "local-galletitas-baggio",
+    "name": "Galletitas Baggio",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 135,
+      "p": 2.0,
+      "c": 22.0,
+      "g": 4.6
+    }
+  },
+  {
+    "id": "local-galletitas-salada-niza",
+    "name": "Galletitas Niza saladas",
+    "portion": {
+      "grams": 30,
+      "description": "porcion 30 g"
+    },
+    "macros": {
+      "kcal": 128,
+      "p": 2.5,
+      "c": 20.0,
+      "g": 4.5
+    }
+  },
+  {
+    "id": "local-fruta-manzana-roja",
+    "name": "Manzana roja",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 52,
+      "p": 0.3,
+      "c": 14.0,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-manzana-verde",
+    "name": "Manzana verde",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 48,
+      "p": 0.3,
+      "c": 13.5,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-banana-ecuador",
+    "name": "Banana ecuador",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 89,
+      "p": 1.1,
+      "c": 23.0,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-pera-williams",
+    "name": "Pera williams",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 57,
+      "p": 0.4,
+      "c": 15.0,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-fruta-naranja-valencia",
+    "name": "Naranja valencia",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 47,
+      "p": 0.9,
+      "c": 12.0,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-fruta-mandarina",
+    "name": "Mandarina",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 53,
+      "p": 0.8,
+      "c": 13.4,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-pomelo-rosado",
+    "name": "Pomelo rosado",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 42,
+      "p": 0.8,
+      "c": 10.7,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-fruta-uva-morada",
+    "name": "Uva morada",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 69,
+      "p": 0.7,
+      "c": 18.1,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-uva-blanca",
+    "name": "Uva blanca",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 67,
+      "p": 0.6,
+      "c": 17.2,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-durazno",
+    "name": "Durazno",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 39,
+      "p": 0.9,
+      "c": 9.5,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-ciruela",
+    "name": "Ciruela",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 46,
+      "p": 0.7,
+      "c": 11.4,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-kiwi",
+    "name": "Kiwi",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 61,
+      "p": 1.1,
+      "c": 14.7,
+      "g": 0.5
+    }
+  },
+  {
+    "id": "local-fruta-mango",
+    "name": "Mango",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 60,
+      "p": 0.8,
+      "c": 15.0,
+      "g": 0.4
+    }
+  },
+  {
+    "id": "local-fruta-papaya",
+    "name": "Papaya",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 43,
+      "p": 0.5,
+      "c": 10.8,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-sandia",
+    "name": "Sandia",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 30,
+      "p": 0.6,
+      "c": 7.6,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-melon",
+    "name": "Melon",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 34,
+      "p": 0.8,
+      "c": 8.2,
+      "g": 0.2
+    }
+  },
+  {
+    "id": "local-fruta-frutilla",
+    "name": "Frutilla",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 32,
+      "p": 0.7,
+      "c": 7.7,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-arandano",
+    "name": "Arandano",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 57,
+      "p": 0.7,
+      "c": 14.5,
+      "g": 0.3
+    }
+  },
+  {
+    "id": "local-fruta-frambuesa",
+    "name": "Frambuesa",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 52,
+      "p": 1.2,
+      "c": 12.0,
+      "g": 0.7
+    }
+  },
+  {
+    "id": "local-fruta-anana",
+    "name": "Anana",
+    "portion": {
+      "grams": 100,
+      "description": "por 100 g"
+    },
+    "macros": {
+      "kcal": 50,
+      "p": 0.5,
+      "c": 13.0,
+      "g": 0.1
+    }
+  },
+  {
+    "id": "local-bebida-coca-cola",
+    "name": "Gaseosa Coca-Cola",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 149,
+      "p": 0.0,
+      "c": 39.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-coca-zero",
+    "name": "Gaseosa Coca-Cola Zero",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 1,
+      "p": 0.0,
+      "c": 0.1,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-pepsi",
+    "name": "Gaseosa Pepsi",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 0.0,
+      "c": 41.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-pepsi-light",
+    "name": "Gaseosa Pepsi Light",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 1,
+      "p": 0.0,
+      "c": 0.1,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-sprite",
+    "name": "Gaseosa Sprite",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 0.0,
+      "c": 38.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-fanta",
+    "name": "Gaseosa Fanta Naranja",
+    "portion": {
+      "grams": 355,
+      "description": "1 lata (355 ml)"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 0.0,
+      "c": 40.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-manaos-cola",
+    "name": "Gaseosa Manaos Cola",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 210,
+      "p": 0.0,
+      "c": 52.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-manaos-naranja",
+    "name": "Gaseosa Manaos Naranja",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 195,
+      "p": 0.0,
+      "c": 48.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-schweppes-tonica",
+    "name": "Schweppes Tonica",
+    "portion": {
+      "grams": 354,
+      "description": "1 lata (354 ml)"
+    },
+    "macros": {
+      "kcal": 140,
+      "p": 0.0,
+      "c": 35.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-paso-toros-pomelo",
+    "name": "Paso de los Toros Pomelo",
+    "portion": {
+      "grams": 354,
+      "description": "1 lata (354 ml)"
+    },
+    "macros": {
+      "kcal": 135,
+      "p": 0.0,
+      "c": 33.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-gatorade-limon",
+    "name": "Gatorade Limon",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 120,
+      "p": 0.0,
+      "c": 30.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-aquarius-anana",
+    "name": "Aquarius Anana",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 110,
+      "p": 0.0,
+      "c": 27.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-speed",
+    "name": "Speed Energy Drink",
+    "portion": {
+      "grams": 250,
+      "description": "1 lata (250 ml)"
+    },
+    "macros": {
+      "kcal": 105,
+      "p": 0.0,
+      "c": 26.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-villavicencio",
+    "name": "Agua saborizada Villavicencio Pomelo",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 85,
+      "p": 0.0,
+      "c": 21.0,
+      "g": 0.0
+    }
+  },
+  {
+    "id": "local-bebida-cunnington",
+    "name": "Cunnington Pomelo",
+    "portion": {
+      "grams": 500,
+      "description": "1 botella (500 ml)"
+    },
+    "macros": {
+      "kcal": 190,
+      "p": 0.0,
+      "c": 47.0,
+      "g": 0.0
+    }
+  }
+]
