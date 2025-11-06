@@ -22,10 +22,10 @@ def main(page: ft.Page):
     page.title = "MacroEntreno Argento"
     page.window_min_width, page.window_min_height = 380, 700
     page.theme_mode = ft.ThemeMode.DARK
-    primary_blue = "#007AFF"
-    secondary_blue = "#5AC8FA"
+    primary_blue = "#38C544"
+    secondary_blue = "#67FA5A"
     page.theme = ft.Theme(color_scheme_seed=primary_blue)
-    page.bgcolor = "#0A0A0A"
+    page.bgcolor = "#191919"
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
     # Estado simple de navegacion
@@ -39,9 +39,9 @@ def main(page: ft.Page):
         return ft.Container(
             content=ft.Column(
                 [
-                    ft.Icon(ft.icons.BUILD_CIRCLE_OUTLINED, size=48),
+                    ft.Icon(ft.Icons.BUILD_CIRCLE_OUTLINED, size=48),
                     ft.Text(title, size=18, weight=ft.FontWeight.W_600),
-                    ft.Text(message, size=13, color=ft.colors.GREY),
+                    ft.Text(message, size=13, color=ft.Colors.GREY.value),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -96,19 +96,19 @@ def main(page: ft.Page):
                 [
                     ft.Text("Agregar", size=18, weight=ft.FontWeight.W_600),
                     ft.ListTile(
-                        leading=ft.Icon(ft.icons.SCALE),
+                        leading=ft.Icon(ft.Icons.SCALE),
                         title=ft.Text("Agregar macronutrientes"),
                         subtitle=ft.Text("Registrar comidas y macros"),
                         on_click=lambda _: handle_add_action("macros"),
                     ),
                     ft.ListTile(
-                        leading=ft.Icon(ft.icons.SCIENCE),
+                        leading=ft.Icon(ft.Icons.SCIENCE),
                         title=ft.Text("Agregar micronutrientes"),
                         subtitle=ft.Text("Control de vitaminas y minerales"),
                         on_click=lambda _: handle_add_action("micros"),
                     ),
                     ft.ListTile(
-                        leading=ft.Icon(ft.icons.FITNESS_CENTER),
+                        leading=ft.Icon(ft.Icons.FITNESS_CENTER),
                         title=ft.Text("Agregar ejercicio"),
                         subtitle=ft.Text("Suma una sesion a tu rutina"),
                         on_click=lambda _: handle_add_action("workouts"),
@@ -124,15 +124,15 @@ def main(page: ft.Page):
     # Barra de navegacion (Flet actual: NavigationBarDestination + Icons)
     nav = ft.NavigationBar(
         destinations=[
-            ft.NavigationBarDestination(icon=ft.icons.HOME, label="Inicio"),
-            ft.NavigationBarDestination(icon=ft.icons.FITNESS_CENTER, label="Mis Ejercicios"),
-            ft.NavigationBarDestination(icon=ft.icons.ADD_CIRCLE, label=""),
-            ft.NavigationBarDestination(icon=ft.icons.ANALYTICS, label="Mi Progreso"),
-            ft.NavigationBarDestination(icon=ft.icons.SSID_CHART, label="Mis Macros"),
+            ft.NavigationBarDestination(icon=ft.Icons.HOME, label="Inicio"),
+            ft.NavigationBarDestination(icon=ft.Icons.FITNESS_CENTER, label="Mis Ejercicios"),
+            ft.NavigationBarDestination(icon=ft.Icons.ADD_CIRCLE, label=""),
+            ft.NavigationBarDestination(icon=ft.Icons.ANALYTICS, label="Mi Progreso"),
+            ft.NavigationBarDestination(icon=ft.Icons.SSID_CHART, label="Mis Macros"),
         ],
         selected_index=0,
         on_change=on_nav_change,
-        bgcolor="#1C1C1E",
+        bgcolor="#E6E8E6",
         indicator_color=primary_blue,
         shadow_color=secondary_blue,
     )

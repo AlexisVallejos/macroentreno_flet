@@ -7,7 +7,40 @@ import flet as ft
 
 # ===== Compat de iconos/colores (icons vs Icons, colors vs Colors)
 ICONS = getattr(ft, "icons", None) or getattr(ft, "Icons", None)
-COLORS = getattr(ft, "colors", None) or getattr(ft, "Colors", None)
+
+
+def _resolve_color_source() -> object:
+    return getattr(ft, "colors", None) or getattr(ft, "Colors", None)
+
+
+class _ColorsCompat:
+    def __init__(self, raw):
+        if raw is None:
+            raise AttributeError("Flet colors API is not available")
+        self._raw = raw
+
+    def __getattr__(self, name: str):
+        if name == "with_opacity":
+            return self.with_opacity
+        attr = getattr(self._raw, name)
+        return getattr(attr, "value", attr)
+
+    @staticmethod
+    def with_opacity(opacity: float, color: object) -> str:
+        value = getattr(color, "value", color)
+        if isinstance(value, str) and value.startswith("#"):
+            hex_color = value.lstrip("#")
+            if len(hex_color) == 3:
+                hex_color = "".join(ch * 2 for ch in hex_color)
+            if len(hex_color) == 6:
+                r = int(hex_color[0:2], 16)
+                g = int(hex_color[2:4], 16)
+                b = int(hex_color[4:6], 16)
+                return f"rgba({r},{g},{b},{opacity})"
+        return value
+
+
+COLORS = _ColorsCompat(_resolve_color_source())
 
 # ===== Paleta MacrosGym (modo oscuro)
 DARK_BG = "#0B0C0E"          # casi negro
@@ -137,6 +170,27 @@ def WorkoutsView() -> ft.Control:
     }
 
     # ---- Cabecera (título + botón Agregar arriba, estilo móvil)
+    def _dialog_layout(page: ft.Page, *, max_width: float = 420, max_height: float = 640):
+        win_width = getattr(page, "window_width", 0) or 0
+        if win_width:
+            width = min(max_width, win_width * 0.92)
+            if win_width > 40:
+                width = min(width, win_width - 32)
+        else:
+            width = max_width
+
+        win_height = getattr(page, "window_height", 0) or 0
+        height = None
+        if max_height is not None:
+            if win_height:
+                height = min(max_height, win_height * 0.85)
+            else:
+                height = max_height
+
+        inset = ft.padding.only(left=16, right=16, top=16, bottom=32)
+        compact = win_width <= 520 if win_width else True
+        return width, height if height is not None else max_height, inset, compact
+
     title = ft.Text("Mis ejercicios", size=20, weight=ft.FontWeight.W_700, color=TEXT)
 
     def _btn_filled(text: str, icon=None):
@@ -144,7 +198,7 @@ def WorkoutsView() -> ft.Control:
             text=text,
             icon=icon,
             style=ft.ButtonStyle(
-                bgcolor=ft.colors.with_opacity(1, ACCENT),
+                bgcolor=COLORS.with_opacity(1, ACCENT),
                 color=COLORS.BLACK,
                 padding=12,
                 shape=ft.RoundedRectangleBorder(radius=12),
@@ -156,7 +210,7 @@ def WorkoutsView() -> ft.Control:
             text=text,
             icon=icon,
             style=ft.ButtonStyle(
-                bgcolor=ft.colors.with_opacity(1, ACCENT_SOFT),
+                bgcolor=COLORS.with_opacity(1, ACCENT_SOFT),
                 color=COLORS.WHITE,
                 padding=12,
                 shape=ft.RoundedRectangleBorder(radius=12),
@@ -169,8 +223,8 @@ def WorkoutsView() -> ft.Control:
             text=text,
             on_click=on_click,
             style=ft.ButtonStyle(
-                bgcolor=ft.colors.with_opacity(1, ACCENT if selected else CARD_BG),
-                color=COLORS.BLACK if selected else ft.colors.WHITE,
+                bgcolor=COLORS.with_opacity(1, ACCENT if selected else CARD_BG),
+                color=COLORS.BLACK if selected else COLORS.WHITE,
                 padding=ft.Padding(10, 6, 10, 6),
                 shape=ft.RoundedRectangleBorder(radius=16),
                 side=ft.BorderSide(1, ACCENT if selected else STROKE),
@@ -434,6 +488,13 @@ def WorkoutsView() -> ft.Control:
         notes_tf = ft.TextField(label="Notas (opcional)", value=initial.notes or "" if initial else "", multiline=True, min_lines=2, max_lines=4)
         fav_cb = ft.Checkbox(label="Marcar como favorito", value=initial.favorite if initial else False)
 
+        dialog_width, dialog_height, inset_padding, compact_layout = _dialog_layout(page)
+
+        def adaptive_row(controls: list[ft.Control], spacing: int = 8) -> ft.Control:
+            if compact_layout:
+                return ft.Column(controls, spacing=spacing, tight=True)
+            return ft.Row(controls, spacing=spacing)
+
         # Selector de día (chips)
         day_idx = pre_date.weekday()
         day_row = ft.Row(spacing=6, wrap=True)
@@ -490,29 +551,35 @@ def WorkoutsView() -> ft.Control:
         def do_cancel(_):
             page.close(dlg)
 
+        dialog_body = ft.Column(
+            [
+                name_tf,
+                adaptive_row([mg_dd, eq_dd]),
+                adaptive_row([sets_tf, reps_tf, weight_tf]),
+                adaptive_row([rpe_tf]),
+                notes_tf,
+                ft.Text("Asignar dia", size=12, color=MUTED),
+                day_row,
+                error_text,
+            ],
+            spacing=10,
+            tight=True,
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
+        )
+
         dlg = ft.AlertDialog(
             modal=True,
+            inset_padding=inset_padding,
             title=ft.Text("Editar ejercicio" if initial else "Agregar ejercicio"),
             content=ft.Container(
-                width=390,
+                width=dialog_width,
+                height=dialog_height,
                 bgcolor=CARD_BG,
                 border=ft.border.all(1, STROKE),
                 border_radius=12,
                 padding=12,
-                content=ft.Column(
-                    [
-                        name_tf,
-                        ft.Row([mg_dd, eq_dd], spacing=8),
-                        ft.Row([sets_tf, reps_tf, weight_tf], spacing=8),
-                        ft.Row([rpe_tf], spacing=8),
-                        notes_tf,
-                        ft.Text("Asignar día", size=12, color=MUTED),
-                        day_row,
-                        error_text,
-                    ],
-                    spacing=10,
-                    tight=True,
-                ),
+                content=dialog_body,
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=do_cancel),
@@ -520,6 +587,7 @@ def WorkoutsView() -> ft.Control:
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )
+
         page.open(dlg)
 
     # ===== Navegación por semana y días

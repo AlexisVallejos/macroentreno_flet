@@ -150,23 +150,23 @@
     {
       "date": "2025-11-05",
       "meal": "almuerzo",
-      "name": "Pollo pechuga cocida",
+      "name": "Huevo entero",
       "grams": 100.0,
-      "kcal": 165.0,
-      "p": 31.0,
-      "c": 0.0,
-      "g": 3.6,
+      "kcal": 143.0,
+      "p": 13.0,
+      "c": 1.1,
+      "g": 9.5,
       "micros": {},
       "food": {
-        "id": "local-chicken-breast",
+        "id": "local-whole-egg",
         "source": "local",
         "portion": {
           "grams": 100.0,
-          "description": "por 100 g"
+          "description": "aprox. 2 huevos (100 g)"
         },
-        "lookup_name": "Pollo pechuga cocida"
+        "lookup_name": "Huevo entero"
       },
-      "entry_id": "entry-e62c41e1532a4e878b413c6708a46856"
+      "entry_id": "entry-a9d491911b564122a946abb90e4c6a48"
     }
   ],
   "workouts": [],

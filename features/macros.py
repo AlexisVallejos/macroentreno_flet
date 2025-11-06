@@ -130,6 +130,26 @@ def MacrosView():
     entries_column = ft.Column(spacing=12)
     totals_info_text = ft.Text("", size=13, color=TEXT_MUTED)
     macro_summary_column = ft.Column(spacing=10)
+
+    def _dialog_dimensions(page: ft.Page, *, max_width: float = 420, max_height: float | None = None):
+        win_width = getattr(page, "window_width", 0) or 0
+        if win_width:
+            width = min(max_width, win_width * 0.92)
+            if win_width > 40:
+                width = min(width, win_width - 32)
+        else:
+            width = max_width
+
+        win_height = getattr(page, "window_height", 0) or 0
+        height: float | None = None
+        if max_height is not None:
+            if win_height:
+                height = min(max_height, win_height * 0.85)
+            else:
+                height = max_height
+
+        inset = ft.padding.only(left=16, right=16, top=16, bottom=32)
+        return width, height, inset
     recent_searches: list[dict] = []
 
     try:
@@ -492,27 +512,37 @@ def MacrosView():
         def cancel_custom(_=None):
             page_local.close(custom_dialog)
 
+        dialog_width, dialog_height, inset_padding = _dialog_dimensions(
+            page_local, max_width=420, max_height=540
+        )
+        custom_form = ft.Column(
+            [
+                name_field,
+                portion_grams_field,
+                portion_desc_field,
+                kcal_field,
+                p_field,
+                c_field,
+                g_field,
+                error_field,
+            ],
+            spacing=10,
+            tight=True,
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
+        )
+
         custom_dialog = ft.AlertDialog(
             modal=True,
+            inset_padding=inset_padding,
             title=ft.Text(
                 "Editar comida definida" if editing_custom else "Nueva comida definida"
             ),
             content=ft.Container(
-                width=360,
-                content=ft.Column(
-                    [
-                        name_field,
-                        portion_grams_field,
-                        portion_desc_field,
-                        kcal_field,
-                        p_field,
-                        c_field,
-                        g_field,
-                        error_field,
-                    ],
-                    spacing=10,
-                    tight=True,
-                ),
+                width=dialog_width,
+                height=dialog_height,
+                padding=ft.padding.only(bottom=4),
+                content=custom_form,
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=cancel_custom),
@@ -1518,22 +1548,34 @@ def MacrosView():
                 ft.Tab(text="Manual", content=manual_tab_content),
                 ft.Tab(text="Mis comidas", content=custom_tab_content),
             ],
+            expand=True,
+        )
+
+        dialog_width, dialog_height, inset_padding = _dialog_dimensions(
+            page, max_width=420, max_height=640
+        )
+
+        dialog_body = ft.Column(
+            [
+                dialog_meal_dropdown,
+                tabs,
+                error_text,
+            ],
+            spacing=14,
+            tight=True,
+            expand=True,
+            scroll=ft.ScrollMode.AUTO,
         )
 
         dialog = ft.AlertDialog(
             modal=True,
+            inset_padding=inset_padding,
             title=ft.Text("Editar comida" if editing else "Agregar comida"),
             content=ft.Container(
-                width=390,
-                content=ft.Column(
-                    [
-                        dialog_meal_dropdown,
-                        tabs,
-                        error_text,
-                    ],
-                    spacing=14,
-                    tight=True,
-                ),
+                width=dialog_width,
+                height=dialog_height,
+                padding=ft.padding.only(bottom=4),
+                content=dialog_body,
             ),
             actions=[
                 ft.TextButton("Cancelar", on_click=close_dialog),
