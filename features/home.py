@@ -197,7 +197,7 @@ def HomeView(go_to):
         title="Mis macros",
         subtitle=macros_today,
         cta="Ir a macros",
-        image_url="Macronutrientes.jpg",
+        image_url="microo.jpg",
         height=150,
         on_tap=lambda e: go_to("macros"),
     )
@@ -206,7 +206,7 @@ def HomeView(go_to):
         title="Mis micronutrientes",
         subtitle="HOY",
         cta="Ir a micros",
-        image_url="micro.jpg",
+        image_url="macro.jpg",
         height=150,
         on_tap=lambda e: go_to("micros"),
     )
@@ -215,7 +215,7 @@ def HomeView(go_to):
         title="Mi progreso semanal",
         subtitle=f"{today.strftime('%B').title()} - Seguimiento grafico",
         cta="Ir a progreso",
-        image_url="home_progress.jpg",
+        image_url="pro.jpg",
         height=180,
         on_tap=lambda e: go_to("progress"),
         content_alignment=ft.alignment.center_left,

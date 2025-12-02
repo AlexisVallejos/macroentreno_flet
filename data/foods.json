@@ -70,6 +70,62 @@
     }
   },
   {
+    "id": "local-quaker-avena-instantanea",
+    "name": "Quaker Avena Instant\u00e1nea",
+    "portion": {
+      "grams": 40,
+      "description": "1 sobre (40 g)"
+    },
+    "macros": {
+      "kcal": 150,
+      "p": 5,
+      "c": 27,
+      "g": 3
+    }
+  },
+  {
+    "id": "local-quaker-granola-mix",
+    "name": "Quaker Granola Mix",
+    "portion": {
+      "grams": 45,
+      "description": "1 porci\u00f3n (45 g)"
+    },
+    "macros": {
+      "kcal": 190,
+      "p": 5,
+      "c": 31,
+      "g": 5
+    }
+  },
+  {
+    "id": "local-quaker-galletas-arroz",
+    "name": "Quaker Galletas de arroz",
+    "portion": {
+      "grams": 16,
+      "description": "2 galletas (16 g)"
+    },
+    "macros": {
+      "kcal": 63,
+      "p": 1.3,
+      "c": 13.6,
+      "g": 0.4
+    }
+  },
+  {
+    "id": "local-quaker-barra-avena-miel",
+    "name": "Barra Quaker avena y miel",
+    "portion": {
+      "grams": 23,
+      "description": "1 barra (23 g)"
+    },
+    "macros": {
+      "kcal": 94,
+      "p": 1.5,
+      "c": 18,
+      "g": 1.8
+    }
+  },
+  {
     "id": "local-sweet-potato",
     "name": "Batata horneada",
     "portion": {

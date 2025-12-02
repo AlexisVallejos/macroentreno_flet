@@ -9,7 +9,7 @@
       "p": 31.0,
       "c": 0.0,
       "g": 3.6,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-chicken-breast",
         "source": "local",
@@ -30,7 +30,7 @@
       "p": 13.0,
       "c": 1.1,
       "g": 9.5,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-whole-egg",
         "source": "local",
@@ -51,7 +51,7 @@
       "p": 4.0,
       "c": 17.0,
       "g": 29.4,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "custom-ce4e3c1fa201428a9302ddd11a51fb1e",
         "source": "custom",
@@ -72,7 +72,7 @@
       "p": 2.0,
       "c": 20.7,
       "g": 0.1,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-sweet-potato",
         "source": "local",
@@ -93,7 +93,7 @@
       "p": 1.1,
       "c": 22.8,
       "g": 0.3,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-banana",
         "source": "local",
@@ -114,7 +114,7 @@
       "p": 7.0,
       "c": 78.0,
       "g": 0.6,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-arroz-largo-fino",
         "source": "local",
@@ -135,7 +135,7 @@
       "p": 13.5,
       "c": 133.2,
       "g": 5.0,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-arroz-integral-doshermanos",
         "source": "local",
@@ -156,7 +156,7 @@
       "p": 13.0,
       "c": 1.1,
       "g": 9.5,
-      "micros": {},
+      "micros": [],
       "food": {
         "id": "local-whole-egg",
         "source": "local",
@@ -167,6 +167,587 @@
         "lookup_name": "Huevo entero"
       },
       "entry_id": "entry-a9d491911b564122a946abb90e4c6a48"
+    },
+    {
+      "date": "2025-11-06",
+      "meal": "almuerzo",
+      "name": "Huevo entero",
+      "grams": 100.0,
+      "kcal": 143.0,
+      "p": 13.0,
+      "c": 1.1,
+      "g": 9.5,
+      "micros": [],
+      "food": {
+        "id": "local-whole-egg",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "aprox. 2 huevos (100 g)"
+        },
+        "lookup_name": "Huevo entero"
+      },
+      "entry_id": "entry-820b9f794dfd4a8b9ef62155f0ac87e3"
+    },
+    {
+      "date": "2025-11-06",
+      "meal": "Snack",
+      "name": "Alfajor Block",
+      "grams": 100.0,
+      "kcal": 476.0,
+      "p": 8.1,
+      "c": 71.0,
+      "g": 16.1,
+      "micros": [],
+      "food": {
+        "id": "local-alfajor-block",
+        "source": "local",
+        "portion": {
+          "grams": 62.0,
+          "description": "1 unidad (62 g)"
+        },
+        "lookup_name": "Alfajor Block"
+      },
+      "entry_id": "entry-aa249495c0bd47e3aef2bd8907b02342"
+    },
+    {
+      "date": "2025-11-06",
+      "meal": "Snack",
+      "name": "Pollo pechuga cocida",
+      "grams": 400.0,
+      "kcal": 660.0,
+      "p": 124.0,
+      "c": 0.0,
+      "g": 14.4,
+      "micros": [],
+      "food": {
+        "id": "local-chicken-breast",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "Pollo pechuga cocida"
+      },
+      "entry_id": "entry-da5f9cbf7fde4cecb1bc54697bfa890b"
+    },
+    {
+      "date": "2025-11-06",
+      "meal": "almuerzo",
+      "name": "milanesa",
+      "grams": 100.0,
+      "kcal": 200.0,
+      "p": 1.0,
+      "c": 1.0,
+      "g": 1.0,
+      "micros": [],
+      "food": {
+        "id": "custom-5b8b0d3469704204a864f33488ff2855",
+        "source": "custom",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "milanesa"
+      },
+      "entry_id": "entry-6d7884ae189c45579276761f35578fdb"
+    },
+    {
+      "date": "2025-11-06",
+      "meal": "Cena",
+      "name": "milanesa",
+      "grams": 100.0,
+      "kcal": 200.0,
+      "p": 1.0,
+      "c": 1.0,
+      "g": 1.0,
+      "micros": [],
+      "food": {
+        "id": "custom-5b8b0d3469704204a864f33488ff2855",
+        "source": "custom",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "milanesa"
+      },
+      "entry_id": "entry-45200abe4950428a8673318a2dd790ff"
+    },
+    {
+      "date": "2025-11-08",
+      "meal": "Cena",
+      "name": "Mostacholes Lucchetti",
+      "grams": 120.0,
+      "kcal": 445.0,
+      "p": 14.4,
+      "c": 88.8,
+      "g": 1.8,
+      "micros": [],
+      "food": {
+        "id": "local-fideos-mostachol-lucchetti",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g secos"
+        },
+        "lookup_name": "Mostacholes Lucchetti"
+      },
+      "entry_id": "entry-2601bba5ef9c45b0adc7a6b59908aed1"
+    },
+    {
+      "date": "2025-11-08",
+      "meal": "almuerzo",
+      "name": "milanesa",
+      "grams": 100.0,
+      "kcal": 200.0,
+      "p": 1.0,
+      "c": 1.0,
+      "g": 1.0,
+      "micros": [],
+      "food": {
+        "id": "custom-5b8b0d3469704204a864f33488ff2855",
+        "source": "custom",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g"
+        },
+        "lookup_name": "milanesa"
+      },
+      "entry_id": "entry-3fc6a2c3658e43bd8cccbcbd90f7f15e"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "Desayuno",
+      "name": "Arroz largo fino Molino Ala (crudo)",
+      "grams": 100.0,
+      "kcal": 348.0,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6,
+      "micros": [],
+      "food": {
+        "id": "local-arroz-largo-fino",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz largo fino Molino Ala (crudo)"
+      },
+      "entry_id": "entry-1760e83febc14d2e995a04e93371c672"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "Desayuno",
+      "name": "Mint",
+      "grams": 27.0,
+      "kcal": 120.0,
+      "p": 1.0,
+      "c": 19.0,
+      "g": 5.0,
+      "micros": [],
+      "food": {
+        "id": "manual-1762975975",
+        "source": "manual",
+        "portion": {
+          "grams": 27.0,
+          "description": "ingreso manual"
+        },
+        "lookup_name": "Mint"
+      },
+      "entry_id": "entry-e66dc4568de5485aae3974579b017754"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "almuerzo",
+      "name": "Arroz largo fino Molino Ala (crudo)",
+      "grams": 100.0,
+      "kcal": 348.0,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6,
+      "micros": [],
+      "food": {
+        "id": "local-arroz-largo-fino",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz largo fino Molino Ala (crudo)"
+      },
+      "entry_id": "entry-ca5bac574a68436ab99e022a9c77a136"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "almuerzo",
+      "name": "Cheese Pizza",
+      "grams": 86.0,
+      "kcal": 237.0,
+      "p": 10.6,
+      "c": 26.1,
+      "g": 10.1,
+      "micros": [],
+      "food": {
+        "id": "fatsecret-4881",
+        "source": "fatsecret",
+        "portion": {
+          "grams": 86.0,
+          "description": "1 piece (1/8 12\" dia)"
+        },
+        "lookup_name": "Cheese Pizza"
+      },
+      "entry_id": "entry-9eb7997a25e4475a8f571baddbb4c516"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "almuerzo",
+      "name": "Mini Oreos",
+      "grams": 42.0,
+      "kcal": 200.0,
+      "p": 2.0,
+      "c": 30.0,
+      "g": 8.0,
+      "micros": [
+        {
+          "nutrient": "saturated_fat",
+          "label": "Grasa saturada",
+          "amount": 2.5,
+          "unit": "g",
+          "source": "Mini Oreos",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:44:08.284131",
+          "updated_at": "2025-11-12T19:44:08.284131",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-eedd5c4fdb9c4786be48694dbdac2d6e",
+          "entry_id": "micro-ef42a8f8d93a4e29b394bdf5c74d7d81"
+        },
+        {
+          "nutrient": "sodium",
+          "label": "Sodio",
+          "amount": 160.0,
+          "unit": "mg",
+          "source": "Mini Oreos",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:44:08.284143",
+          "updated_at": "2025-11-12T19:44:08.284143",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-eedd5c4fdb9c4786be48694dbdac2d6e",
+          "entry_id": "micro-c4942203794a47fcadc50a6cebc989b6"
+        },
+        {
+          "nutrient": "sugar",
+          "label": "Azucar",
+          "amount": 17.0,
+          "unit": "g",
+          "source": "Mini Oreos",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:44:08.284147",
+          "updated_at": "2025-11-12T19:44:08.284147",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-eedd5c4fdb9c4786be48694dbdac2d6e",
+          "entry_id": "micro-ffdbb43f7577492cbed361d7914fd01c"
+        }
+      ],
+      "food": {
+        "id": "fatsecret-54488124",
+        "source": "fatsecret",
+        "portion": {
+          "grams": 42.0,
+          "description": "1 pack"
+        },
+        "lookup_name": "Mini Oreos"
+      },
+      "entry_id": "entry-eedd5c4fdb9c4786be48694dbdac2d6e"
+    },
+    {
+      "date": "2025-11-12",
+      "meal": "Desayuno",
+      "name": "Cheese Pizza",
+      "grams": 100.0,
+      "kcal": 276.0,
+      "p": 12.3,
+      "c": 30.3,
+      "g": 11.7,
+      "micros": [
+        {
+          "nutrient": "saturated_fat",
+          "label": "Grasa saturada",
+          "amount": 4.304,
+          "unit": "g",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428003",
+          "updated_at": "2025-11-12T19:47:56.428003",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-6485199fc23645ae9ca2e5d4f860b8a0"
+        },
+        {
+          "nutrient": "polyunsaturated_fat",
+          "label": "Grasa poliinsaturada",
+          "amount": 1.776,
+          "unit": "g",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428017",
+          "updated_at": "2025-11-12T19:47:56.428017",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-e5b1564c9e2c4a519b57823644487447"
+        },
+        {
+          "nutrient": "monounsaturated_fat",
+          "label": "Grasa monoinsaturada",
+          "amount": 2.823,
+          "unit": "g",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428023",
+          "updated_at": "2025-11-12T19:47:56.428023",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-b2d687a7e3d4471184b54f789d50820d"
+        },
+        {
+          "nutrient": "cholesterol",
+          "label": "Colesterol",
+          "amount": 21.0,
+          "unit": "mg",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428028",
+          "updated_at": "2025-11-12T19:47:56.428028",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-06e840d012024dd59af65a0fe7224709"
+        },
+        {
+          "nutrient": "sodium",
+          "label": "Sodio",
+          "amount": 462.0,
+          "unit": "mg",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428033",
+          "updated_at": "2025-11-12T19:47:56.428033",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-84224e7a2ac0430caf3e06827322785b"
+        },
+        {
+          "nutrient": "potassium",
+          "label": "Potasio",
+          "amount": 138.0,
+          "unit": "mg",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428038",
+          "updated_at": "2025-11-12T19:47:56.428038",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-4551cab34cf8422496a395af3bf47de7"
+        },
+        {
+          "nutrient": "fiber",
+          "label": "Fibra",
+          "amount": 1.6,
+          "unit": "g",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428042",
+          "updated_at": "2025-11-12T19:47:56.428042",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-49e3f0a4bcd14deaae54c07cb05aa6de"
+        },
+        {
+          "nutrient": "sugar",
+          "label": "Azucar",
+          "amount": 3.06,
+          "unit": "g",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428046",
+          "updated_at": "2025-11-12T19:47:56.428046",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-67dfcce36f194c978613dd176cf57eff"
+        },
+        {
+          "nutrient": "vitamin_a",
+          "label": "Vitamina A",
+          "amount": 8.0,
+          "unit": "IU",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428051",
+          "updated_at": "2025-11-12T19:47:56.428051",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-0d83a36737b84bdeabee3579a95a869e"
+        },
+        {
+          "nutrient": "calcium",
+          "label": "Calcio",
+          "amount": 14.0,
+          "unit": "mg",
+          "source": "Cheese Pizza",
+          "kind": "meal",
+          "created_at": "2025-11-12T19:47:56.428055",
+          "updated_at": "2025-11-12T19:47:56.428055",
+          "date": "2025-11-12",
+          "meal_entry_id": "entry-d05f4ec5f190419f8920069a4d025481",
+          "entry_id": "micro-9ce2c3e7ada8488c82326dc476396bc4"
+        }
+      ],
+      "food": {
+        "id": "fatsecret-4881",
+        "source": "fatsecret",
+        "portion": {
+          "grams": 86.0,
+          "description": "1 piece (1/8 12\" dia)"
+        },
+        "lookup_name": "Cheese Pizza"
+      },
+      "entry_id": "entry-d05f4ec5f190419f8920069a4d025481"
+    },
+    {
+      "date": "2025-11-15",
+      "meal": "almuerzo",
+      "name": "Arroz largo fino Molino Ala (crudo)",
+      "grams": 100.0,
+      "kcal": 348.0,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6,
+      "micros": [],
+      "food": {
+        "id": "local-arroz-largo-fino",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz largo fino Molino Ala (crudo)"
+      },
+      "entry_id": "entry-16b6ca58f7bc445a857172be58e53d6d"
+    },
+    {
+      "date": "2025-11-15",
+      "meal": "Cena",
+      "name": "Spaghetti Don Vicente (sémola)",
+      "grams": 50.0,
+      "kcal": 186.0,
+      "p": 6.5,
+      "c": 37.0,
+      "g": 0.8,
+      "micros": [],
+      "food": {
+        "id": "local-fideos-spaghetti-donvicente",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g secos"
+        },
+        "lookup_name": "Spaghetti Don Vicente (sémola)"
+      },
+      "entry_id": "entry-b6befafa08f34a119634aaf6f5053c8b"
+    },
+    {
+      "date": "2025-11-15",
+      "meal": "Desayuno",
+      "name": "Mini Oreos",
+      "grams": 42.0,
+      "kcal": 200.0,
+      "p": 2.0,
+      "c": 30.0,
+      "g": 8.0,
+      "micros": [],
+      "food": {
+        "id": "fatsecret-54488124",
+        "source": "fatsecret",
+        "portion": {
+          "grams": 42.0,
+          "description": "1 pack"
+        },
+        "lookup_name": "Mini Oreos"
+      },
+      "entry_id": "entry-22a47a372ccc40d09185c45b9f9e178f"
+    },
+    {
+      "date": "2025-11-19",
+      "meal": "almuerzo",
+      "name": "Arroz largo fino Molino Ala (crudo)",
+      "grams": 100.0,
+      "kcal": 348.0,
+      "p": 7.0,
+      "c": 78.0,
+      "g": 0.6,
+      "micros": [
+        {
+          "nutrient": "fiber",
+          "label": "Fibra",
+          "amount": 1.8,
+          "unit": "g",
+          "source": "Arroz largo fino Molino Ala (crudo)",
+          "date": "2025-11-19",
+          "meal_entry_id": "entry-95631f55e50344cab8b8fcd7dee97748",
+          "kind": "meal",
+          "created_at": "2025-11-19",
+          "updated_at": "2025-11-19",
+          "entry_id": "micro-10dcfc9a73c241888811a90685d01cb0"
+        },
+        {
+          "nutrient": "iron",
+          "label": "Hierro",
+          "amount": 1.0,
+          "unit": "mg",
+          "source": "Arroz largo fino Molino Ala (crudo)",
+          "date": "2025-11-19",
+          "meal_entry_id": "entry-95631f55e50344cab8b8fcd7dee97748",
+          "kind": "meal",
+          "created_at": "2025-11-19",
+          "updated_at": "2025-11-19",
+          "entry_id": "micro-d20a3d575cd74750a98bd8f6eeef4777"
+        },
+        {
+          "nutrient": "magnesium",
+          "label": "Magnesio",
+          "amount": 43.0,
+          "unit": "mg",
+          "source": "Arroz largo fino Molino Ala (crudo)",
+          "date": "2025-11-19",
+          "meal_entry_id": "entry-95631f55e50344cab8b8fcd7dee97748",
+          "kind": "meal",
+          "created_at": "2025-11-19",
+          "updated_at": "2025-11-19",
+          "entry_id": "micro-f31e02eeb9504a8ca5e9fc3b12d8f3a0"
+        },
+        {
+          "nutrient": "zinc",
+          "label": "Zinc",
+          "amount": 1.0,
+          "unit": "mg",
+          "source": "Arroz largo fino Molino Ala (crudo)",
+          "date": "2025-11-19",
+          "meal_entry_id": "entry-95631f55e50344cab8b8fcd7dee97748",
+          "kind": "meal",
+          "created_at": "2025-11-19",
+          "updated_at": "2025-11-19",
+          "entry_id": "micro-6911102fd11c451ab42e4b8745785622"
+        }
+      ],
+      "food": {
+        "id": "local-arroz-largo-fino",
+        "source": "local",
+        "portion": {
+          "grams": 100.0,
+          "description": "por 100 g crudo"
+        },
+        "lookup_name": "Arroz largo fino Molino Ala (crudo)"
+      },
+      "entry_id": "entry-95631f55e50344cab8b8fcd7dee97748"
     }
   ],
   "workouts": [],
@@ -174,5 +755,22 @@
     "name": "Alexis",
     "kcal_goal": 1800
   },
-  "custom_foods": []
+  "custom_foods": [
+    {
+      "name": "milanesa",
+      "source": "custom",
+      "portion": {
+        "grams": 100.0,
+        "description": "por 100 g"
+      },
+      "macros": {
+        "kcal": 200.0,
+        "p": 1.0,
+        "c": 1.0,
+        "g": 1.0
+      },
+      "id": "custom-5b8b0d3469704204a864f33488ff2855"
+    }
+  ],
+  "micronutrients": []
 }

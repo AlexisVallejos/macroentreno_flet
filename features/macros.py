@@ -665,7 +665,97 @@ def MacrosView():
             bgcolor=CARD_BG,
             visible=False,
         )
-        selected_catalog = {"food": None, "serving": None, "serving_id": None, "override_grams": None}
+        catalog_micro_status = ft.Text("", size=11, color=TEXT_MUTED, visible=False)
+        catalog_micro_button = ft.FilledButton(
+            "Agregar micronutrientes de esta comida",
+            icon=ICONS.SCIENCE,
+            disabled=True,
+        )
+        catalog_detail_stack = ft.Column(
+            [
+                catalog_detail_container,
+                catalog_micro_button,
+                catalog_micro_status,
+            ],
+            spacing=6,
+            tight=True,
+        )
+        selected_catalog = {
+            "food": None,
+            "serving": None,
+            "serving_id": None,
+            "override_grams": None,
+            "micros_payload": None,
+        }
+
+        def clear_micro_capture_state():
+            selected_catalog["micros_payload"] = None
+            catalog_micro_status.value = ""
+            catalog_micro_status.visible = False
+            catalog_micro_status.color = TEXT_MUTED
+            if catalog_micro_status.page:
+                catalog_micro_status.update()
+
+        def show_micro_status(message: str, *, success: bool = False):
+            catalog_micro_status.value = message
+            catalog_micro_status.color = ACCENT_GREEN if success else TEXT_MUTED
+            catalog_micro_status.visible = True
+            if catalog_micro_status.page:
+                catalog_micro_status.update()
+
+        def capture_catalog_micros(_: ft.ControlEvent):
+            food = selected_catalog.get("food")
+            serving = selected_catalog.get("serving")
+            if not food or not serving:
+                page.snack_bar = ft.SnackBar(ft.Text("Selecciona un alimento antes de agregar micronutrientes"))
+                page.snack_bar.open = True
+                page.update()
+                return
+            nutrients = dict(serving.get("nutrients") or food.get("nutrients") or {})
+            if not nutrients:
+                show_micro_status("Este alimento no reporta micronutrientes.", success=False)
+                return
+            grams = parse_float_field(catalog_grams_field, default=None)
+            if grams is None or grams <= 0:
+                grams = selected_catalog.get("override_grams")
+            if grams is None or grams <= 0:
+                grams = float(serving.get("grams") or food.get("portion", {}).get("grams") or 100.0)
+            base_grams = float(serving.get("grams") or food.get("portion", {}).get("grams") or grams or 100.0)
+            ratio = grams / base_grams if base_grams > 0 else 1.0
+
+            def _rounded_amount(amount: float, unit: str) -> float:
+                return round(amount, 0) if unit in {"mg", "IU"} else round(amount, 2)
+
+            micros_payload: list[dict] = []
+            for nutrient, (value, unit) in nutrients.items():
+                try:
+                    amount = float(value) * ratio
+                except (TypeError, ValueError):
+                    continue
+                if amount <= 0:
+                    continue
+                micros_payload.append(
+                    {
+                        "nutrient": nutrient,
+                        "label": NUTRIENT_LABELS.get(nutrient, nutrient.replace("_", " ").title()),
+                        "amount": _rounded_amount(amount, unit),
+                        "unit": unit,
+                        "source": food.get("name"),
+                    }
+                )
+            if not micros_payload:
+                show_micro_status("No se encontraron micronutrientes para la porcion indicada.")
+                return
+            selected_catalog["micros_payload"] = micros_payload
+            show_micro_status(
+                f"{len(micros_payload)} micronutrientes se guardaran con la comida.",
+                success=True,
+            )
+            page.snack_bar = ft.SnackBar(ft.Text("Micronutrientes preparados para esta comida"))
+            page.snack_bar.open = True
+            page.update()
+
+        catalog_micro_button.on_click = capture_catalog_micros
 
         manual_name_field = ft.TextField(
             label="Nombre del alimento",
@@ -742,6 +832,7 @@ def MacrosView():
                 selected_catalog["override_grams"] = None
             else:
                 selected_catalog["override_grams"] = grams
+            clear_micro_capture_state()
             food = selected_catalog.get("food")
             serving = selected_catalog.get("serving")
             if food and serving:
@@ -781,6 +872,10 @@ def MacrosView():
                 ft.Text("Selecciona un alimento para ver detalles.", size=12, color=TEXT_MUTED)
             )
             catalog_detail_container.visible = False
+            catalog_micro_button.disabled = True
+            if catalog_micro_button.page:
+                catalog_micro_button.update()
+            clear_micro_capture_state()
             if catalog_detail_column.page:
                 catalog_detail_column.update()
             if catalog_detail_container.page:
@@ -906,6 +1001,16 @@ def MacrosView():
                 ft.Text("Datos nutricionales", size=13, weight=ft.FontWeight.W_600, color=TEXT_PRIMARY)
             )
             catalog_detail_column.controls.append(ft.Column(nutrient_rows, spacing=4, tight=True))
+
+            has_nutrients = bool(serving.get("nutrients") or food.get("nutrients"))
+            catalog_micro_button.disabled = not has_nutrients
+            if catalog_micro_button.page:
+                catalog_micro_button.update()
+            if not has_nutrients:
+                selected_catalog["micros_payload"] = None
+                show_micro_status("Este alimento no reporta micronutrientes.", success=False)
+            elif not selected_catalog.get("micros_payload"):
+                clear_micro_capture_state()
 
             catalog_detail_container.visible = True
             if catalog_detail_column.page:
@@ -1071,6 +1176,7 @@ def MacrosView():
             selected_catalog["serving"] = target
             selected_catalog["serving_id"] = serving_id
 
+            clear_micro_capture_state()
             render_catalog_detail(food, target, selected_catalog["override_grams"])
 
         def update_serving_controls(food: dict, preferred_id: str | None = None):
@@ -1116,6 +1222,7 @@ def MacrosView():
             selected_catalog["serving"] = None
             selected_catalog["serving_id"] = None
             selected_catalog["override_grams"] = None
+            clear_micro_capture_state()
             catalog_selected_text.value = f"{food['name']} ({describe_portion(food)})"
             catalog_selected_text.color = COLORS.PRIMARY
             if catalog_selected_text.page:
@@ -1295,6 +1402,7 @@ def MacrosView():
                         "portion": food.get("portion"),
                         "lookup_name": food["name"],
                     }
+                    micros_payload = selected_catalog.get("micros_payload")
                     if editing:
                         update_food_entry(
                             entry_id,
@@ -1306,6 +1414,7 @@ def MacrosView():
                             c=macros["c"],
                             g=macros["g"],
                             food_ref=food_ref,
+                            micros=micros_payload,
                         )
                     else:
                         add_food_entry(
@@ -1318,6 +1427,7 @@ def MacrosView():
                             macros["c"],
                             macros["g"],
                             food_ref=food_ref,
+                            micros=micros_payload,
                         )
             elif selected_tab == 1:
                 name = (manual_name_field.value or "").strip()
@@ -1484,7 +1594,7 @@ def MacrosView():
                 catalog_selected_text,
                 catalog_serving_dropdown,
                 catalog_grams_field,
-                catalog_detail_container,
+                catalog_detail_stack,
             ],
             spacing=10,
             tight=True,

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
 
 from data.argentina_meta import ARGENTINA_PRODUCTS_META
+from data.argentina_micros import ARGENTINA_CATEGORY_MICROS, ARGENTINA_MICRO_OVERRIDES
 from services.fatsecret import FatSecretClient, FatSecretError
 
 
@@ -208,6 +209,30 @@ def _extract_usda_macros(nutrients: List[Dict]) -> Optional[Dict[str, float]]:
     return macros
 
 
+def _scale_micro_payload(payload: Dict[str, Tuple[float, str]], grams: float) -> Dict[str, Tuple[float, str]]:
+    if not payload:
+        return {}
+    base = 100.0
+    ratio = grams / base if base > 0 else 1.0
+    scaled: Dict[str, Tuple[float, str]] = {}
+    for nutrient, (value, unit) in payload.items():
+        try:
+            amount = float(value) * ratio
+        except (TypeError, ValueError):
+            continue
+        scaled[nutrient] = (amount, unit)
+    return scaled
+
+
+def _lookup_local_nutrients(item_id: str, category: Optional[str], grams: float) -> Optional[Dict[str, Tuple[float, str]]]:
+    payload = ARGENTINA_MICRO_OVERRIDES.get(item_id)
+    if not payload and category:
+        payload = ARGENTINA_CATEGORY_MICROS.get(category)
+    if not payload:
+        return None
+    return _scale_micro_payload(payload, grams or 100.0)
+
+
 def _normalise_food(item: Dict, source: str) -> Dict:
     portion = item.get("portion", {}) or {}
     grams = portion.get("grams") or 100
@@ -238,6 +263,7 @@ def _normalise_food(item: Dict, source: str) -> Dict:
     if category:
         normalised["category"] = str(category)
 
+    meta = None
     if source == "local":
         meta = ARGENTINA_PRODUCTS_META.get(normalised["id"])
         if meta:
@@ -252,6 +278,23 @@ def _normalise_food(item: Dict, source: str) -> Dict:
             merged = existing + [tag for tag in meta_tags if tag not in existing]
             if merged:
                 normalised["tags"] = merged
+        if not item.get("servings"):
+            nutrients = item.get("nutrients")
+            if nutrients:
+                nutrient_payload = {k: (float(val[0]), val[1]) for k, val in nutrients.items()}
+            else:
+                category = meta.get("category") if meta else normalised.get("category")
+                nutrient_payload = _lookup_local_nutrients(normalised["id"], category, normalised["portion"]["grams"])
+            if nutrient_payload:
+                normalised["servings"] = [
+                    {
+                        "id": "local-default",
+                        "description": normalised["portion"]["description"],
+                        "grams": normalised["portion"]["grams"],
+                        "macros": dict(normalised["macros"]),
+                        "nutrients": nutrient_payload,
+                    }
+                ]
     return normalised
 
 
