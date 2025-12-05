@@ -145,9 +145,4 @@ ARGENTINA_PRODUCTS_META = {
     "local-papas-fritas-lays-clasicas": {"brand": "Lays", "category": "Snacks", "tags": ["argentina", "snacks", "papas_fritas"]},
     "local-papas-fritas-lays-onduladas": {"brand": "Lays", "category": "Snacks", "tags": ["argentina", "snacks", "papas_fritas"]},
     "local-papas-fritas-pringles-original": {"brand": "Pringles", "category": "Snacks", "tags": ["argentina", "snacks", "papas_fritas"]},
-    # Productos saludables PepsiCo
-    "local-quaker-avena-instantanea": {"brand": "Quaker", "category": "Cereales y granos", "tags": ["argentina", "pepsico", "avena"]},
-    "local-quaker-granola-mix": {"brand": "Quaker", "category": "Cereales y granos", "tags": ["argentina", "pepsico", "granola"]},
-    "local-quaker-galletas-arroz": {"brand": "Quaker", "category": "Snacks saludables", "tags": ["argentina", "pepsico", "snacks"]},
-    "local-quaker-barra-avena-miel": {"brand": "Quaker", "category": "Snacks saludables", "tags": ["argentina", "pepsico", "barras"]},
 }

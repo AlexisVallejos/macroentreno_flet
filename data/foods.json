@@ -2084,5 +2084,56 @@
       "c": 47.0,
       "g": 0.0
     }
+  },
+  {
+    "id": "local-papas-fritas-lays-clasicas",
+    "name": "Papas fritas Lays clasicas",
+    "brand": "Lays",
+    "category": "Snacks",
+    "tags": ["papas fritas", "snack", "fritas", "lays"],
+    "portion": {
+      "grams": 30,
+      "description": "por 1 paquete chico (30 g)"
+    },
+    "macros": {
+      "kcal": 160,
+      "p": 2.0,
+      "c": 15.0,
+      "g": 10.0
+    }
+  },
+  {
+    "id": "local-papas-fritas-lays-onduladas",
+    "name": "Papas fritas Lays onduladas",
+    "brand": "Lays",
+    "category": "Snacks",
+    "tags": ["papas fritas", "snack", "fritas", "lays"],
+    "portion": {
+      "grams": 30,
+      "description": "por 1 paquete chico (30 g)"
+    },
+    "macros": {
+      "kcal": 165,
+      "p": 2.0,
+      "c": 16.0,
+      "g": 10.0
+    }
+  },
+  {
+    "id": "local-papas-fritas-pringles-original",
+    "name": "Papas fritas Pringles original",
+    "brand": "Pringles",
+    "category": "Snacks",
+    "tags": ["papas fritas", "snack", "pringles"],
+    "portion": {
+      "grams": 40,
+      "description": "por 1 tubo pequeño (40 g)"
+    },
+    "macros": {
+      "kcal": 210,
+      "p": 2.5,
+      "c": 21.0,
+      "g": 13.0
+    }
   }
 ]

@@ -11,10 +11,13 @@ def _load() -> Dict:
             "workouts": [],
             "user": {"name": "Alexis", "kcal_goal": 1800},
             "custom_foods": [],
+            "micronutrients": [],
         }
     with open(DB_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
     changed = False
+    changed |= _normalise_diary_entries(data)
+    changed |= _migrate_meal_micros(data)
     if "diary" not in data:
         data["diary"] = []
         changed = True
@@ -26,6 +29,9 @@ def _load() -> Dict:
         changed = True
     if "custom_foods" not in data:
         data["custom_foods"] = []
+        changed = True
+    if "micronutrients" not in data:
+        data["micronutrients"] = []
         changed = True
     if changed:
         _save(data)
@@ -48,6 +54,84 @@ def _ensure_workout_id(workout: Dict):
         workout["id"] = f"workout-{uuid.uuid4().hex}"
         workout["created_at"] = dt.datetime.utcnow().isoformat()
     workout["updated_at"] = dt.datetime.utcnow().isoformat()
+
+def _ensure_micro_entry_id(entry: Dict):
+    if "entry_id" not in entry or not entry["entry_id"]:
+        entry["entry_id"] = f"micro-{uuid.uuid4().hex}"
+
+def _normalise_diary_entries(data: Dict) -> bool:
+    changed = False
+    for entry in data.get("diary", []):
+        micros = entry.get("micros")
+        if isinstance(micros, dict):
+            entry["micros"] = []
+            changed = True
+        elif micros is None:
+            entry["micros"] = []
+            changed = True
+        elif isinstance(micros, list):
+            for micro in micros:
+                if "date" not in micro:
+                    micro["date"] = entry.get("date")
+                    changed = True
+                if "meal_entry_id" not in micro:
+                    micro["meal_entry_id"] = entry.get("entry_id")
+                    changed = True
+                if "kind" not in micro:
+                    micro["kind"] = "meal"
+                    changed = True
+                if "created_at" not in micro:
+                    micro["created_at"] = micro.get("date") or dt.datetime.utcnow().isoformat()
+                    changed = True
+                if "updated_at" not in micro:
+                    micro["updated_at"] = micro["created_at"]
+                    changed = True
+                prev_id = micro.get("entry_id")
+                _ensure_micro_entry_id(micro)
+                if micro.get("entry_id") != prev_id:
+                    changed = True
+    return changed
+
+def _find_diary_entry(data: Dict, entry_id: str) -> Optional[Dict]:
+    for entry in data.get("diary", []):
+        if entry.get("entry_id") == entry_id:
+            if not isinstance(entry.get("micros"), list):
+                entry["micros"] = []
+            return entry
+    return None
+
+def _get_entry_micros(entry: Dict) -> List[Dict]:
+    micros = entry.get("micros")
+    if isinstance(micros, list):
+        return micros
+    entry["micros"] = []
+    return entry["micros"]
+
+def _migrate_meal_micros(data: Dict) -> bool:
+    """Move any micronutrient entries that reference a meal into that meal."""
+    micros = data.get("micronutrients", [])
+    if not micros:
+        return False
+    remaining = []
+    changed = False
+    for micro in micros:
+        meal_entry_id = micro.get("meal_entry_id")
+        if not meal_entry_id:
+            remaining.append(micro)
+            continue
+        entry = _find_diary_entry(data, meal_entry_id)
+        if not entry:
+            remaining.append(micro)
+            continue
+        entry_micros = entry.setdefault("micros", [])
+        _ensure_micro_entry_id(micro)
+        micro.setdefault("kind", "meal")
+        micro["date"] = entry.get("date")
+        entry_micros.append(micro)
+        changed = True
+    if changed:
+        data["micronutrients"] = remaining
+    return changed
 
 def _normalise_portion(grams: float, description: Optional[str] = None) -> Dict:
     grams = float(grams or 0)
@@ -72,7 +156,7 @@ def add_food_entry(date, meal_type, name, grams, kcal, p, c, g, micros=None, foo
         "name": name,
         "grams": grams,
         "kcal": float(kcal), "p": float(p), "c": float(c), "g": float(g),
-        "micros": micros or {}
+        "micros": micros or []
     }
     if food_ref:
         entry["food"] = food_ref
@@ -119,6 +203,215 @@ def get_week_entries(end_date, days=7):
         if start <= d <= end:
             out.append(e)
     return out
+
+def add_micro_entry(date, nutrient_id, label, amount, unit, source=None, notes=None, meal_entry_id=None, kind=None):
+    data = _load()
+    micro_entry = {
+        "date": str(date),
+        "nutrient": nutrient_id or "custom",
+        "label": (label or "Micronutriente").strip(),
+        "amount": float(amount or 0.0),
+        "unit": (unit or "mg").strip(),
+        "source": (source or "").strip(),
+        "notes": (notes or "").strip(),
+        "meal_entry_id": meal_entry_id,
+        "kind": kind or ("meal" if meal_entry_id else "supplement"),
+        "created_at": dt.datetime.utcnow().isoformat(),
+    }
+    micro_entry["updated_at"] = micro_entry["created_at"]
+    _ensure_micro_entry_id(micro_entry)
+
+    if meal_entry_id:
+        diary_entry = _find_diary_entry(data, meal_entry_id)
+        if not diary_entry:
+            raise ValueError("meal_entry_id no encontrado")
+        micro_entry["date"] = diary_entry.get("date")
+        _get_entry_micros(diary_entry).append(micro_entry)
+    else:
+        micros = data.setdefault("micronutrients", [])
+        micros.append(micro_entry)
+
+    _save(data)
+    return deepcopy(micro_entry)
+
+def list_micro_entries(date=None):
+    data = _load()
+    date_filter = str(date) if date is not None else None
+    result: List[Dict] = []
+    changed = False
+
+    for entry in data.get("diary", []):
+        entry_micros = _get_entry_micros(entry)
+        for micro in entry_micros:
+            if micro.get("date") != entry.get("date"):
+                micro["date"] = entry.get("date")
+                changed = True
+            if micro.get("meal_entry_id") != entry.get("entry_id"):
+                micro["meal_entry_id"] = entry.get("entry_id")
+                changed = True
+            if micro.get("kind") not in {"meal", "supplement"}:
+                micro["kind"] = "meal"
+                changed = True
+            if "created_at" not in micro:
+                micro["created_at"] = micro.get("date") or dt.datetime.utcnow().isoformat()
+                changed = True
+            if "updated_at" not in micro:
+                micro["updated_at"] = micro["created_at"]
+                changed = True
+            _ensure_micro_entry_id(micro)
+            if date_filter and entry.get("date") != date_filter:
+                continue
+            result.append(deepcopy(micro))
+
+    supplements = data.get("micronutrients", [])
+    for micro in supplements:
+        if "entry_id" not in micro or not micro["entry_id"]:
+            _ensure_micro_entry_id(micro)
+            changed = True
+        if "created_at" not in micro:
+            micro["created_at"] = micro.get("date") or dt.datetime.utcnow().isoformat()
+            changed = True
+        if "updated_at" not in micro:
+            micro["updated_at"] = micro["created_at"]
+            changed = True
+        if "meal_entry_id" not in micro:
+            micro["meal_entry_id"] = None
+            changed = True
+        if "kind" not in micro or micro["kind"] != "supplement":
+            micro["kind"] = "supplement"
+            changed = True
+        if date_filter and micro.get("date") != date_filter:
+            continue
+        result.append(deepcopy(micro))
+
+    if changed:
+        _save(data)
+    return sorted(result, key=lambda e: e.get("created_at", ""))
+
+def delete_micro_entry(entry_id: str) -> bool:
+    if not entry_id:
+        return False
+    data = _load()
+    removed = False
+    for diary_entry in data.get("diary", []):
+        micros = _get_entry_micros(diary_entry)
+        before = len(micros)
+        diary_entry["micros"] = [micro for micro in micros if micro.get("entry_id") != entry_id]
+        if len(diary_entry["micros"]) != before:
+            removed = True
+    if not removed:
+        micros = data.get("micronutrients", [])
+        before = len(micros)
+        data["micronutrients"] = [entry for entry in micros if entry.get("entry_id") != entry_id]
+        removed = len(data["micronutrients"]) != before
+    if removed:
+        _save(data)
+    return removed
+
+def update_micro_entry(entry_id: str, *, label=None, amount=None, unit=None, source=None, notes=None, nutrient_id=None, meal_entry_id=None, kind=None):
+    data = _load()
+    updated = False
+
+    supplements = data.setdefault("micronutrients", [])
+
+    def apply_common_updates(micro: Dict):
+        if label is not None:
+            micro["label"] = label
+        if amount is not None:
+            micro["amount"] = float(amount)
+        if unit is not None:
+            micro["unit"] = unit
+        if source is not None:
+            micro["source"] = source
+        if notes is not None:
+            micro["notes"] = notes
+        if nutrient_id is not None:
+            micro["nutrient"] = nutrient_id
+
+    target_kind = kind
+    target_meal_id = meal_entry_id
+
+    for entry in data.get("diary", []):
+        micros = _get_entry_micros(entry)
+        for idx, micro in enumerate(micros):
+            if micro.get("entry_id") != entry_id:
+                continue
+            apply_common_updates(micro)
+
+            new_kind = target_kind if target_kind is not None else micro.get("kind")
+            new_kind = new_kind or "meal"
+            if new_kind == "supplement":
+                # Move to supplements
+                del micros[idx]
+                micro["meal_entry_id"] = None
+                micro["kind"] = "supplement"
+                supplements.append(micro)
+            else:
+                desired_meal = target_meal_id if target_meal_id is not None else micro.get("meal_entry_id")
+                desired_meal = desired_meal or entry.get("entry_id")
+                if desired_meal != entry.get("entry_id"):
+                    target_entry = _find_diary_entry(data, desired_meal)
+                    if target_entry:
+                        del micros[idx]
+                        micro["meal_entry_id"] = desired_meal
+                        micro["date"] = target_entry.get("date")
+                        _get_entry_micros(target_entry).append(micro)
+                    else:
+                        micro["meal_entry_id"] = entry.get("entry_id")
+                else:
+                    micro["meal_entry_id"] = entry.get("entry_id")
+                micro["kind"] = "meal"
+
+            micro["updated_at"] = dt.datetime.utcnow().isoformat()
+            updated = True
+            break
+        if updated:
+            break
+
+    if not updated:
+        for idx, micro in enumerate(supplements):
+            if micro.get("entry_id") != entry_id:
+                continue
+            apply_common_updates(micro)
+            move_to_meal = (target_kind == "meal") or (target_meal_id is not None)
+            if move_to_meal and target_meal_id:
+                target_entry = _find_diary_entry(data, target_meal_id)
+                if target_entry:
+                    micro["meal_entry_id"] = target_meal_id
+                    micro["kind"] = "meal"
+                    micro["date"] = target_entry.get("date")
+                    _get_entry_micros(target_entry).append(micro)
+                    del supplements[idx]
+                else:
+                    micro["meal_entry_id"] = None
+                    micro["kind"] = "supplement"
+            else:
+                micro["meal_entry_id"] = None
+                micro["kind"] = "supplement" if (target_kind is None or target_kind == "supplement") else micro.get("kind", "supplement")
+            micro["updated_at"] = dt.datetime.utcnow().isoformat()
+            updated = True
+            break
+
+    if updated:
+        _save(data)
+    return updated
+
+def get_micro_totals(date):
+    totals = {}
+    for entry in list_micro_entries(date):
+        key = entry.get("nutrient") or entry.get("label")
+        if not key:
+            continue
+        bucket = totals.setdefault(
+            key,
+            {
+                "amount": 0.0,
+                "unit": entry.get("unit") or "mg",
+                "label": entry.get("label") or key.title(),
+            },
+        )
+        bucket["amount"] += float(entry.get("amount") or 0.0)
+    return totals
 
 def _normalise_sets(sets: List[Dict]) -> List[Dict]:
     normalised = []

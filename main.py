@@ -3,6 +3,7 @@ from pathlib import Path
 import flet as ft
 from features.home import HomeView
 from features.macros import MacrosView
+from features.micros import MicrosView
 from features.progress import ProgressView
 from features.workouts import WorkoutsView
 
@@ -19,7 +20,7 @@ if load_dotenv:
             load_dotenv(candidate, override=False)
 
 def main(page: ft.Page):
-    page.title = "MacroEntreno Argento"
+    page.title = "MacrosGym"
     page.window_min_width, page.window_min_height = 380, 700
     page.theme_mode = ft.ThemeMode.DARK
     primary_blue = "#38C544"
@@ -28,8 +29,8 @@ def main(page: ft.Page):
     page.bgcolor = "#191919"
     page.horizontal_alignment = ft.CrossAxisAlignment.STRETCH
 
-    # Estado simple de navegacion
-    routes = ["home", "workouts", "add", "progress", "macros", "micros"]
+    nav_routes = ["home", "add", "progress"]
+    valid_routes = set(nav_routes + ["workouts", "macros", "micros"])
     current_route = "home"
     last_nav_index = 0
 
@@ -53,17 +54,16 @@ def main(page: ft.Page):
 
     def go_to(route: str):
         nonlocal current_route, last_nav_index
-        if route not in routes:
+        if route not in valid_routes:
             route = "home"
         current_route = route
 
-        if route in routes:
-            idx = routes.index(route)
-            if idx < len(nav.destinations):
-                last_nav_index = idx
-                if nav.selected_index != idx:
-                    nav.selected_index = idx
-                    nav.update()
+        if route in nav_routes:
+            idx = nav_routes.index(route)
+            last_nav_index = idx
+            if nav.selected_index != idx:
+                nav.selected_index = idx
+                nav.update()
 
         render()
 
@@ -81,13 +81,13 @@ def main(page: ft.Page):
 
     def on_nav_change(e: ft.ControlEvent):
         idx = e.control.selected_index
-        add_idx = routes.index("add")
-        if idx == add_idx:
+        selected_route = nav_routes[idx]
+        if selected_route == "add":
             e.control.selected_index = last_nav_index
             e.control.update()
             open_add_sheet()
             return
-        go_to(routes[idx])
+        go_to(selected_route)
 
     add_sheet = ft.BottomSheet(
         ft.Container(
@@ -125,14 +125,12 @@ def main(page: ft.Page):
     nav = ft.NavigationBar(
         destinations=[
             ft.NavigationBarDestination(icon=ft.Icons.HOME, label="Inicio"),
-            ft.NavigationBarDestination(icon=ft.Icons.FITNESS_CENTER, label="Mis Ejercicios"),
             ft.NavigationBarDestination(icon=ft.Icons.ADD_CIRCLE, label=""),
             ft.NavigationBarDestination(icon=ft.Icons.ANALYTICS, label="Mi Progreso"),
-            ft.NavigationBarDestination(icon=ft.Icons.SSID_CHART, label="Mis Macros"),
         ],
         selected_index=0,
         on_change=on_nav_change,
-        bgcolor="#E6E8E6",
+        bgcolor="#2B2B2B",
         indicator_color=primary_blue,
         shadow_color=secondary_blue,
     )
@@ -144,9 +142,7 @@ def main(page: ft.Page):
         elif current_route == "macros":
             content.controls.append(MacrosView())
         elif current_route == "micros":
-            content.controls.append(
-                make_placeholder("Micronutrientes", "Modulo en construccion. Proximamente.")
-            )
+            content.controls.append(MicrosView())
         elif current_route == "workouts":
             content.controls.append(WorkoutsView())
         elif current_route == "progress":

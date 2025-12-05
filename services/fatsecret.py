@@ -106,47 +106,54 @@ class FatSecretClient:
         if not query:
             return []
 
-        limit = max(1, min(limit, 20))
+        limit = max(1, min(limit, 60))
         region = region or self.default_region
         language = language or self.default_language
 
-        payload = _apply_market(
-            {
-                "method": "foods.search",
-                "search_expression": query,
-                "max_results": str(limit),
-                "page_number": "0",
-                "include_sub_categories": "true",
-                "format": "json",
-            },
-            region,
-            language,
-        )
-
-        response = self._request(payload)
-        foods_payload = response.get("foods", {}).get("food")
-        if not foods_payload:
-            return []
-
-        foods_list = foods_payload if isinstance(foods_payload, list) else [foods_payload]
         market = {k: v for k, v in (("region", region), ("language", language)) if v}
 
-        normalised: List[Dict] = []
-        for item in foods_list:
-            food_id = item.get("food_id")
-            if not food_id:
-                continue
-            try:
-                detail_payload = self._fetch_food(food_id, region=region, language=language)
-            except FatSecretError:
-                continue
-            data = self._normalise_food(detail_payload, market=market or None)
-            if data:
-                normalised.append(data)
-            if len(normalised) >= limit:
+        collected: List[Dict] = []
+        page_number = 0
+
+        while len(collected) < limit:
+            batch_limit = min(20, limit - len(collected))
+            payload = _apply_market(
+                {
+                    "method": "foods.search",
+                    "search_expression": query,
+                    "max_results": str(batch_limit),
+                    "page_number": str(page_number),
+                    "include_sub_categories": "true",
+                    "format": "json",
+                },
+                region,
+                language,
+            )
+
+            response = self._request(payload)
+            foods_payload = response.get("foods", {}).get("food")
+            if not foods_payload:
                 break
 
-        return normalised
+            foods_list = foods_payload if isinstance(foods_payload, list) else [foods_payload]
+            for item in foods_list:
+                food_id = item.get("food_id")
+                if not food_id:
+                    continue
+                try:
+                    detail_payload = self._fetch_food(food_id, region=region, language=language)
+                except FatSecretError:
+                    continue
+                data = self._normalise_food(detail_payload, market=market or None)
+                if data:
+                    collected.append(data)
+                if len(collected) >= limit:
+                    break
+            if len(foods_list) < batch_limit:
+                break
+            page_number += 1
+
+        return collected
 
     def _fetch_food(
         self,

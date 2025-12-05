@@ -1,3 +1,17 @@
 {
-  "exercises": []
+  "exercises": [
+    {
+      "id": "42c0d96c-92eb-478d-929b-2216eecc3f8f",
+      "name": "Press de banca",
+      "muscle_group": "Pecho",
+      "equipment": "Barra",
+      "sets": 3,
+      "reps": 10,
+      "weight": 50.0,
+      "rpe": null,
+      "notes": "me deje una repeticion para descansae",
+      "favorite": false,
+      "date": "2025-11-10"
+    }
+  ]
 }

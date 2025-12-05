@@ -1,0 +1,125 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 1 /Kids [3 0 R] >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 3066 >>
+stream
+BT
+/F1 12 Tf
+16 TL
+72 750 Td
+(MacrosGym - Sintaxis y Paquete de Entrega) Tj
+T*
+(Fecha de generacion: 2025-11-19) Tj
+T*
+() Tj
+T*
+(1. Descripcion general) Tj
+T*
+(MacrosGym es una aplicacion escrita con Python 3.11 y Flet orientada a organizar macros,) Tj
+T*
+(micros, rutinas y progreso de entrenamiento dentro de una sola experiencia mobile-friendly.) Tj
+T*
+(Cada feature vive en un modulo desacoplado y la navegacion principal se resuelve con un) Tj
+T*
+(NavigationBar y una hoja flotante para agregar registros.) Tj
+T*
+() Tj
+T*
+(2. Sintaxis y arquitectura por modulos) Tj
+T*
+(- main.py: Define la pagina Flet, aplica el tema oscuro, configura la barra de navegacion y) Tj
+T*
+(  conecta cada vista declarada en features/. Tambien carga variables desde .env.local y) Tj
+T*
+(  gestiona el BottomSheet para las acciones rapidas.) Tj
+T*
+(- features/home.py: Pantalla de bienvenida con resumen de calorias, accesos directos y tarjetas) Tj
+T*
+(  informativas que utilizan estilos responsive declarados en responsive.py.) Tj
+T*
+(- features/macros.py y features/micros.py: Formularios controlados que registran consumos de) Tj
+T*
+(  macro y micronutrientes, guardando la informacion en macroentreno.json mediante helpers) Tj
+T*
+(  especializados.) Tj
+T*
+(- features/workouts.py: Gestor de rutinas con favoritos, chips por dia de la semana y) Tj
+T*
+(  persistencia en data/workouts.json usando dataclasses y funciones CRUD dedicadas.) Tj
+T*
+(- features/progress.py: Tarjetas y graficos que resumen calorias, balance y rachas semanales) Tj
+T*
+(  aprovechando controles de Flet como LineChart y ProgressRing.) Tj
+T*
+() Tj
+T*
+(3. Persistencia y configuraciones) Tj
+T*
+(Los datos principales viven en macroentreno.json, mientras que los entrenamientos persisten en) Tj
+T*
+(data/workouts.json. La carpeta services/ centraliza reglas de negocio y el archivo .env.local) Tj
+T*
+(permite definir claves externas sin exponerlas en el repositorio.) Tj
+T*
+() Tj
+T*
+(4. Ejecucion en modo desarrollo) Tj
+T*
+(- Crear un entorno virtual, instalar dependencias con pip install -r requirements.txt y) Tj
+T*
+(  ejecutar python main.py para levantar la aplicacion en modo Flet desktop.) Tj
+T*
+(- Los assets declarados se cargan automaticamente gracias al parametro assets_dir especificado) Tj
+T*
+(  al invocar ft.app.) Tj
+T*
+() Tj
+T*
+(5. Construccion del ejecutable) Tj
+T*
+(- PyInstaller utiliza main.spec para reproducir dist/main.exe. Se puede regenerar ejecutando:) Tj
+T*
+(  pyinstaller --clean --noconfirm main.spec.) Tj
+T*
+(- El ejecutable empaqueta Flet, los modulos de features y la carpeta assets, permitiendo probar) Tj
+T*
+(  el proyecto sin instalar Python en el equipo evaluador.) Tj
+T*
+() Tj
+T*
+(6. Recomendaciones de prueba) Tj
+T*
+(- Iniciar en Home, abrir la hoja + y cargar datos de macros, micros y ejercicios; cada) Tj
+T*
+(  insercion debe verse reflejada en los listados y en la vista Progreso.) Tj
+T*
+(- Para reiniciar el entorno de pruebas basta eliminar macroentreno.json y data/workouts.json;) Tj
+T*
+(  el sistema recrea automaticamente plantillas vacias al iniciarse.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000003359 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3429
+%%EOF

@@ -1,6 +1,7 @@
 import json
 import os
 import ssl
+import unicodedata
 import urllib.parse
 import urllib.request
 from functools import lru_cache
@@ -22,6 +23,16 @@ NUTRIENT_MAP = {
     "Energy": "kcal",
 }
 
+def _normalize_text(value: str) -> str:
+    """
+    Lowercase, remove accents/spaces so queries like 'papasfritas' match 'Papas fritas'.
+    """
+    if not value:
+        return ""
+    normalized = unicodedata.normalize("NFKD", str(value))
+    stripped = "".join(ch for ch in normalized if not unicodedata.combining(ch))
+    return "".join(stripped.lower().split())
+
 
 class FoodLookupError(Exception):
     """Raised when the external lookup fails."""
@@ -36,7 +47,7 @@ def _load_local_foods() -> List[Dict]:
     return data
 
 
-def search_foods(query: str, limit: int = 8) -> List[Dict]:
+def search_foods(query: str, limit: int = 8, *, allow_local_fallback: bool = True) -> List[Dict]:
     """
     Returns a list of food dictionaries ready to be scaled for macros.
     The function tries the USDA FoodData Central API when an API key is present,
@@ -54,13 +65,13 @@ def search_foods(query: str, limit: int = 8) -> List[Dict]:
             foods = []
 
     api_key = os.getenv("FOODDATA_API_KEY")
-    if not foods and api_key and query:
+    if not foods and api_key and query and allow_local_fallback:
         try:
             foods = _search_usda(query, api_key, limit)
         except FoodLookupError:
             foods = []
 
-    if not foods:
+    if not foods and allow_local_fallback:
         foods = _search_local(query, limit)
 
     return foods
@@ -108,18 +119,31 @@ def _search_local(query: str, limit: int, tags: Optional[Iterable[str]] = None) 
     if not items:
         return []
 
-    query_l = (query or "").lower()
+    query_l = (query or "").lower().strip()
+    query_compact = _normalize_text(query)
     tag_filter = {str(tag).lower() for tag in tags} if tags else None
 
     def score(item: Dict) -> float:
-        name = item.get("name", "").lower()
-        if not query_l:
+        name = item.get("name", "")
+        name_l = name.lower()
+        name_compact = _normalize_text(name)
+        if not query_l and not query_compact:
             return 1.0
-        if query_l in name:
-            return 0.9 + len(query_l) / max(len(name), 1)
-        name_words = name.split()
-        matches = sum(1 for w in name_words if w.startswith(query_l))
-        return matches / len(name_words) if name_words else 0.0
+        if query_compact and query_compact in name_compact:
+            return 1.1 + len(query_compact) / max(len(name_compact), 1)
+        if query_l and query_l in name_l:
+            return 0.9 + len(query_l) / max(len(name_l), 1)
+        name_words = name_l.split()
+        tokens = [tok for tok in query_l.split() if tok]
+        if tokens and name_words:
+            matches = sum(1 for tok in tokens for w in name_words if w.startswith(tok))
+            if matches:
+                return matches / (len(name_words) * len(tokens))
+        if name_words and query_l:
+            prefix_hits = sum(1 for w in name_words if w.startswith(query_l))
+            if prefix_hits:
+                return prefix_hits / len(name_words)
+        return 0.0
 
     def matches_tags(item_id: Optional[str]) -> bool:
         if not tag_filter:
