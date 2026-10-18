@@ -1,20 +1,25 @@
-# Entorno virtual
-.venv/
-__pycache__/
+# Dependencias
+node_modules/
 
-# Archivos de Python
-*.pyc
-*.pyo
-*.pyd
+# Variables de entorno (nunca subir secretos)
+.env
+.env.*
+!.env.example
 
-# Archivos de Flet/compilaciones
-build/
-dist/
-*.spec
+# Expo / builds
+mobile/.expo/
+mobile/dist/
+mobile/android/
+mobile/ios/
+*.apk
+*.aab
 
-# Configuración de VSCode
-.vscode/
+# Archivos que genera create-expo-app para asistentes de IA
+mobile/AGENTS.md
+mobile/.claude/
 
-# Archivos del sistema
+# Sistema / editores
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/

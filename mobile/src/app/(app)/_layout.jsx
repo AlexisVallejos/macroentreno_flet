@@ -1,0 +1,55 @@
+import { Stack } from 'expo-router';
+import { useAuth } from '../../context/AuthContext';
+import { colors } from '../../theme';
+
+/**
+ * Pantallas de la sesión iniciada. Cada grupo de rutas se protege por rol:
+ * aunque alguien intente navegar a una ruta ajena (deep link), se redirige al inicio.
+ * El backend vuelve a verificar los permisos en cada endpoint.
+ */
+export const unstable_settings = { anchor: '(tabs)' };
+
+export default function AppLayout() {
+  const { user } = useAuth();
+  const role = user?.role;
+  const isAthlete = role === 'athlete';
+  const isStaff = role === 'coach' || role === 'admin';
+
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.card },
+        headerTintColor: colors.text,
+        headerTitleStyle: { fontWeight: '700' },
+        headerBackButtonDisplayMode: 'minimal',
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="change-password" options={{ title: 'Contraseña', presentation: 'modal' }} />
+      <Stack.Screen name="foods" options={{ title: 'Alimentos' }} />
+      <Stack.Screen name="food-form" options={{ title: 'Alimento' }} />
+
+      {/* Atleta: carga su diario */}
+      <Stack.Protected guard={isAthlete}>
+        <Stack.Screen name="diary-entry" options={{ title: 'Registrar comida' }} />
+      </Stack.Protected>
+
+      {/* Atleta (sus sesiones) y coach/admin (rutinas para atletas) */}
+      <Stack.Protected guard={isAthlete || isStaff}>
+        <Stack.Screen name="workout-form" options={{ title: 'Sesión de entrenamiento' }} />
+      </Stack.Protected>
+
+      {/* Coach y admin */}
+      <Stack.Protected guard={isStaff}>
+        <Stack.Screen name="athlete/[id]" options={{ title: 'Atleta' }} />
+        <Stack.Screen name="exercise-form" options={{ title: 'Ejercicio' }} />
+      </Stack.Protected>
+
+      {/* Solo admin */}
+      <Stack.Protected guard={role === 'admin'}>
+        <Stack.Screen name="user-form" options={{ title: 'Usuario' }} />
+      </Stack.Protected>
+    </Stack>
+  );
+}

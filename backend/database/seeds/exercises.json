@@ -1,0 +1,107 @@
+[
+  {
+    "name": "Press de banca con barra",
+    "muscleGroup": "Pecho",
+    "imageUrl": "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Press inclinado con mancuernas",
+    "muscleGroup": "Pecho",
+    "imageUrl": "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Contractor de pecho (Pec Deck)",
+    "muscleGroup": "Pecho",
+    "imageUrl": "https://images.unsplash.com/photo-1589829037393-f9c75f6b4c1d?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Jalon al pecho",
+    "muscleGroup": "Espalda",
+    "imageUrl": "https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Remo con barra",
+    "muscleGroup": "Espalda",
+    "imageUrl": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Remo sentado en polea",
+    "muscleGroup": "Espalda",
+    "imageUrl": "https://images.unsplash.com/photo-1540760028073-4f8ce74300c4?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Sentadilla espalda",
+    "muscleGroup": "Piernas",
+    "imageUrl": "https://images.unsplash.com/photo-1526402466350-043f1b0a4c54?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Prensa inclinada",
+    "muscleGroup": "Piernas",
+    "imageUrl": "https://images.unsplash.com/photo-1571907485990-6e40b1620690?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Peso muerto rumano",
+    "muscleGroup": "Piernas",
+    "imageUrl": "https://images.unsplash.com/photo-1534367610401-9f85a215bd1d?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Press militar con mancuernas",
+    "muscleGroup": "Hombros",
+    "imageUrl": "https://images.unsplash.com/photo-1530825894095-9c184b068fcb?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Elevaciones laterales",
+    "muscleGroup": "Hombros",
+    "imageUrl": "https://images.unsplash.com/photo-1617364852220-0f9d47095fac?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Face pull en polea",
+    "muscleGroup": "Hombros",
+    "imageUrl": "https://images.unsplash.com/photo-1528642474498-1af0c17fd8c4?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Curl de biceps con barra",
+    "muscleGroup": "Biceps",
+    "imageUrl": "https://images.unsplash.com/photo-1593079831251-35e6c88da23c?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Curl inclinado con mancuernas",
+    "muscleGroup": "Biceps",
+    "imageUrl": "https://images.unsplash.com/photo-1574680034394-7d2c24e1d9c0?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Curl martillo",
+    "muscleGroup": "Biceps",
+    "imageUrl": "https://images.unsplash.com/photo-1517963628607-235ccdd5476c?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Extension de triceps en polea",
+    "muscleGroup": "Triceps",
+    "imageUrl": "https://images.unsplash.com/photo-1517502166878-35c93a0072bb?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Press frances (skull crusher)",
+    "muscleGroup": "Triceps",
+    "imageUrl": "https://images.unsplash.com/photo-1559741803-1f3e79a1b2c8?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Fondos entre bancos",
+    "muscleGroup": "Triceps",
+    "imageUrl": "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Plancha",
+    "muscleGroup": "Core",
+    "imageUrl": "https://images.unsplash.com/photo-1554344057-99829f17a602?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Elevaciones de piernas",
+    "muscleGroup": "Core",
+    "imageUrl": "https://images.unsplash.com/photo-1517832207067-4db24a2ae47c?auto=format&fit=crop&w=900&q=60"
+  },
+  {
+    "name": "Crunch en polea",
+    "muscleGroup": "Core",
+    "imageUrl": "https://images.unsplash.com/photo-1584865288649-299164c46eb3?auto=format&fit=crop&w=900&q=60"
+  }
+]

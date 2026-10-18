@@ -1,0 +1,45 @@
+import { useRouter } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
+import { adminApi } from '../../api/endpoints';
+import { Card, ErrorState, ListItem, Loading, RoleBadge, Screen, StatTile } from '../../components';
+import { useResource } from '../../hooks/useResource';
+import { colors, spacing } from '../../theme';
+
+/** Panel del administrador con números generales del sistema. */
+export default function AdminHome() {
+  const router = useRouter();
+  const { data, error, loading, refreshing, reload } = useResource(() => adminApi.stats(), []);
+
+  if (error && !data) return <ErrorState error={error} onRetry={reload} />;
+  if (loading || !data) return <Loading />;
+
+  return (
+    <Screen onRefresh={reload} refreshing={refreshing}>
+      <View style={styles.tiles}>
+        <StatTile icon="people-outline" label="usuarios" value={data.totalUsers} />
+        <StatTile icon="barbell-outline" label="atletas" value={data.usersByRole.athlete} color={colors.success} />
+        <StatTile icon="stopwatch-outline" label="entrenadores" value={data.usersByRole.coach} color={colors.warning} />
+        <StatTile icon="alert-circle-outline" label="atletas sin coach" value={data.athletesWithoutCoach} color={colors.danger} />
+        <StatTile icon="restaurant-outline" label="comidas (7 días)" value={data.last7Days.diaryEntries} color={colors.secondary} />
+        <StatTile icon="fitness-outline" label="sesiones (7 días)" value={data.last7Days.workouts} color={colors.protein} />
+        <StatTile icon="nutrition-outline" label="alimentos globales" value={data.foods.global} />
+        <StatTile icon="person-outline" label="alimentos personales" value={data.foods.custom} />
+      </View>
+      <Card title="Últimos usuarios registrados">
+        {data.recentUsers.map((u) => (
+          <ListItem
+            key={u.id}
+            title={u.name}
+            subtitle={u.email ?? 'sin email (red social)'}
+            right={<RoleBadge role={u.role} />}
+            onPress={() => router.push({ pathname: '/user-form', params: { id: String(u.id) } })}
+          />
+        ))}
+      </Card>
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+});
