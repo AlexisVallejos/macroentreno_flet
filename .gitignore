@@ -9,6 +9,8 @@ node_modules/
 # Expo / builds
 mobile/.expo/
 mobile/dist/
+# Runtime de MediaPipe: lo copia scripts/copy-mediapipe.js desde node_modules
+mobile/public/mediapipe/
 mobile/android/
 mobile/ios/
 *.apk

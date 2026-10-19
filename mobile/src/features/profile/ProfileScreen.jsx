@@ -4,7 +4,7 @@ import { Image, StyleSheet, Text, View } from 'react-native';
 import { API_URL } from '../../api/client';
 import { Button, Card, FormError, Grid, ListItem, RoleBadge, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, font, spacing, tracking } from '../../theme';
 import { confirm } from '../../utils/confirm';
 import { GoalsForm } from '../users/GoalsForm';
 
@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontSize: font.xxl, fontWeight: '800' },
-  name: { color: colors.text, fontSize: font.xl, fontWeight: '800' },
+  avatarText: { color: colors.onPrimary, fontSize: font.xxl, fontWeight: '700' },
+  name: { color: colors.text, fontSize: font.xl + 2, fontWeight: '700', letterSpacing: tracking.title },
   muted: { color: colors.muted, fontSize: font.sm },
   footer: { color: colors.muted, fontSize: font.xs, textAlign: 'center' },
 });

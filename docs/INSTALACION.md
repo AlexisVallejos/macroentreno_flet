@@ -31,7 +31,7 @@
 git clone https://github.com/AlexisVallejos/macroentreno_flet.git
 cd macroentreno_flet
 ```
-
+agregacio de formato de estilos de apple para la web ademas de verificar el responsive de los cuales se debe investigar como funciona el codigo y como funciona la api de macros nutrientes en si se debera corroborar eso 
 ## 3. Backend (API + MySQL)
 
 ### 3.1 Instalar dependencias

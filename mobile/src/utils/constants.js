@@ -1,7 +1,7 @@
 export const ROLES = {
   admin: { label: 'Administrador', color: '#FF453A', icon: 'shield-checkmark' },
   coach: { label: 'Entrenador', color: '#FF9F0A', icon: 'stopwatch' },
-  athlete: { label: 'Atleta', color: '#34C759', icon: 'barbell' },
+  athlete: { label: 'Atleta', color: '#30D158', icon: 'barbell' },
 };
 
 export const MEALS = [

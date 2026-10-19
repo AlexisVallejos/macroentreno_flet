@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { diaryApi, usersApi } from '../../api/endpoints';
 import { Card, Chips, DateSwitcher, ErrorState, Loading, RoleBadge, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, font, spacing, tracking } from '../../theme';
 import { today } from '../../utils/dates';
 import { DiaryDay } from '../diary/DiaryDay';
 import { ProgressView } from '../progress/ProgressView';
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontSize: font.xxl, fontWeight: '800' },
-  name: { color: colors.text, fontSize: font.xl, fontWeight: '800' },
+  avatarText: { color: colors.onPrimary, fontSize: font.xxl, fontWeight: '700' },
+  name: { color: colors.text, fontSize: font.xl + 2, fontWeight: '700', letterSpacing: tracking.title },
   muted: { color: colors.muted, fontSize: font.sm },
 });

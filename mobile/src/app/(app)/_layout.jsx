@@ -18,9 +18,11 @@ export default function AppLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.card },
-        headerTintColor: colors.text,
-        headerTitleStyle: { fontWeight: '700' },
+        // Barra de navegación de iOS: fondo del sistema, sin sombra, botón atrás en verde
+        headerStyle: { backgroundColor: colors.background },
+        headerShadowVisible: false,
+        headerTintColor: colors.primary,
+        headerTitleStyle: { fontWeight: '600', color: colors.text },
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: colors.background },
       }}
@@ -30,9 +32,11 @@ export default function AppLayout() {
       <Stack.Screen name="foods" options={{ title: 'Alimentos' }} />
       <Stack.Screen name="food-form" options={{ title: 'Alimento' }} />
 
-      {/* Atleta: carga su diario */}
+      {/* Atleta: carga su diario y entrena con la cámara */}
       <Stack.Protected guard={isAthlete}>
         <Stack.Screen name="diary-entry" options={{ title: 'Registrar comida' }} />
+        <Stack.Screen name="coach/index" options={{ title: 'Entrenar con cámara' }} />
+        <Stack.Screen name="coach/[rule]" options={{ title: 'Entrenar' }} />
       </Stack.Protected>
 
       {/* Atleta (sus sesiones) y coach/admin (rutinas para atletas) */}

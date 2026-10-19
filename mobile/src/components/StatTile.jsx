@@ -1,13 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, spacing } from '../theme';
+import { colors, continuous, font, numeric, radius, spacing, tracking } from '../theme';
 
+/** Dato destacado al estilo de las tarjetas de Salud: categoría en color arriba y el valor grande abajo. */
 export function StatTile({ icon, label, value, color = colors.primary }) {
   return (
-    <View style={styles.tile}>
-      <Ionicons name={icon} size={20} color={color} />
+    <View style={[styles.tile, continuous]}>
+      <View style={styles.head}>
+        <Ionicons name={icon} size={15} color={color} />
+        <Text style={[styles.label, { color }]} numberOfLines={2}>
+          {label}
+        </Text>
+      </View>
       <Text style={styles.value}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
@@ -18,11 +23,10 @@ const styles = StyleSheet.create({
     flexBasis: 140,
     backgroundColor: colors.card,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
-  value: { color: colors.text, fontSize: font.xxl, fontWeight: '800' },
-  label: { color: colors.muted, fontSize: font.sm },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  label: { fontSize: font.sm, fontWeight: '600', flexShrink: 1 },
+  value: { ...numeric, color: colors.text, fontSize: font.xxl + 2, fontWeight: '700', letterSpacing: tracking.title },
 });

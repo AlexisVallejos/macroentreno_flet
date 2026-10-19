@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { fetchProviders } from '../../api/socialLogin';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, radius, spacing } from '../../theme';
+import { colors, continuous, font, radius, spacing } from '../../theme';
 
 const PROVIDERS = [
   { id: 'google', label: 'Google', icon: 'logo-google', color: '#EA4335' },
@@ -56,7 +56,7 @@ export function SocialButtons({ onError, disabled }) {
               disabled={disabled || Boolean(busy)}
               accessibilityRole="button"
               accessibilityLabel={`Iniciar sesión con ${p.label}`}
-              style={({ pressed }) => [styles.btn, (off || pressed) && { opacity: 0.5 }]}
+              style={({ pressed }) => [styles.btn, continuous, off && { opacity: 0.45 }, pressed && styles.pressed]}
             >
               {busy === p.id ? <ActivityIndicator color={p.color} /> : <Ionicons name={p.icon} size={20} color={p.color} />}
               <Text style={styles.label}>{p.label}</Text>
@@ -77,15 +77,14 @@ const styles = StyleSheet.create({
   btn: {
     flexGrow: 1,
     flexBasis: 100,
-    minHeight: 48,
+    minHeight: 50,
     flexDirection: 'row',
     gap: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: radius.pill,
     backgroundColor: colors.card,
   },
+  pressed: { opacity: 0.7, transform: [{ scale: 0.97 }] },
   label: { color: colors.text, fontWeight: '600', fontSize: font.sm },
 });

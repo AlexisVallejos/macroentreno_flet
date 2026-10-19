@@ -1,9 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, spacing } from '../theme';
+import { colors, continuous, font, radius, spacing, tracking } from '../theme';
 
+/** Tarjeta agrupada al estilo iOS: superficie elevada sin borde y esquinas continuas. */
 export function Card({ title, right, children, style }) {
   return (
-    <View style={[styles.card, style]}>
+    <View style={[styles.card, continuous, style]}>
       {title || right ? (
         <View style={styles.header}>
           {title ? <Text style={styles.title}>{title}</Text> : <View />}
@@ -19,11 +20,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
+    padding: spacing.lg + 2,
     gap: spacing.md,
   },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm },
-  title: { color: colors.text, fontSize: font.lg, fontWeight: '700', flexShrink: 1 },
+  title: { color: colors.text, fontSize: font.xl - 2, fontWeight: '700', letterSpacing: tracking.headline, flexShrink: 1 },
 });

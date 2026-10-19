@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, font, radius, spacing } from '../../theme';
+import { colors, continuous, font, numeric, radius, spacing, tracking } from '../../theme';
 import { formatDayLabel } from '../../utils/dates';
 import { fmt } from '../../utils/format';
 
@@ -10,7 +10,7 @@ const volumeOf = (w) => w.exercises.reduce((acc, e) => acc + e.sets.reduce((a, s
 export function WorkoutCard({ workout, onPress }) {
   const assignedByCoach = workout.createdBy && workout.createdBy !== workout.userId;
   return (
-    <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [styles.card, pressed && { opacity: 0.8 }]}>
+    <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [styles.card, continuous, pressed && styles.pressed]}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.date}>{formatDayLabel(workout.date)}</Text>
@@ -44,21 +44,20 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.lg,
+    padding: spacing.lg + 2,
     gap: spacing.sm,
   },
+  pressed: { opacity: 0.85, transform: [{ scale: 0.985 }] },
   header: { flexDirection: 'row', gap: spacing.md },
-  date: { color: colors.primary, fontSize: font.xs, fontWeight: '700', textTransform: 'uppercase' },
-  title: { color: colors.text, fontSize: font.lg, fontWeight: '700' },
+  date: { color: colors.primary, fontSize: font.xs, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.4 },
+  title: { color: colors.text, fontSize: font.lg + 1, fontWeight: '700', letterSpacing: tracking.headline },
   volume: { alignItems: 'flex-end' },
-  volumeValue: { color: colors.text, fontSize: font.lg, fontWeight: '800' },
+  volumeValue: { ...numeric, color: colors.text, fontSize: font.xl, fontWeight: '700', letterSpacing: tracking.title },
   volumeLabel: { color: colors.muted, fontSize: font.xs },
   coach: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   coachText: { color: colors.warning, fontSize: font.xs, fontWeight: '600' },
   exercise: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
   exName: { color: colors.text, fontSize: font.sm, flex: 1 },
-  sets: { color: colors.muted, fontSize: font.sm },
+  sets: { ...numeric, color: colors.muted, fontSize: font.sm },
   notes: { color: colors.muted, fontSize: font.sm, fontStyle: 'italic' },
 });

@@ -82,6 +82,6 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   footer: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xs },
   muted: { color: colors.muted, fontSize: font.md },
-  link: { color: colors.primary, fontSize: font.md, fontWeight: '700' },
+  link: { color: colors.primary, fontSize: font.md, fontWeight: '600' },
   demo: { color: colors.muted, fontSize: font.xs, textAlign: 'center' },
 });

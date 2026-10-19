@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { diaryApi, progressApi } from '../../api/endpoints';
-import { Button, Card, ErrorState, Grid, KcalBarChart, Loading, MacroSummary, Screen } from '../../components';
+import { Card, ErrorState, Grid, KcalBarChart, Loading, MacroSummary, Screen } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, continuous, font, radius, spacing, tracking } from '../../theme';
 import { today } from '../../utils/dates';
 
 export default function AthleteHome() {
@@ -27,17 +28,15 @@ export default function AthleteHome() {
       </View>
 
       <View style={styles.actions}>
-        <Button
+        <QuickAction
+          primary
+          icon="add"
           title="Registrar comida"
-          icon="add-circle-outline"
-          style={{ flex: 1 }}
           onPress={() => router.push({ pathname: '/diary-entry', params: { date } })}
         />
-        <Button
+        <QuickAction
+          icon="barbell"
           title="Nueva sesión"
-          icon="barbell-outline"
-          variant="secondary"
-          style={{ flex: 1 }}
           onPress={() => router.push({ pathname: '/workout-form', params: { date } })}
         />
       </View>
@@ -64,8 +63,38 @@ export default function AthleteHome() {
   );
 }
 
+/** Acceso rápido en forma de tarjeta: ícono en un círculo y el texto debajo (puede ocupar dos líneas). */
+function QuickAction({ icon, title, onPress, primary }) {
+  const fg = primary ? colors.onPrimary : colors.text;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.action, continuous, primary && styles.actionPrimary, pressed && styles.actionPressed]}
+    >
+      <View style={[styles.actionIcon, { backgroundColor: primary ? 'rgba(0,0,0,0.14)' : colors.primarySoft }]}>
+        <Ionicons name={icon} size={20} color={primary ? colors.onPrimary : colors.primary} />
+      </View>
+      <Text style={[styles.actionText, { color: fg }]}>{title}</Text>
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  hello: { color: colors.text, fontSize: font.xxl, fontWeight: '800' },
+  hello: { color: colors.text, fontSize: font.xxl, fontWeight: '700', letterSpacing: tracking.title },
   sub: { color: colors.muted, fontSize: font.sm },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  actions: { flexDirection: 'row', gap: spacing.md },
+  action: {
+    flex: 1,
+    minHeight: 96,
+    padding: spacing.lg,
+    gap: spacing.sm,
+    justifyContent: 'space-between',
+    borderRadius: radius.lg,
+    backgroundColor: colors.card,
+  },
+  actionPrimary: { backgroundColor: colors.primary },
+  actionPressed: { opacity: 0.85, transform: [{ scale: 0.97 }] },
+  actionIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  actionText: { fontSize: font.md + 1, fontWeight: '600', letterSpacing: tracking.headline },
 });

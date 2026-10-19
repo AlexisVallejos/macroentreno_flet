@@ -35,9 +35,9 @@ export function DiaryDay({ day, onAdd, onEdit, onDelete, readOnly = false }) {
                     onPress={() => onAdd(meal.key)}
                     hitSlop={8}
                     accessibilityLabel={`Agregar a ${meal.label}`}
-                    style={styles.add}
+                    style={({ pressed }) => [styles.add, pressed && { transform: [{ scale: 0.9 }] }]}
                   >
-                    <Ionicons name="add" size={20} color="#fff" />
+                    <Ionicons name="add" size={20} color={colors.onPrimary} />
                   </Pressable>
                 ) : null}
               </View>
