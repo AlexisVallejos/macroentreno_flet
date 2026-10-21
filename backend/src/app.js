@@ -7,6 +7,7 @@ import { query } from './config/db.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 import adminRoutes from './modules/admin/admin.routes.js';
 import authRoutes from './modules/auth/auth.routes.js';
+import billingRoutes from './modules/billing/billing.routes.js';
 import diaryRoutes from './modules/diary/diary.routes.js';
 import exercisesRoutes from './modules/exercises/exercises.routes.js';
 import foodsRoutes from './modules/foods/foods.routes.js';
@@ -35,6 +36,7 @@ export function createApp() {
   app.use('/api/workouts', workoutsRoutes);
   app.use('/api/progress', progressRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/billing', billingRoutes);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

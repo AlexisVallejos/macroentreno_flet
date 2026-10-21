@@ -29,6 +29,9 @@ export const foodsApi = {
   create: (body) => data(api('/foods', { method: 'POST', body })),
   update: (id, body) => data(api(`/foods/${id}`, { method: 'PUT', body })),
   remove: (id) => api(`/foods/${id}`, { method: 'DELETE' }),
+  // MacroEntreno Pro: base de FatSecret con micronutrientes
+  searchFatSecret: (search, query) => data(api('/foods/fatsecret/search', { query: { search, ...query } })),
+  importFatSecret: (externalId) => data(api('/foods/fatsecret/import', { method: 'POST', body: { externalId } })),
 };
 
 export const diaryApi = {
@@ -61,4 +64,13 @@ export const progressApi = {
 
 export const adminApi = {
   stats: () => data(api('/admin/stats')),
+};
+
+/** MacroEntreno Pro: suscripción mensual con Mercado Pago. */
+export const billingApi = {
+  plan: () => data(api('/billing/plan')),
+  subscribe: () => data(api('/billing/subscribe', { method: 'POST' })),
+  sync: () => data(api('/billing/sync', { method: 'POST' })),
+  cancel: () => data(api('/billing/cancel', { method: 'POST' })),
+  grant: (userId, days) => data(api('/billing/grant', { method: 'POST', body: { userId, days } })),
 };

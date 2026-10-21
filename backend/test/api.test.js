@@ -25,6 +25,14 @@ before(async () => {
     DB_USER: db.username,
     DB_PASSWORD: '',
     DB_NAME: 'macroentreno_test',
+    // Servicios externos con claves de prueba: las llamadas se simulan (setFatSecretFetch / setMercadoPagoFetch).
+    FATSECRET_CONSUMER_KEY: 'test-key',
+    FATSECRET_CONSUMER_SECRET: 'test-secret',
+    FATSECRET_REGION: '',
+    MERCADOPAGO_ACCESS_TOKEN: 'TEST-token',
+    MERCADOPAGO_WEBHOOK_SECRET: 'secreto-webhook',
+    PUBLIC_APP_URL: 'https://app.macroentreno.test',
+    PRO_PRICE: '4999',
   });
   const { initDatabase } = await import('../scripts/db-init.js');
   const { env } = await import('../src/config/env.js');
@@ -522,3 +530,212 @@ describe('índices', () => {
     assert.equal(await explain('SELECT id FROM users WHERE email = ?', ['atleta@macroentreno.com']), 'uq_users_email');
   });
 });
+
+const localToday = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+const jsonResponse = (body, status = 200) => ({ ok: status < 400, status, json: async () => body });
+
+describe('MacroEntreno Pro: micronutrientes', () => {
+  test('el atleta con Pro recibe los micronutrientes del día; el plan gratis no', async () => {
+    const pro = await request(app).get(`/api/diary?date=${localToday()}`).set(auth('athlete'));
+    assert.equal(pro.status, 200);
+    const fiber = pro.body.data.micros.find((m) => m.key === 'fiber');
+    // avena 60 g (10,6 g/100 g) + pollo 200 g (0) + arroz 150 g (1,8 g/100 g) = 6,36 + 0 + 2,7
+    assert.equal(fiber.value, 9.1);
+    assert.equal(fiber.percent, 33); // 9,1 g de 28 g
+    assert.equal(fiber.known, 3);
+    const vitD = pro.body.data.micros.find((m) => m.key === 'vitaminD');
+    assert.equal(vitD.value, null, 'lo desconocido no suma cero');
+    assert.ok(pro.body.data.entries[0].micros);
+
+    const free = await request(app).get(`/api/diary?date=${localToday()}`).set(auth('other'));
+    assert.equal(free.body.data.micros, null);
+    assert.equal((await request(app).get('/api/auth/me').set(auth('other'))).body.data.plan.pro, false);
+  });
+
+  test('el coach ve los micronutrientes de su atleta (Pro incluido por el rol)', async () => {
+    const res = await request(app).get(`/api/diary?date=${localToday()}&userId=3`).set(auth('coach'));
+    assert.ok(Array.isArray(res.body.data.micros));
+    const me = await request(app).get('/api/auth/me').set(auth('coach'));
+    assert.deepEqual(me.body.data.plan, { pro: true, source: 'role', proUntil: null });
+  });
+
+  test('progreso: promedio diario de micronutrientes solo con Pro', async () => {
+    const pro = await request(app).get(`/api/progress?days=7&to=${localToday()}`).set(auth('athlete'));
+    assert.equal(pro.body.data.micros.days, 7);
+    assert.ok(pro.body.data.micros.nutrients.find((m) => m.key === 'sodium').value > 0);
+    const free = await request(app).get('/api/progress?days=7').set(auth('other'));
+    assert.equal(free.body.data.micros, null);
+  });
+});
+
+describe('MacroEntreno Pro: FatSecret', () => {
+  let fatsecret;
+  const calls = [];
+  // Porción de 50 g: la API tiene que pasar todo a 100 g.
+  const serving = { serving_id: '1', serving_description: '1 unidad', metric_serving_amount: '50.000', metric_serving_unit: 'g', calories: '44.5', protein: '0.55', carbohydrate: '11.4', fat: '0.15', fiber: '1.3', sugar: '6.1', sodium: '0.5', potassium: '179', vitamin_c: '4.35', calcium: '2.5', iron: '0.13' };
+  const banana = { food_id: '5388', food_name: 'Banana', food_type: 'Generic', servings: { serving } };
+
+  before(async () => {
+    fatsecret = await import('../src/modules/foods/fatsecret.js');
+    fatsecret.setFatSecretFetch(async (url) => {
+      const params = new URL(url).searchParams;
+      calls.push(params);
+      if (params.get('method') === 'foods.search.v5') return jsonResponse({ foods_search: { total_results: '1', page_number: '0', results: { food: banana } } });
+      if (params.get('method') === 'food.get.v5') return jsonResponse({ food: banana });
+      return jsonResponse({ error: { code: 2, message: 'método desconocido' } });
+    });
+  });
+  after(() => fatsecret.setFatSecretFetch());
+
+  test('sin Pro → 402 PRO_REQUIRED', async () => {
+    const res = await request(app).get('/api/foods/fatsecret/search?search=banana').set(auth('other'));
+    assert.equal(res.status, 402);
+    assert.equal(res.body.error.code, 'PRO_REQUIRED');
+  });
+
+  test('busca firmando con OAuth 1.0 y normaliza a 100 g', async () => {
+    const res = await request(app).get('/api/foods/fatsecret/search?search=banana').set(auth('athlete'));
+    assert.equal(res.status, 200, res.text);
+    const [food] = res.body.data.foods;
+    assert.equal(food.kcal, 89);
+    assert.equal(food.micros.potassium, 358);
+    assert.equal(food.micros.vitamin_d, null);
+    assert.equal(food.microsCount, 7);
+    const sent = calls.at(-1);
+    assert.equal(sent.get('oauth_consumer_key'), 'test-key');
+    assert.equal(sent.get('oauth_signature_method'), 'HMAC-SHA1');
+    assert.ok(sent.get('oauth_signature'));
+  });
+
+  test('importar crea el alimento (sin duplicar) y el diario escala sus micronutrientes', async () => {
+    const first = await request(app).post('/api/foods/fatsecret/import').set(auth('athlete')).send({ externalId: '5388' });
+    assert.equal(first.status, 201, first.text);
+    assert.equal(first.body.data.micros.fiber, 2.6);
+    assert.deepEqual(first.body.data.source, { name: 'fatsecret', id: '5388' });
+    const again = await request(app).post('/api/foods/fatsecret/import').set(auth('athlete')).send({ externalId: '5388' });
+    assert.equal(again.body.data.id, first.body.data.id);
+
+    const entry = await request(app)
+      .post('/api/diary')
+      .set(auth('athlete'))
+      .send({ date: '2026-03-01', meal: 'merienda', foodId: first.body.data.id, grams: 150 });
+    assert.equal(entry.status, 201, entry.text);
+    assert.equal(entry.body.data.micros.potassium, 537);
+    assert.equal(entry.body.data.micros.vitaminD, null);
+
+    // Un atleta sin Pro puede registrar ese alimento, pero no recibe sus micronutrientes.
+    const free = await request(app).get(`/api/foods/${first.body.data.id}`).set(auth('other'));
+    assert.equal(free.body.data.micros, undefined);
+  });
+});
+
+describe('MacroEntreno Pro: suscripción con Mercado Pago', () => {
+  let mp;
+  let preapproval;
+  const sent = [];
+  const sign = (dataId, requestId, ts = String(Math.floor(Date.now() / 1000))) => {
+    const v1 = crypto.createHmac('sha256', 'secreto-webhook').update(`id:${dataId};request-id:${requestId};ts:${ts};`).digest('hex');
+    return `ts=${ts},v1=${v1}`;
+  };
+
+  before(async () => {
+    mp = await import('../src/modules/billing/mercadopago.js');
+    mp.setMercadoPagoFetch(async (url, options) => {
+      const body = options.body ? JSON.parse(options.body) : null;
+      sent.push({ url, method: options.method, body, headers: options.headers });
+      if (options.method === 'POST' && url.endsWith('/preapproval')) {
+        preapproval = { id: 'pre-123', status: 'pending', external_reference: body.external_reference, init_point: 'https://www.mercadopago.com.ar/subscriptions/checkout?preapproval_id=pre-123' };
+        return jsonResponse(preapproval, 201);
+      }
+      if (url.endsWith('/preapproval/pre-123') && options.method === 'GET') return jsonResponse(preapproval);
+      if (url.endsWith('/preapproval/pre-123') && options.method === 'PUT') {
+        preapproval = { ...preapproval, status: body.status };
+        return jsonResponse(preapproval);
+      }
+      return jsonResponse({ message: 'not found' }, 404);
+    });
+  });
+  after(() => mp.setMercadoPagoFetch());
+
+  test('el plan informa precio y que se puede pagar', async () => {
+    const res = await request(app).get('/api/billing/plan').set(auth('other'));
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.data.price, { amount: 4999, currency: 'ARS', period: 'month' });
+    assert.equal(res.body.data.checkoutAvailable, true);
+  });
+
+  test('suscribirse crea el preapproval pendiente y devuelve el link de pago', async () => {
+    const res = await request(app).post('/api/billing/subscribe').set(auth('other'));
+    assert.equal(res.status, 201, res.text);
+    assert.match(res.body.data.checkoutUrl, /preapproval_id=pre-123/);
+    const call = sent.at(-1);
+    assert.equal(call.headers.Authorization, 'Bearer TEST-token');
+    assert.ok(call.headers['X-Idempotency-Key']);
+    assert.deepEqual(call.body.auto_recurring, { frequency: 1, frequency_type: 'months', transaction_amount: 4999, currency_id: 'ARS' });
+    assert.equal(call.body.payer_email, 'martina@macroentreno.com');
+    assert.equal(call.body.back_url, 'https://app.macroentreno.test/pro');
+    assert.equal(res.body.data.subscription.status, 'pending');
+  });
+
+  test('coach no se suscribe: su rol ya incluye Pro', async () => {
+    assert.equal((await request(app).post('/api/billing/subscribe').set(auth('coach'))).status, 400);
+  });
+
+  test('webhook con firma inválida → 401; con firma válida activa Pro', async () => {
+    const bad = await request(app)
+      .post('/api/billing/webhook?type=subscription_preapproval&data.id=pre-123')
+      .set('x-signature', 'ts=1,v1=deadbeef')
+      .set('x-request-id', 'req-1')
+      .send({ type: 'subscription_preapproval', data: { id: 'pre-123' } });
+    assert.equal(bad.status, 401);
+
+    const next = new Date(Date.now() + 30 * 86_400_000).toISOString();
+    preapproval = { ...preapproval, status: 'authorized', next_payment_date: next };
+    const ok = await request(app)
+      .post('/api/billing/webhook?type=subscription_preapproval&data.id=pre-123')
+      .set('x-signature', sign('pre-123', 'req-2'))
+      .set('x-request-id', 'req-2')
+      .send({ type: 'subscription_preapproval', data: { id: 'pre-123' } });
+    assert.equal(ok.status, 200, ok.text);
+
+    const me = await request(app).get('/api/auth/me').set(auth('other'));
+    assert.equal(me.body.data.plan.pro, true);
+    assert.equal(me.body.data.plan.source, 'subscription');
+    const plan = await request(app).get('/api/billing/plan').set(auth('other'));
+    assert.equal(plan.body.data.subscription.status, 'authorized');
+    // Con Pro activo ya ve los micronutrientes.
+    const diary = await request(app).get(`/api/diary?date=${localToday()}`).set(auth('other'));
+    assert.ok(Array.isArray(diary.body.data.micros));
+  });
+
+  test('cancelar da de baja en Mercado Pago pero respeta el período pagado', async () => {
+    const res = await request(app).post('/api/billing/cancel').set(auth('other'));
+    assert.equal(res.status, 200, res.text);
+    assert.equal(sent.at(-1).method, 'PUT');
+    assert.deepEqual(sent.at(-1).body, { status: 'cancelled' });
+    assert.equal(res.body.data.subscription.status, 'cancelled');
+    assert.equal(res.body.data.plan.pro, true);
+  });
+
+  test('admin regala o quita Pro; los demás no', async () => {
+    assert.equal((await request(app).post('/api/billing/grant').set(auth('athlete')).send({ userId: 4, days: 30 })).status, 403);
+    const off = await request(app).post('/api/billing/grant').set(auth('admin')).send({ userId: 4, days: 0 });
+    assert.equal(off.status, 200);
+    assert.equal(off.body.data.plan.pro, false);
+    const on = await request(app).post('/api/billing/grant').set(auth('admin')).send({ userId: 4, days: 15 });
+    assert.equal(on.body.data.plan.pro, true);
+  });
+
+  test('webhook de otra cosa se ignora', async () => {
+    const res = await request(app)
+      .post('/api/billing/webhook?type=payment&data.id=999')
+      .set('x-signature', sign('999', 'req-3'))
+      .set('x-request-id', 'req-3')
+      .send({ type: 'payment', data: { id: '999' } });
+    assert.equal(res.status, 200);
+  });
+});
+

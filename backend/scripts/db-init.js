@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import bcrypt from 'bcryptjs';
 import mysql from 'mysql2/promise';
 import { env } from '../src/config/env.js';
+import { MICROS, MICRO_COLUMNS } from '../src/modules/nutrition/micros.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const readJson = async (file) => JSON.parse(await fs.readFile(path.join(root, 'database/seeds', file), 'utf8'));
@@ -32,12 +33,13 @@ export async function initDatabase({ seedOnly = false, config = env.db } = {}) {
 async function seed(conn) {
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
   await conn.query('SET FOREIGN_KEY_CHECKS = 0');
-  for (const table of ['workout_sets', 'workout_exercises', 'workouts', 'exercises', 'diary_entries', 'foods', 'refresh_tokens', 'social_accounts', 'users']) {
+  for (const table of ['workout_sets', 'workout_exercises', 'workouts', 'exercises', 'diary_entries', 'foods', 'subscriptions', 'refresh_tokens', 'social_accounts', 'users']) {
     await conn.query(`TRUNCATE TABLE ${table}`);
   }
   await conn.query('SET FOREIGN_KEY_CHECKS = 1');
 
   // Usuarios de demostración, uno por rol (+ un segundo atleta sin entrenador).
+  // Alexis tiene MacroEntreno Pro por 30 días (para ver micronutrientes); Martina está en el plan gratis.
   await conn.query(
     `INSERT INTO users (id, name, email, password_hash, role, coach_id, kcal_goal, protein_goal, carbs_goal, fat_goal) VALUES
      (1, 'Admin MacroEntreno', 'admin@macroentreno.com', ?, 'admin', NULL, 2200, 150, 250, 70),
@@ -47,10 +49,14 @@ async function seed(conn) {
     [hash, hash, hash, hash],
   );
 
+  await conn.query('UPDATE users SET pro_until = NOW() + INTERVAL 30 DAY WHERE id = 3');
+
+  // Los micronutrientes del seed (por porción) vienen de FatSecret: ver "microsFrom" en foods.json.
   const foods = await readJson('foods.json');
+  const microValues = (f) => MICROS.map((m) => f.micros?.[m.key] ?? null);
   await conn.query(
-    'INSERT INTO foods (owner_id, name, category, brand, portion_grams, portion_description, kcal, protein, carbs, fat) VALUES ?',
-    [foods.map((f) => [null, f.name, f.category, f.brand, f.portionGrams, f.portionDescription, f.kcal, f.protein, f.carbs, f.fat])],
+    `INSERT INTO foods (owner_id, name, category, brand, portion_grams, portion_description, kcal, protein, carbs, fat, ${MICRO_COLUMNS.join(', ')}) VALUES ?`,
+    [foods.map((f) => [null, f.name, f.category, f.brand, f.portionGrams, f.portionDescription, f.kcal, f.protein, f.carbs, f.fat, ...microValues(f)])],
   );
   await conn.query(
     `INSERT INTO foods (owner_id, name, category, portion_grams, portion_description, kcal, protein, carbs, fat)
@@ -68,16 +74,25 @@ async function seed(conn) {
     d.setDate(d.getDate() + offset);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   };
+  // Micronutrientes de un alimento del seed escalados a los gramos del registro.
+  const microsFor = (name, grams) => {
+    const food = foods.find((f) => f.name === name);
+    return MICROS.map((m) => {
+      const value = food?.micros?.[m.key];
+      return value === null || value === undefined ? null : Math.round(((value * grams) / food.portionGrams) * 100) / 100;
+    });
+  };
   const diary = [];
   for (let offset = -6; offset <= 0; offset += 1) {
+    const rice = 150 + offset * 10;
     diary.push(
-      [3, day(offset), 'desayuno', 'Avena en hojuelas', 60, 233.4, 10.1, 39.8, 4.1],
-      [3, day(offset), 'almuerzo', 'Pollo pechuga cocida', 200, 330, 62, 0, 7.2],
-      [3, day(offset), 'cena', 'Arroz integral cocido', 150 + offset * 10, 184.5, 4.1, 38.4, 1.5],
+      [3, day(offset), 'desayuno', 'Avena en hojuelas', 60, 233.4, 10.1, 39.8, 4.1, ...microsFor('Avena en hojuelas', 60)],
+      [3, day(offset), 'almuerzo', 'Pollo pechuga cocida', 200, 330, 62, 0, 7.2, ...microsFor('Pollo pechuga cocida', 200)],
+      [3, day(offset), 'cena', 'Arroz integral cocido', rice, 184.5, 4.1, 38.4, 1.5, ...microsFor('Arroz integral cocido', rice)],
     );
   }
   await conn.query(
-    'INSERT INTO diary_entries (user_id, entry_date, meal, name, grams, kcal, protein, carbs, fat) VALUES ?',
+    `INSERT INTO diary_entries (user_id, entry_date, meal, name, grams, kcal, protein, carbs, fat, ${MICRO_COLUMNS.join(', ')}) VALUES ?`,
     [diary],
   );
 

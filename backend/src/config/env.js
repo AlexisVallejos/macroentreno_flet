@@ -43,6 +43,24 @@ export const env = {
     appSchemes: list(process.env.APP_REDIRECT_SCHEMES || 'macroentreno,exp,exps'),
   },
 
+  // Búsqueda de alimentos con micronutrientes (OAuth 1.0: no depende de la IP habilitada en FatSecret).
+  fatsecret: {
+    consumerKey: process.env.FATSECRET_CONSUMER_KEY || '',
+    consumerSecret: process.env.FATSECRET_CONSUMER_SECRET || '',
+    region: process.env.FATSECRET_REGION || '',
+    language: process.env.FATSECRET_LANGUAGE || '',
+  },
+
+  // MacroEntreno Pro: suscripción mensual con Mercado Pago.
+  billing: {
+    mpAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
+    mpWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET || '',
+    price: Number(process.env.PRO_PRICE || 4999),
+    currency: process.env.PRO_CURRENCY || 'ARS',
+    // Adónde vuelve el navegador después de pagar (la app web, ej. https://app.midominio.com).
+    appUrl: (process.env.PUBLIC_APP_URL || '').replace(/\/$/, ''),
+  },
+
   social: {
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',

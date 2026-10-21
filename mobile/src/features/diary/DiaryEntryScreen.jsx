@@ -1,13 +1,30 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { diaryApi, foodsApi } from '../../api/endpoints';
 import { Button, Card, Chips, ErrorState, FieldRow, FormError, ListItem, Loading, MacroInline, Screen, TextField } from '../../components';
+import { useAuth } from '../../context/AuthContext';
 import { colors, font, spacing } from '../../theme';
 import { MEALS } from '../../utils/constants';
 import { confirm } from '../../utils/confirm';
 import { round1 } from '../../utils/format';
 import { toNumber, validateNumbers } from '../../utils/validation';
+
+/** Vista previa de los micronutrientes que trae el alimento para esos gramos (solo los conocidos). */
+const MICRO_PREVIEW = [
+  ['fiber', 'Fibra', 'g'],
+  ['sodium', 'Sodio', 'mg'],
+  ['potassium', 'Potasio', 'mg'],
+  ['calcium', 'Calcio', 'mg'],
+  ['iron', 'Hierro', 'mg'],
+  ['vitaminC', 'Vit. C', 'mg'],
+];
+const microPreview = (food, grams) => {
+  if (!food.micros) return null;
+  const f = (Number(grams) || 0) / food.portionGrams;
+  const parts = MICRO_PREVIEW.filter(([key]) => food.micros[key] !== null).map(([key, label, unit]) => `${label} ${round1(food.micros[key] * f)} ${unit}`);
+  return parts.length ? parts.join(' · ') : 'Este alimento no informa micronutrientes.';
+};
 
 const scale = (food, grams) => {
   const f = (Number(grams) || 0) / food.portionGrams;
@@ -18,6 +35,8 @@ const scale = (food, grams) => {
 export default function DiaryEntryScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useAuth();
+  const isPro = Boolean(user?.plan?.pro);
   const editingId = params.id ? Number(params.id) : null;
   const date = String(params.date);
 
@@ -35,6 +54,7 @@ export default function DiaryEntryScreen() {
   const [loadingEntry, setLoadingEntry] = useState(Boolean(editingId));
   const [loadError, setLoadError] = useState(null);
   const [entryFoodId, setEntryFoodId] = useState(null);
+  const [importing, setImporting] = useState(null);
   const [original, setOriginal] = useState(null);
 
   // Edición: se busca el registro dentro del día.
@@ -80,17 +100,63 @@ export default function DiaryEntryScreen() {
     return () => clearTimeout(timer);
   }, [search, mode, editingId]);
 
+  // Pro: búsqueda en FatSecret (necesita al menos 2 letras; un poco más de espera porque es un servicio externo).
+  useEffect(() => {
+    if (mode !== 'fatsecret' || editingId) return undefined;
+    if (search.trim().length < 2) return undefined;
+    const timer = setTimeout(() => {
+      setSearching(true);
+      foodsApi
+        .searchFatSecret(search.trim(), { limit: 20 })
+        .then((res) => {
+          setResults(res.foods);
+          setSearchError(null);
+        })
+        .catch(setSearchError)
+        .finally(() => setSearching(false));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search, mode, editingId]);
+
+  const changeMode = (next) => {
+    if (next === 'fatsecret' && !isPro) {
+      router.push('/pro');
+      return;
+    }
+    setResults([]);
+    setFood(null);
+    setMode(next);
+  };
+
+  /** Importa el alimento de FatSecret al catálogo y lo deja elegido. */
+  const pickFatSecret = async (item) => {
+    setImporting(item.externalId);
+    setFormError(null);
+    try {
+      const imported = await foodsApi.importFatSecret(item.externalId);
+      setFood(imported);
+      setForm((f) => ({ ...f, grams: '100' }));
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setImporting(null);
+    }
+  };
+
   const set = (key) => (value) => {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => ({ ...e, [key]: undefined }));
   };
+
+  // En FatSecret, con menos de 2 letras no se muestran resultados viejos.
+  const visible = mode === 'fatsecret' && search.trim().length < 2 ? [] : results;
 
   const preview = useMemo(() => (food ? scale(food, toNumber(form.grams)) : null), [food, form.grams]);
 
   const save = async () => {
     setFormError(null);
     let body;
-    if (mode === 'catalog' && !editingId) {
+    if (mode !== 'manual' && !editingId) {
       if (!food) return setFormError('Elegí un alimento de la lista');
       const found = validateNumbers(form, ['grams'], { positive: ['grams'] });
       setErrors(found);
@@ -169,18 +235,19 @@ export default function DiaryEntryScreen() {
       {!editingId ? (
         <Chips
           options={[
-            { value: 'catalog', label: 'Buscar en catálogo' },
+            { value: 'catalog', label: 'Catálogo' },
+            { value: 'fatsecret', label: isPro ? 'FatSecret · Pro' : 'FatSecret 🔒' },
             { value: 'manual', label: 'Carga manual' },
           ]}
           value={mode}
-          onChange={setMode}
+          onChange={changeMode}
         />
       ) : null}
 
-      {mode === 'catalog' && !editingId ? (
+      {mode !== 'manual' && !editingId ? (
         <>
           <TextField
-            placeholder="Buscar: pollo, arroz, alfajor…"
+            placeholder={mode === 'fatsecret' ? 'Buscar en FatSecret: banana, yogur, oats…' : 'Buscar: pollo, arroz, alfajor…'}
             value={search}
             onChangeText={setSearch}
             autoCorrect={false}
@@ -200,16 +267,34 @@ export default function DiaryEntryScreen() {
                 keyboardType="decimal-pad"
               />
               {preview ? <MacroInline {...preview} /> : null}
+              {food.micros ? <Text style={styles.muted}>{microPreview(food, toNumber(form.grams))}</Text> : null}
             </Card>
           ) : (
             <Card>
               {searching ? <Loading label="Buscando…" /> : null}
               {searchError ? <Text style={styles.error}>{searchError.message}</Text> : null}
-              {!searching && !searchError && results.length === 0 ? (
-                <Text style={styles.muted}>Sin resultados. Probá otra palabra o usá la carga manual.</Text>
+              {!searching && !searchError && visible.length === 0 ? (
+                <Text style={styles.muted}>
+                  {mode === 'fatsecret' && search.trim().length < 2
+                    ? 'Escribí qué comiste. FatSecret trae vitaminas y minerales; los genéricos suelen estar en inglés (ej. "oats").'
+                    : 'Sin resultados. Probá otra palabra o usá la carga manual.'}
+                </Text>
               ) : null}
               {!searching &&
-                results.map((item) => (
+                mode === 'fatsecret' &&
+                visible.map((item) => (
+                  <ListItem
+                    key={item.externalId}
+                    icon="leaf-outline"
+                    title={item.brand ? `${item.name} · ${item.brand}` : item.name}
+                    subtitle={`${item.kcal} kcal ${item.portionDescription} · ${item.microsCount} micronutrientes`}
+                    right={importing === item.externalId ? <ActivityIndicator color={colors.primary} /> : undefined}
+                    onPress={importing ? undefined : () => pickFatSecret(item)}
+                  />
+                ))}
+              {!searching &&
+                mode === 'catalog' &&
+                visible.map((item) => (
                   <ListItem
                     key={item.id}
                     icon={item.isGlobal ? 'nutrition-outline' : 'person-outline'}

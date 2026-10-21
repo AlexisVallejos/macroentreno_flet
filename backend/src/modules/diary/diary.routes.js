@@ -12,7 +12,7 @@ router.use(authenticate);
 // Lectura: el propio usuario, su coach o un admin.
 router.get('/', validate({ query: schemas.dayQuery }), async (req, res) => {
   const userId = await resolveTargetUser(req, req.valid.query.userId, { coachCan: true });
-  res.json({ data: await service.getDay(userId, req.valid.query.date) });
+  res.json({ data: await service.getDay(userId, req.valid.query.date, { micros: req.user.pro }) });
 });
 
 // Escritura: solo sobre el diario propio (admin puede corregir cualquiera).

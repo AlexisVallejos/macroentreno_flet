@@ -65,6 +65,18 @@ export default function ProfileScreen() {
       </Grid>
 
       <Card>
+        <ListItem
+          icon="sparkles"
+          title="MacroEntreno Pro"
+          subtitle={
+            user.plan?.source === 'role'
+              ? 'Incluido con tu rol'
+              : user.plan?.pro
+                ? `Activo hasta el ${new Date(String(user.plan.proUntil).replace(' ', 'T')).toLocaleDateString('es-AR')}`
+                : 'Micronutrientes y base de FatSecret · probalo'
+          }
+          onPress={() => router.push('/pro')}
+        />
         {user.role === 'athlete' ? (
           <ListItem icon="nutrition-outline" title="Mis alimentos" subtitle="Creá y editá tus alimentos personalizados" onPress={() => router.push('/foods')} />
         ) : null}

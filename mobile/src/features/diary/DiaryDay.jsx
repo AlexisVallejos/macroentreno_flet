@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Card, EmptyState, ListItem, MacroInline, MacroSummary } from '../../components';
+import { Card, EmptyState, ListItem, MacroInline, MacroSummary, MicroList, ProTeaser } from '../../components';
 import { colors, font, spacing } from '../../theme';
 import { MEALS } from '../../utils/constants';
 import { fmt } from '../../utils/format';
@@ -18,6 +18,14 @@ export function DiaryDay({ day, onAdd, onEdit, onDelete, readOnly = false }) {
       <Card>
         <MacroSummary totals={day.totals} goals={day.goals} />
       </Card>
+      {/* La API manda micros solo con Pro; sin Pro se ofrece el plan (no en la vista de solo lectura del coach). */}
+      {day.micros ? (
+        <Card title="Micronutrientes">
+          <MicroList nutrients={day.micros} />
+        </Card>
+      ) : !readOnly ? (
+        <ProTeaser />
+      ) : null}
       {readOnly && !day.entries.length ? (
         <EmptyState icon="restaurant-outline" title="Sin registros" message="No cargó comidas este día." />
       ) : null}

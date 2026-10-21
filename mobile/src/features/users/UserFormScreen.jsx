@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Switch, Text, View } from 'react-native';
-import { usersApi } from '../../api/endpoints';
+import { billingApi, usersApi } from '../../api/endpoints';
 import { Button, Card, Chips, ErrorState, FormError, Loading, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { colors, font, spacing } from '../../theme';
@@ -24,6 +24,8 @@ export default function UserFormScreen() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(Boolean(id));
   const [loadError, setLoadError] = useState(null);
+  const [plan, setPlan] = useState(null);
+  const [granting, setGranting] = useState(false);
 
   useEffect(() => {
     usersApi
@@ -33,10 +35,26 @@ export default function UserFormScreen() {
     if (!id) return;
     usersApi
       .get(id)
-      .then((u) => setForm({ name: u.name, email: u.email || '', password: '', role: u.role, coachId: u.coachId, isActive: u.isActive }))
+      .then((u) => {
+        setForm({ name: u.name, email: u.email || '', password: '', role: u.role, coachId: u.coachId, isActive: u.isActive });
+        setPlan(u.plan);
+      })
       .catch(setLoadError)
       .finally(() => setLoading(false));
   }, [id]);
+
+  /** Regala días de MacroEntreno Pro (se suman) o lo quita con 0. */
+  const grantPro = async (days) => {
+    setGranting(true);
+    setFormError(null);
+    try {
+      setPlan((await billingApi.grant(id, days)).plan);
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setGranting(false);
+    }
+  };
 
   const set = (key) => (value) => {
     setForm((f) => ({ ...f, [key]: value }));
@@ -146,6 +164,18 @@ export default function UserFormScreen() {
             value={form.coachId}
             onChange={set('coachId')}
           />
+        </Card>
+      ) : null}
+
+      {id && form.role === 'athlete' && plan ? (
+        <Card title="MacroEntreno Pro">
+          <Text style={styles.muted}>
+            {plan.pro ? `Activo hasta el ${new Date(String(plan.proUntil).replace(' ', 'T')).toLocaleDateString('es-AR')}` : 'Plan gratis'}
+          </Text>
+          <View style={styles.row}>
+            <Button title="Regalar 30 días" icon="gift" variant="tinted" small onPress={() => grantPro(30)} loading={granting} />
+            {plan.pro ? <Button title="Quitar Pro" variant="danger" small onPress={() => grantPro(0)} disabled={granting} /> : null}
+          </View>
         </Card>
       ) : null}
 

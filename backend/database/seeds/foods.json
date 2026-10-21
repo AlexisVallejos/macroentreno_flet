@@ -8,7 +8,21 @@
     "kcal": 165,
     "protein": 31,
     "carbs": 0,
-    "fat": 3.6
+    "fat": 3.6,
+    "micros": {
+      "fiber": 0,
+      "sugar": 0,
+      "saturatedFat": 1,
+      "cholesterol": 84,
+      "sodium": 396,
+      "potassium": 254,
+      "calcium": 15,
+      "iron": 1.03,
+      "vitaminA": 6,
+      "vitaminC": 0,
+      "vitaminD": null
+    },
+    "microsFrom": "FatSecret 1646 (Roasted Chicken Breast, Skin Not Eaten)"
   },
   {
     "name": "Huevo entero",
@@ -41,7 +55,21 @@
     "kcal": 123,
     "protein": 2.7,
     "carbs": 25.6,
-    "fat": 1
+    "fat": 1,
+    "micros": {
+      "fiber": 1.8,
+      "sugar": 0.35,
+      "saturatedFat": 0.18,
+      "cholesterol": 0,
+      "sodium": 5,
+      "potassium": 43,
+      "calcium": 10,
+      "iron": 0.42,
+      "vitaminA": 0,
+      "vitaminC": 0,
+      "vitaminD": null
+    },
+    "microsFrom": "FatSecret 39714 (Brown Rice, Long-Grain, Cooked)"
   },
   {
     "name": "Avena en hojuelas",
@@ -52,7 +80,21 @@
     "kcal": 389,
     "protein": 16.9,
     "carbs": 66.3,
-    "fat": 6.9
+    "fat": 6.9,
+    "micros": {
+      "fiber": 10.6,
+      "sugar": null,
+      "saturatedFat": 1.22,
+      "cholesterol": 0,
+      "sodium": 2,
+      "potassium": 429,
+      "calcium": 54,
+      "iron": 4.72,
+      "vitaminA": 0,
+      "vitaminC": 0,
+      "vitaminD": null
+    },
+    "microsFrom": "FatSecret 39715 (Oats)"
   },
   {
     "name": "Batata horneada",

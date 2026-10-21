@@ -6,6 +6,7 @@ import { validate } from '../../middlewares/validate.js';
 import { resolveTargetUser } from '../../utils/access.js';
 import { addDays, dateRange, today } from '../../utils/dates.js';
 import { isoDate } from '../../utils/validation.js';
+import { MICRO_COLUMNS, summarizeMicros } from '../nutrition/micros.js';
 
 const router = Router();
 router.use(authenticate);
@@ -128,8 +129,19 @@ router.get('/', validate({ query: progressQuery }), async (req, res) => {
         totalWorkouts: daily.reduce((a, d) => a + d.workouts, 0),
       },
       exercises: exerciseProgress(setRows),
+      micros: req.user.pro ? await microsAverage(userId, from, to) : null,
     },
   });
 });
+
+/** MacroEntreno Pro: promedio diario de cada micronutriente en los días con registros del período. */
+async function microsAverage(userId, from, to) {
+  const rows = await query(
+    `SELECT entry_date, ${MICRO_COLUMNS.join(', ')} FROM diary_entries WHERE user_id = ? AND entry_date BETWEEN ? AND ?`,
+    [userId, from, to],
+  );
+  const days = new Set(rows.map((r) => r.entry_date)).size;
+  return { days, nutrients: summarizeMicros(rows, { days: Math.max(days, 1) }) };
+}
 
 export default router;

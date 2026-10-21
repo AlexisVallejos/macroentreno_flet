@@ -15,3 +15,7 @@ export const forbidden = (message = 'No tenés permisos para esta acción') =>
   new HttpError(403, 'FORBIDDEN', message);
 export const notFound = (message = 'Recurso no encontrado') => new HttpError(404, 'NOT_FOUND', message);
 export const conflict = (message) => new HttpError(409, 'CONFLICT', message);
+export const paymentRequired = (message = 'Esta función es parte de MacroEntreno Pro') =>
+  new HttpError(402, 'PRO_REQUIRED', message);
+export const unavailable = (code, message) => new HttpError(503, code, message);
+export const badGateway = (code, message) => new HttpError(502, code, message);

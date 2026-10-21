@@ -1,9 +1,12 @@
 import { query } from '../../config/db.js';
 import { forbidden, notFound } from '../../utils/httpError.js';
 import { paginationMeta } from '../../utils/validation.js';
+import { MICRO_COLUMNS, microsOf } from '../nutrition/micros.js';
+import { getFoodDetail } from './fatsecret.js';
 
-export function toFood(row) {
-  return {
+/** Los micronutrientes y el origen solo se incluyen para quien tiene Pro (`micros: true`). */
+export function toFood(row, { micros = false } = {}) {
+  const food = {
     id: row.id,
     name: row.name,
     category: row.category,
@@ -17,6 +20,11 @@ export function toFood(row) {
     isGlobal: row.owner_id === null,
     ownerId: row.owner_id,
   };
+  if (micros) {
+    food.micros = microsOf(row);
+    food.source = row.external_source ? { name: row.external_source, id: row.external_id } : null;
+  }
+  return food;
 }
 
 /**
@@ -44,7 +52,8 @@ function buildSearch(search) {
 }
 
 /** Catálogo visible para un usuario: globales + los propios. */
-export async function listFoods(userId, { page, limit, search, category, scope }) {
+export async function listFoods(user, { page, limit, search, category, scope }) {
+  const userId = user.id;
   const where = [];
   const params = [];
   if (scope === 'global') where.push('f.owner_id IS NULL');
@@ -71,7 +80,7 @@ export async function listFoods(userId, { page, limit, search, category, scope }
     limit,
     (page - 1) * limit,
   ]);
-  return { data: rows.map(toFood), meta: paginationMeta(page, limit, total) };
+  return { data: rows.map((row) => toFood(row, { micros: user.pro })), meta: paginationMeta(page, limit, total) };
 }
 
 export async function listCategories() {
@@ -120,7 +129,7 @@ export async function createFood(user, data) {
     `INSERT INTO foods (owner_id, ${keys.map((k) => COLUMNS[k]).join(', ')}) VALUES (?, ${keys.map(() => '?').join(', ')})`,
     [ownerId, ...keys.map((k) => data[k])],
   );
-  return toFood(await getFood(user, result.insertId));
+  return toFood(await getFood(user, result.insertId), { micros: user.pro });
 }
 
 export async function updateFood(user, id, data) {
@@ -133,7 +142,36 @@ export async function updateFood(user, id, data) {
       id,
     ]);
   }
-  return toFood(await getFood(user, id));
+  return toFood(await getFood(user, id), { micros: user.pro });
+}
+
+/**
+ * Trae un alimento de FatSecret y lo guarda en el catálogo global (los datos son de la fuente, no del usuario).
+ * Si ya se había importado, se actualizan sus valores en lugar de duplicarlo.
+ */
+export async function importFatSecretFood(user, externalId) {
+  const food = await getFoodDetail(externalId);
+  const values = {
+    name: food.name.slice(0, 150),
+    category: 'FatSecret',
+    brand: food.brand?.slice(0, 80) ?? null,
+    portion_grams: food.portionGrams,
+    portion_description: food.portionDescription,
+    kcal: food.kcal,
+    protein: food.protein,
+    carbs: food.carbs,
+    fat: food.fat,
+    ...Object.fromEntries(MICRO_COLUMNS.map((c) => [c, food.micros[c]])),
+  };
+  const columns = Object.keys(values);
+  await query(
+    `INSERT INTO foods (owner_id, external_source, external_id, ${columns.join(', ')})
+     VALUES (NULL, 'fatsecret', ?, ${columns.map(() => '?').join(', ')})
+     ON DUPLICATE KEY UPDATE ${columns.map((c) => `${c} = VALUES(${c})`).join(', ')}`,
+    [food.externalId, ...columns.map((c) => values[c])],
+  );
+  const [row] = await query("SELECT * FROM foods WHERE external_source = 'fatsecret' AND external_id = ?", [food.externalId]);
+  return toFood(row, { micros: user.pro });
 }
 
 export async function deleteFood(user, id) {

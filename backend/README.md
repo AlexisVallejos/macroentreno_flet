@@ -386,6 +386,27 @@ Un día está "en objetivo" cuando sus calorías quedan dentro de ±10 % de la m
 Usuarios por rol, activos, atletas sin coach, alimentos globales y personales, actividad de los
 últimos 7 días y últimos 5 usuarios registrados.
 
+### 5.11 MacroEntreno Pro (micronutrientes y suscripción)
+
+Los atletas acceden a Pro con una suscripción mensual (Mercado Pago) o porque un admin se la regala; entrenadores y administradores lo tienen incluido. Sin Pro, las funciones devuelven **402 `PRO_REQUIRED`** y las respuestas del diario, progreso y alimentos no incluyen micronutrientes (`micros: null`).
+
+**Micronutrientes** (fibra, azúcares, grasas saturadas, colesterol, sodio, potasio, calcio, hierro, vitaminas A, C y D): cada alimento y registro los guarda por porción; `null` significa *desconocido* (no suma cero). Los resúmenes informan `value`, `percent` del valor diario de referencia (FDA, adultos), `kind` (`goal` o `limit`) y la cobertura (`known` de `entries`).
+
+| Método | Ruta | Quién | Descripción |
+|---|---|---|---|
+| GET | `/api/diary?date=` | todos | Con Pro agrega `micros` (resumen del día) y `entries[].micros` |
+| GET | `/api/progress` | todos | Con Pro agrega `micros: { days, nutrients }` (promedio diario) |
+| GET | `/api/foods/fatsecret/search?search=&page=&limit=` | Pro | Busca en FatSecret; valores cada 100 g y `microsCount` |
+| POST | `/api/foods/fatsecret/import` | Pro | `{ externalId }` → guarda el alimento en el catálogo global (si ya existe lo actualiza) |
+| GET | `/api/billing/plan` | todos | `{ plan, price, checkoutAvailable, subscription }` |
+| POST | `/api/billing/subscribe` | atleta | Crea la suscripción pendiente en Mercado Pago → `{ checkoutUrl }` |
+| POST | `/api/billing/sync` | atleta | Consulta el estado en Mercado Pago (la app lo llama al volver del pago) |
+| POST | `/api/billing/cancel` | atleta | Da de baja; Pro sigue hasta el final del período pagado |
+| POST | `/api/billing/webhook` | Mercado Pago | Valida `x-signature` (si hay `MERCADOPAGO_WEBHOOK_SECRET`) y vuelve a consultar la suscripción |
+| POST | `/api/billing/grant` | admin | `{ userId, days }` suma días de Pro; `days: 0` lo quita |
+
+Una suscripción autorizada deja Pro activo hasta la fecha del próximo cobro más 3 días de gracia; cada cobro mensual lo extiende.
+
 ## 6. Scripts y pruebas
 
 | Comando | Qué hace |

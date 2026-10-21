@@ -13,6 +13,7 @@ DROP TABLE IF EXISTS workouts;
 DROP TABLE IF EXISTS exercises;
 DROP TABLE IF EXISTS diary_entries;
 DROP TABLE IF EXISTS foods;
+DROP TABLE IF EXISTS subscriptions;
 DROP TABLE IF EXISTS refresh_tokens;
 DROP TABLE IF EXISTS social_accounts;
 DROP TABLE IF EXISTS users;
@@ -35,6 +36,7 @@ CREATE TABLE users (
   carbs_goal     SMALLINT UNSIGNED NOT NULL DEFAULT 200,
   fat_goal       SMALLINT UNSIGNED NOT NULL DEFAULT 65,
   is_active      TINYINT(1) NOT NULL DEFAULT 1,
+  pro_until      DATETIME NULL,                   -- MacroEntreno Pro (micronutrientes) activo hasta esta fecha
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
@@ -73,6 +75,26 @@ CREATE TABLE refresh_tokens (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------
+-- MacroEntreno Pro: suscripciones mensuales con Mercado Pago
+-- ---------------------------------------------------------------------
+CREATE TABLE subscriptions (
+  id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id          INT UNSIGNED NOT NULL,
+  provider         ENUM('mercadopago') NOT NULL DEFAULT 'mercadopago',
+  provider_id      VARCHAR(80) NOT NULL,                -- id del preapproval de Mercado Pago
+  status           ENUM('pending', 'authorized', 'paused', 'cancelled') NOT NULL DEFAULT 'pending',
+  amount           DECIMAL(10,2) NOT NULL,
+  currency         CHAR(3) NOT NULL DEFAULT 'ARS',
+  next_payment_at  DATETIME NULL,
+  created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_subscriptions_provider (provider, provider_id), -- los webhooks buscan por el id de Mercado Pago
+  KEY idx_subscriptions_user (user_id, created_at),             -- la suscripción más reciente del usuario
+  CONSTRAINT fk_subscriptions_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ---------------------------------------------------------------------
 -- Nutrición
 -- ---------------------------------------------------------------------
 -- owner_id NULL = alimento del catálogo global (lo administran coach/admin)
@@ -89,12 +111,27 @@ CREATE TABLE foods (
   protein              DECIMAL(6,2) NOT NULL DEFAULT 0,
   carbs                DECIMAL(6,2) NOT NULL DEFAULT 0,
   fat                  DECIMAL(6,2) NOT NULL DEFAULT 0,
+  -- Micronutrientes por porción. NULL = dato desconocido (no es lo mismo que 0).
+  fiber                DECIMAL(6,2) NULL,                -- g
+  sugar                DECIMAL(6,2) NULL,                -- g
+  saturated_fat        DECIMAL(6,2) NULL,                -- g
+  cholesterol          DECIMAL(7,2) NULL,                -- mg
+  sodium               DECIMAL(8,2) NULL,                -- mg
+  potassium            DECIMAL(8,2) NULL,                -- mg
+  calcium              DECIMAL(8,2) NULL,                -- mg
+  iron                 DECIMAL(6,2) NULL,                -- mg
+  vitamin_a            DECIMAL(8,2) NULL,                -- µg
+  vitamin_c            DECIMAL(7,2) NULL,                -- mg
+  vitamin_d            DECIMAL(6,2) NULL,                -- µg
+  external_source      ENUM('fatsecret') NULL,           -- de dónde se importó
+  external_id          VARCHAR(40) NULL,
   created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_foods_owner_name (owner_id, name),        -- listado global/propio ordenado por nombre
   KEY idx_foods_category (category),                -- filtro por categoría
   FULLTEXT KEY ft_foods_search (name, brand),       -- buscador de alimentos (?search=)
+  UNIQUE KEY uq_foods_external (external_source, external_id), -- importar dos veces el mismo de FatSecret lo actualiza
   CONSTRAINT fk_foods_owner FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -112,6 +149,18 @@ CREATE TABLE diary_entries (
   protein     DECIMAL(6,2) NOT NULL DEFAULT 0,
   carbs       DECIMAL(6,2) NOT NULL DEFAULT 0,
   fat         DECIMAL(6,2) NOT NULL DEFAULT 0,
+  -- Copia de los micronutrientes del alimento escalados a los gramos (NULL si no se conocen).
+  fiber       DECIMAL(6,2) NULL,
+  sugar       DECIMAL(6,2) NULL,
+  saturated_fat DECIMAL(6,2) NULL,
+  cholesterol DECIMAL(7,2) NULL,
+  sodium      DECIMAL(8,2) NULL,
+  potassium   DECIMAL(8,2) NULL,
+  calcium     DECIMAL(8,2) NULL,
+  iron        DECIMAL(6,2) NULL,
+  vitamin_a   DECIMAL(8,2) NULL,
+  vitamin_c   DECIMAL(7,2) NULL,
+  vitamin_d   DECIMAL(6,2) NULL,
   created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

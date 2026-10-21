@@ -31,6 +31,7 @@ export default function AppLayout() {
       <Stack.Screen name="change-password" options={{ title: 'Contraseña', presentation: 'modal' }} />
       <Stack.Screen name="foods" options={{ title: 'Alimentos' }} />
       <Stack.Screen name="food-form" options={{ title: 'Alimento' }} />
+      <Stack.Screen name="pro" options={{ title: 'MacroEntreno Pro' }} />
 
       {/* Atleta: carga su diario y entrena con la cámara */}
       <Stack.Protected guard={isAthlete}>

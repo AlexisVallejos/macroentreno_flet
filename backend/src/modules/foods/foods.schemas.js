@@ -25,3 +25,13 @@ export const foodSchema = z.object({
 });
 
 export const updateFoodSchema = foodSchema.omit({ isGlobal: true }).partial();
+
+export const fatSecretSearchQuery = z.object({
+  search: z.string().trim().min(2, 'Escribí al menos 2 letras').max(100),
+  page: z.coerce.number().int().min(0).max(50).default(0),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const fatSecretImportSchema = z.object({
+  externalId: z.string().trim().regex(/^\d{1,20}$/, 'Id de FatSecret inválido'),
+});
