@@ -450,3 +450,7 @@ backend/
 │       ├── auth/  users/  foods/  diary/  exercises/  workouts/  progress/  admin/
 └── test/api.test.js
 ```
+
+## Seguimiento, planes e informes
+
+La API incorpora el panel de entrenadores, planes alimentarios y reportes semanales/mensuales. Consultá las [rutas, permisos, migración y configuración del generador automático](../docs/SEGUIMIENTO_ENTRENADORES.md).

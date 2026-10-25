@@ -3,7 +3,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { workoutsApi } from '../../api/endpoints';
-import { Button, Card, DateSwitcher, ErrorState, FormError, Loading, Screen, TextField } from '../../components';
+import { Button, Card, Chips, DateSwitcher, ErrorState, FormError, Loading, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { requestCoach } from '../coach/bridge';
 import { ruleFor } from '../coach/exercises';
@@ -31,6 +31,7 @@ export default function WorkoutFormScreen() {
 
   const [date, setDate] = useState(String(params.date || today()));
   const [title, setTitle] = useState('');
+  const [status, setStatus] = useState(userId || String(params.date || today()) > today() ? 'planned' : 'completed');
   const [notes, setNotes] = useState('');
   const [exercises, setExercises] = useState([]);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -47,6 +48,7 @@ export default function WorkoutFormScreen() {
       .get(id)
       .then((w) => {
         setDate(w.date);
+        setStatus(w.status);
         setTitle(w.title);
         setNotes(w.notes || '');
         setOwnerId(w.userId);
@@ -107,6 +109,7 @@ export default function WorkoutFormScreen() {
     if (Object.keys(found).length) return;
     const body = {
       date,
+      status: ownerId && ownerId !== user.id ? undefined : status,
       title: title.trim(),
       notes: notes.trim() || null,
       userId: ownerId,
@@ -152,7 +155,12 @@ export default function WorkoutFormScreen() {
     >
       <Stack.Screen options={{ title: id ? 'Editar sesión' : ownerId ? 'Asignar rutina' : 'Nueva sesión' }} />
       <FormError message={formError} />
-      <DateSwitcher date={date} onChange={setDate} />
+      <DateSwitcher date={date} onChange={(next) => { setDate(next); if (next > today()) setStatus('planned'); }} />
+      {user.role === 'athlete' && (!ownerId || ownerId === user.id) ? <Card title="Estado de la sesión">
+        <Chips options={[{ value: 'planned', label: 'Pendiente' }, { value: 'completed', label: 'Realizada' }]} value={status} onChange={setStatus} />
+        <Text style={{ color: colors.muted }}>Marcá Realizada y ajustá los pesos y las repeticiones cuando termines de entrenar.</Text>
+      </Card> : <Text style={{ color: colors.muted }}>Esta rutina queda pendiente hasta que el atleta confirme que la realizó.</Text>}
+
       <TextField label="Título" value={title} onChangeText={setTitle} error={errors.title} placeholder="Ej. Pierna pesada" />
       <TextField label="Notas (opcional)" value={notes} onChangeText={setNotes} multiline />
 

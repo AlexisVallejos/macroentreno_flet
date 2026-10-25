@@ -5,7 +5,7 @@ export const idParam = z.object({ id: z.coerce.number().int().positive() });
 export const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha esperado: AAAA-MM-DD')
-  .refine((value) => !Number.isNaN(Date.parse(value)), 'Fecha inválida');
+  .refine((value) => !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value, 'Fecha inválida');
 
 export const pagination = {
   page: z.coerce.number().int().min(1).default(1),

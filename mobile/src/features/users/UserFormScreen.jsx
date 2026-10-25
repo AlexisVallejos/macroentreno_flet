@@ -13,12 +13,13 @@ import { isEmail, validatePassword } from '../../utils/validation';
 export default function UserFormScreen() {
   const router = useRouter();
   const { user: me } = useAuth();
-  const { id: idParam } = useLocalSearchParams();
+  const { id: idParam, role: initialRole } = useLocalSearchParams();
   const id = idParam ? Number(idParam) : null;
   const isSelf = id === me.id;
 
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'athlete', coachId: null, isActive: true });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: initialRole === 'coach' ? 'coach' : 'athlete', coachId: null, isActive: true });
   const [coaches, setCoaches] = useState([]);
+  const [coachesError, setCoachesError] = useState(null);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -31,7 +32,7 @@ export default function UserFormScreen() {
     usersApi
       .list({ role: 'coach', limit: 100 })
       .then((res) => setCoaches(res.data))
-      .catch(() => {});
+      .catch(setCoachesError);
     if (!id) return;
     usersApi
       .get(id)
@@ -159,8 +160,9 @@ export default function UserFormScreen() {
 
       {form.role === 'athlete' ? (
         <Card title="Entrenador asignado">
+          <FormError message={coachesError?.message} />
           <Chips
-            options={[{ value: null, label: 'Sin entrenador' }, ...coaches.map((c) => ({ value: c.id, label: c.name }))]}
+            options={[{ value: null, label: 'Sin entrenador' }, ...coaches.filter((c) => c.isActive).map((c) => ({ value: c.id, label: c.name }))]}
             value={form.coachId}
             onChange={set('coachId')}
           />

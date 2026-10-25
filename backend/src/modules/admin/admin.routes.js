@@ -13,7 +13,7 @@ router.get('/stats', async (_req, res) => {
     query('SELECT role, COUNT(*) AS total, SUM(is_active) AS active FROM users GROUP BY role'),
     query('SELECT SUM(owner_id IS NULL) AS global, SUM(owner_id IS NOT NULL) AS custom FROM foods'),
     query('SELECT COUNT(*) AS total FROM diary_entries WHERE entry_date >= ?', [weekAgo]),
-    query('SELECT COUNT(*) AS total FROM workouts WHERE workout_date >= ?', [weekAgo]),
+    query("SELECT COUNT(*) AS total FROM workouts WHERE status = 'completed' AND workout_date >= ?", [weekAgo]),
     query("SELECT COUNT(*) AS total FROM users WHERE role = 'athlete' AND coach_id IS NULL"),
     query('SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC, id DESC LIMIT 5'),
   ]);

@@ -18,6 +18,7 @@ const exerciseSchema = z
 
 export const workoutSchema = z.object({
   date: isoDate,
+  status: z.enum(['planned', 'completed']).optional(),
   title: z.string().trim().min(2, 'El título debe tener al menos 2 caracteres').max(120),
   notes: z.string().trim().max(1000).nullable().optional(),
   // Un coach puede cargar la sesión a uno de sus atletas.

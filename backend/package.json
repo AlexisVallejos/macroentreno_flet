@@ -13,7 +13,8 @@
     "db:init": "node scripts/db-init.js",
     "db:seed": "node scripts/db-init.js --seed-only",
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
-    "dev:memory": "node scripts/dev-memory.js"
+    "dev:memory": "node scripts/dev-memory.js",
+    "reports:weekly": "node scripts/generate-reports.js"
   },
   "license": "MIT",
   "dependencies": {
@@ -26,6 +27,7 @@
     "jsonwebtoken": "^9.0.3",
     "morgan": "^1.12.1",
     "mysql2": "^3.24.6",
+    "pdfkit": "^0.20.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {

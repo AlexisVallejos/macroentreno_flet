@@ -94,6 +94,10 @@ se apaga el Wi-Fi y aparece el mensaje de error con **Reintentar**.
             └──────────────▶ Google / Facebook / GitHub ◀──────┘
 ```
 
+## Seguimiento y reportes
+
+Los entrenadores tienen un panel diario y semanal de clientes, planes de alimentación integrados al diario y PDF. Los atletas reciben informes semanales automáticos. El administrador dispone de reportes mensuales por entrenador y accesos a altas y asignaciones. Ver [guía de seguimiento, permisos y generación automática](docs/SEGUIMIENTO_ENTRENADORES.md).
+
 ## Roles
 
 | | Atleta | Entrenador | Administrador |

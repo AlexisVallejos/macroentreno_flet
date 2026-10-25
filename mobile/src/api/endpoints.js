@@ -74,3 +74,21 @@ export const billingApi = {
   cancel: () => data(api('/billing/cancel', { method: 'POST' })),
   grant: (userId, days) => data(api('/billing/grant', { method: 'POST', body: { userId, days } })),
 };
+
+export const coachingApi = {
+  dashboard: (date) => data(api('/coaching/dashboard', { query: { date } })),
+  plans: (userId) => data(api('/coaching/plans', { query: { userId } })),
+  createPlan: (body) => data(api('/coaching/plans', { method: 'POST', body })),
+  archivePlan: (id) => data(api(`/coaching/plans/${id}/archive`, { method: 'POST' })),
+  applyPlan: (id, date) => data(api(`/coaching/plans/${id}/apply`, { method: 'POST', body: { date } })),
+  planPdf: (id) => data(api(`/coaching/plans/${id}/pdf`, { query: { format: 'base64' } })),
+};
+export const reportsApi = {
+  weeklyPreview: (week, userId) => data(api('/reports/weekly/preview', { query: { week, userId } })),
+  weeklyList: (userId) => data(api('/reports/weekly', { query: { userId } })),
+  weekly: (id) => data(api(`/reports/weekly/${id}`)),
+  generateWeekly: (week, userId) => data(api('/reports/weekly/generate', { method: 'POST', body: { week, userId } })),
+  weeklyPdf: (id) => data(api(`/reports/weekly/${id}/pdf`, { query: { format: 'base64' } })),
+  monthly: (month) => data(api('/reports/coaches/monthly', { query: { month } })),
+  monthlyPdf: (month, coachId) => data(api('/reports/coaches/monthly/pdf', { query: { month, coachId, format: 'base64' } })),
+};

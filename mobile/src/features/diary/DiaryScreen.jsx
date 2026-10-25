@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { diaryApi } from '../../api/endpoints';
-import { DateSwitcher, ErrorState, Loading, Screen } from '../../components';
+import { Button, DateSwitcher, ErrorState, Loading, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
 import { confirm, notify } from '../../utils/confirm';
 import { today } from '../../utils/dates';
@@ -29,6 +29,7 @@ export default function DiaryScreen() {
 
   return (
     <Screen onRefresh={reload} refreshing={refreshing}>
+      <Button title="Mi plan de alimentación" icon="nutrition-outline" variant="tinted" onPress={() => router.push('/nutrition-plans')} />
       <DateSwitcher date={date} onChange={changeDate} />
       {error && !day ? (
         <ErrorState error={error} onRetry={reload} />

@@ -1,3 +1,5 @@
+import coachingRoutes from './modules/coaching/coaching.routes.js';
+import reportsRoutes from './modules/reports/reports.routes.js';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -36,6 +38,8 @@ export function createApp() {
   app.use('/api/workouts', workoutsRoutes);
   app.use('/api/progress', progressRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/coaching', coachingRoutes);
+  app.use('/api/reports', reportsRoutes);
   app.use('/api/billing', billingRoutes);
 
   app.use(notFoundHandler);

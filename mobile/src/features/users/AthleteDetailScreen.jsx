@@ -1,21 +1,23 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { diaryApi, usersApi } from '../../api/endpoints';
-import { Card, Chips, DateSwitcher, ErrorState, Loading, RoleBadge, Screen } from '../../components';
+import { Button, Card, Chips, DateSwitcher, ErrorState, Loading, RoleBadge, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
 import { colors, font, spacing, tracking } from '../../theme';
 import { today } from '../../utils/dates';
 import { DiaryDay } from '../diary/DiaryDay';
 import { ProgressView } from '../progress/ProgressView';
 import { WorkoutList } from '../workouts/WorkoutList';
+import { WeeklyReview } from '../reports/WeeklyReview';
 import { GoalsForm } from './GoalsForm';
 
 /** Vista del coach (o admin) sobre un atleta: diario (solo lectura), rutinas, progreso y objetivos. */
 export default function AthleteDetailScreen() {
+  const router = useRouter();
   const { id: idParam } = useLocalSearchParams();
   const id = Number(idParam);
-  const [tab, setTab] = useState('diary');
+  const [tab, setTab] = useState('weekly');
   const [date, setDate] = useState(today());
   const athlete = useResource(() => usersApi.get(id), [id]);
   const day = useResource(() => (tab === 'diary' ? diaryApi.day(date, id) : Promise.resolve(null)), [id, date, tab]);
@@ -40,6 +42,7 @@ export default function AthleteDetailScreen() {
 
       <Chips
         options={[
+          { value: 'weekly', label: 'Semana' },
           { value: 'diary', label: 'Diario' },
           { value: 'workouts', label: 'Rutinas' },
           { value: 'progress', label: 'Progreso' },
@@ -49,6 +52,11 @@ export default function AthleteDetailScreen() {
         onChange={setTab}
       />
 
+      <View style={{ gap: spacing.sm }}>
+        <Button title="Plan de alimentación" icon="nutrition-outline" variant="tinted" onPress={() => router.push({ pathname: '/nutrition-plans', params: { userId: String(id) } })} />
+        <Button title="Informes PDF semanales" icon="document-text-outline" variant="tinted" onPress={() => router.push({ pathname: '/weekly-reports', params: { userId: String(id) } })} />
+      </View>
+      {tab === 'weekly' ? <WeeklyReview userId={id} onSelectDate={(next) => { setDate(next); setTab('diary'); }} /> : null}
       {tab === 'diary' ? (
         <>
           <DateSwitcher date={date} onChange={setDate} />

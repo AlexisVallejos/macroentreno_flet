@@ -11,6 +11,9 @@ export const pool = mysql.createPool({
   charset: 'utf8mb4',
 });
 
+// MySQL usa el mismo día de negocio que los informes automáticos.
+pool.on('connection', (connection) => { connection.query("SET time_zone = '-03:00'"); });
+
 /** Ejecuta una consulta parametrizada y devuelve las filas. */
 export async function query(sql, params = []) {
   const [rows] = await pool.query(sql, params);

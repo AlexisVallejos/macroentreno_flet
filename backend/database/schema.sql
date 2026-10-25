@@ -7,6 +7,11 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
+DROP TABLE IF EXISTS weekly_reports;
+DROP TABLE IF EXISTS meal_plan_applications;
+DROP TABLE IF EXISTS meal_plan_items;
+DROP TABLE IF EXISTS meal_plans;
+DROP TABLE IF EXISTS coach_assignments;
 DROP TABLE IF EXISTS workout_sets;
 DROP TABLE IF EXISTS workout_exercises;
 DROP TABLE IF EXISTS workouts;

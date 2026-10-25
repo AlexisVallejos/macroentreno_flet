@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { diaryApi, progressApi } from '../../api/endpoints';
-import { Card, ErrorState, Grid, KcalBarChart, Loading, MacroSummary, Screen } from '../../components';
+import { Button, Card, ErrorState, Grid, KcalBarChart, Loading, MacroSummary, Screen } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { useResource } from '../../hooks/useResource';
 import { colors, continuous, font, radius, spacing, tracking } from '../../theme';
@@ -41,6 +41,10 @@ export default function AthleteHome() {
         />
       </View>
 
+      <View style={{ gap: spacing.sm }}>
+        <Button title="Mi plan de alimentación" icon="nutrition-outline" variant="tinted" onPress={() => router.push('/nutrition-plans')} />
+        <Button title="Mis informes semanales" icon="document-text-outline" variant="tinted" onPress={() => router.push('/weekly-reports')} />
+      </View>
       {error && !data ? (
         <ErrorState error={error} onRetry={reload} />
       ) : loading || !data ? (

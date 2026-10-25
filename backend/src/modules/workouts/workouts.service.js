@@ -43,6 +43,7 @@ async function hydrate(workoutRows) {
     date: w.workout_date,
     title: w.title,
     notes: w.notes,
+    status: w.status,
     exercises: exercisesByWorkout.get(w.id) || [],
   }));
 }
@@ -102,8 +103,8 @@ async function insertExercises(conn, workoutId, exercises) {
 export async function createWorkout(ownerId, creatorId, data) {
   const id = await transaction(async (conn) => {
     const [result] = await conn.query(
-      'INSERT INTO workouts (user_id, created_by, workout_date, title, notes) VALUES (?, ?, ?, ?, ?)',
-      [ownerId, creatorId, data.date, data.title, data.notes ?? null],
+      'INSERT INTO workouts (user_id, created_by, workout_date, title, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
+      [ownerId, creatorId, data.date, data.title, data.notes ?? null, ownerId === creatorId ? (data.status ?? 'completed') : 'planned'],
     );
     await insertExercises(conn, result.insertId, data.exercises);
     return result.insertId;
@@ -120,6 +121,7 @@ export async function replaceWorkout(id, data) {
       data.notes ?? null,
       id,
     ]);
+    if (data.status) await conn.query('UPDATE workouts SET status = ? WHERE id = ?', [data.status, id]);
     await conn.query('DELETE FROM workout_exercises WHERE workout_id = ?', [id]); // las series caen en cascada
     await insertExercises(conn, id, data.exercises);
   });

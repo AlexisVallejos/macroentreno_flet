@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { adminApi } from '../../api/endpoints';
-import { Card, ErrorState, ListItem, Loading, RoleBadge, Screen, StatTile } from '../../components';
+import { Button, Card, ErrorState, ListItem, Loading, RoleBadge, Screen, StatTile } from '../../components';
 import { useResource } from '../../hooks/useResource';
 import { colors, spacing } from '../../theme';
 
@@ -15,6 +15,11 @@ export default function AdminHome() {
 
   return (
     <Screen onRefresh={reload} refreshing={refreshing}>
+      <Card title="Gestión de entrenadores">
+        <Button title="Reportes mensuales" icon="document-text-outline" onPress={() => router.push('/coach-reports')} />
+        <Button title="Crear entrenador" icon="person-add-outline" variant="tinted" onPress={() => router.push({ pathname: '/user-form', params: { role: 'coach' } })} />
+        <Button title="Asignar atletas a entrenadores" variant="tinted" onPress={() => router.push('/users')} />
+      </Card>
       <View style={styles.tiles}>
         <StatTile icon="people-outline" label="usuarios" value={data.totalUsers} />
         <StatTile icon="barbell-outline" label="atletas" value={data.usersByRole.athlete} color={colors.success} />

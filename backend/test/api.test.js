@@ -499,7 +499,8 @@ describe('progreso', () => {
     assert.equal(res.body.data.daily.length, 7);
     assert.ok(res.body.data.summary.loggedDays >= 6);
     const bench = res.body.data.exercises.find((e) => e.name.startsWith('Press de banca'));
-    assert.equal(bench.sessions, 3);
+    // La rutina pendiente del coach no cuenta como una sesión realizada.
+    assert.equal(bench.sessions, 2);
     assert.equal(bench.delta.bestWeight, 2.5);
   });
 
@@ -739,3 +740,139 @@ describe('MacroEntreno Pro: suscripción con Mercado Pago', () => {
   });
 });
 
+
+describe('seguimiento, planes e informes por rol', () => {
+  let coachA, coachB, athleteA, athleteB, plan;
+  const headers = {};
+  let today, week, food;
+  before(async () => {
+    const periods = await import('../src/modules/reports/periods.js');
+    today = periods.argentinaToday();
+    week = periods.mondayOf(today);
+    for (const [key, role, name] of [['ca', 'coach', 'Coach A'], ['cb', 'coach', 'Coach B'], ['aa', 'athlete', 'Atleta A'], ['ab', 'athlete', 'Atleta B']]) {
+      const res = await request(app).post('/api/users').set(auth('admin')).send({ name, email: `${key}@seguimiento.test`, password: 'Demo1234', role });
+      assert.equal(res.status, 201, res.text);
+      const session = await login(`${key}@seguimiento.test`);
+      headers[key] = { Authorization: `Bearer ${session.body.data.tokens.accessToken}` };
+      if (key === 'ca') coachA = res.body.data.id;
+      if (key === 'cb') coachB = res.body.data.id;
+      if (key === 'aa') athleteA = res.body.data.id;
+      if (key === 'ab') athleteB = res.body.data.id;
+    }
+    await request(app).put(`/api/users/${athleteA}`).set(auth('admin')).send({ coachId: coachA });
+    await request(app).put(`/api/users/${athleteB}`).set(auth('admin')).send({ coachId: coachB });
+    const list = await request(app).get('/api/foods?scope=global&limit=1').set(headers.ca);
+    food = list.body.data[0];
+  });
+  test('panel limitado a los clientes del coach y validación de fechas reales', async () => {
+    const dash = await request(app).get(`/api/coaching/dashboard?date=${today}`).set(headers.ca);
+    assert.equal(dash.status, 200, dash.text);
+    assert.deepEqual(dash.body.data.clients.map((c) => c.id), [athleteA]);
+    assert.equal((await request(app).get('/api/coaching/dashboard').set(headers.aa)).status, 403);
+    assert.equal((await request(app).get('/api/coaching/dashboard?date=2026-02-31').set(headers.ca)).status, 400);
+  });
+  test('crear planes verifica rol, asignación, alimentos privados y cantidades', async () => {
+    const body = { athleteId: athleteA, title: 'Plan semanal A', notes: 'Indicaciones de prueba', startDate: today, endDate: today,
+      items: [{ foodId: food.id, grams: food.portionGrams * 2, meal: 'almuerzo', dayOfWeek: 0 }] };
+    assert.equal((await request(app).post('/api/coaching/plans').set(headers.aa).send(body)).status, 403);
+    assert.equal((await request(app).post('/api/coaching/plans').set(headers.cb).send(body)).status, 403);
+    assert.equal((await request(app).post('/api/coaching/plans').set(headers.ca).send({ ...body, items: [{ ...body.items[0], grams: -1 }] })).status, 400);
+    const privateFood = await request(app).post('/api/foods').set(headers.ab).send({ name: 'Comida privada B', category: 'Personal', portionGrams: 100, kcal: 150, protein: 10, carbs: 20, fat: 2 });
+    assert.equal(privateFood.status, 201, privateFood.text);
+    assert.equal((await request(app).post('/api/coaching/plans').set(headers.ca).send({ ...body, items: [{ ...body.items[0], foodId: privateFood.body.data.id }] })).status, 400);
+    const created = await request(app).post('/api/coaching/plans').set(headers.ca).send(body);
+    assert.equal(created.status, 201, created.text);
+    plan = created.body.data;
+    assert.equal(plan.items[0].kcal, Math.round(food.kcal * 20) / 10);
+    assert.equal((await request(app).get(`/api/coaching/plans/${plan.id}`).set(headers.cb)).status, 403);
+    assert.equal((await request(app).get(`/api/coaching/plans/${plan.id}/pdf`).set(headers.ab)).status, 403);
+  });
+  test('copiar plan es atómico, conserva nutrientes y no duplica con dos clics', async () => {
+    const results = await Promise.all([1, 2].map(() => request(app).post(`/api/coaching/plans/${plan.id}/apply`).set(headers.aa).send({ date: today })));
+    for (const r of results) assert.equal(r.status, 200, r.text);
+    assert.equal(results.reduce((n, r) => n + r.body.data.added, 0), 1);
+    const day = await request(app).get(`/api/diary?date=${today}`).set(headers.aa);
+    assert.equal(day.body.data.entries.length, 1);
+    assert.equal(day.body.data.totals.kcal, plan.items[0].kcal);
+    assert.equal((await request(app).post(`/api/coaching/plans/${plan.id}/apply`).set(headers.ab).send({ date: today })).status, 403);
+    const pdf = await request(app).get(`/api/coaching/plans/${plan.id}/pdf?format=base64`).set(headers.aa);
+    assert.equal(pdf.status, 200, pdf.text);
+    assert.equal(Buffer.from(pdf.body.data.base64, 'base64').subarray(0, 5).toString(), '%PDF-');
+    await request(app).post(`/api/coaching/plans/${plan.id}/archive`).set(headers.ca);
+    assert.equal((await request(app).post(`/api/coaching/plans/${plan.id}/apply`).set(headers.aa).send({ date: today })).status, 400);
+  });
+  test('rutinas asignadas no aumentan rendimiento hasta confirmación del atleta', async () => {
+    const workout = { userId: athleteA, date: today, title: 'Rutina asignada', exercises: [{ name: 'Sentadilla libre', sets: [{ reps: 10, weight: 20 }] }] };
+    const assigned = await request(app).post('/api/workouts').set(headers.ca).send(workout);
+    assert.equal(assigned.status, 201, assigned.text);
+    assert.equal(assigned.body.data.status, 'planned');
+    let report = await request(app).get(`/api/reports/weekly/preview?week=${week}`).set(headers.aa);
+    assert.equal(report.status, 200, report.text);
+    assert.equal(report.body.data.summary.sessions, 0);
+    assert.equal(report.body.data.summary.planned, 1);
+    const completed = { ...workout, status: 'completed' };
+    assert.equal((await request(app).put(`/api/workouts/${assigned.body.data.id}`).set(headers.ca).send(completed)).status, 400);
+    assert.equal((await request(app).put(`/api/workouts/${assigned.body.data.id}`).set(headers.aa).send(completed)).status, 200);
+    report = await request(app).get(`/api/reports/weekly/preview?week=${week}`).set(headers.aa);
+    assert.equal(report.body.data.summary.sessions, 1);
+    assert.equal(report.body.data.summary.volume, 200);
+    const { addDays } = await import('../src/utils/dates.js');
+    assert.equal((await request(app).put(`/api/workouts/${assigned.body.data.id}`).set(headers.ca).send({ ...workout, date: addDays(today, 1) })).status, 400);
+  });
+  test('PDF semanal cerrado es persistente e idempotente y exige acceso al atleta', async () => {
+    const { addDays } = await import('../src/utils/dates.js');
+    const lastWeek = addDays(week, -7);
+    assert.equal((await request(app).post('/api/reports/weekly/generate').set(headers.aa).send({ week })).status, 400);
+    assert.equal((await request(app).get(`/api/reports/weekly/preview?userId=${athleteA}`).set(headers.cb)).status, 403);
+    const first = await request(app).post('/api/reports/weekly/generate').set(headers.aa).send({ week: lastWeek });
+    assert.equal(first.status, 200, first.text);
+    const second = await request(app).post('/api/reports/weekly/generate').set(headers.ca).send({ week: lastWeek, userId: athleteA });
+    assert.equal(first.body.data.id, second.body.data.id);
+    const id = first.body.data.id;
+    assert.equal((await request(app).get(`/api/reports/weekly/${id}/pdf`).set(headers.ab)).status, 403);
+    const pdf = await request(app).get(`/api/reports/weekly/${id}/pdf`).set(headers.aa);
+    assert.equal(pdf.status, 200);
+    assert.match(pdf.headers['content-type'], /application\/pdf/);
+    const [stored] = (await pool.query('SELECT LENGTH(pdf) AS bytes FROM weekly_reports WHERE id = ?', [id]))[0];
+    assert.ok(stored.bytes > 1000);
+    const { generateDueWeeklyReports } = await import('../src/modules/reports/reports.service.js');
+    await generateDueWeeklyReports();
+    await generateDueWeeklyReports();
+    const [[automatic]] = await pool.query('SELECT COUNT(*) AS total FROM weekly_reports WHERE athlete_id = 3 AND week_start = ?', [lastWeek]);
+    assert.equal(automatic.total, 1, 'El proceso automático generó la semana cerrada del atleta demo');
+    const [counts] = (await pool.query('SELECT COUNT(*) AS total FROM weekly_reports WHERE athlete_id = ? AND week_start = ?', [athleteA, lastWeek]))[0];
+    assert.equal(counts.total, 1);
+  });
+  test('mensual cuenta altas únicas y actividad y solo lo descarga admin', async () => {
+    const month = today.slice(0, 7);
+    let report = await request(app).get(`/api/reports/coaches/monthly?month=${month}`).set(auth('admin'));
+    assert.equal(report.status, 200, report.text);
+    let a = report.body.data.coaches.find((c) => c.id === coachA);
+    assert.equal(a.newClients, 1);
+    assert.equal(a.clientsServed, 1);
+    assert.equal(a.workouts, 1);
+    assert.equal(a.meals, 1);
+    assert.equal(a.plans, 1);
+    assert.equal(a.routines, 1);
+    await request(app).put(`/api/users/${athleteA}`).set(auth('admin')).send({ coachId: coachB });
+    assert.equal((await request(app).get(`/api/coaching/plans/${plan.id}`).set(headers.ca)).status, 403);
+    assert.equal((await request(app).get(`/api/coaching/plans/${plan.id}`).set(headers.cb)).status, 200);
+    await request(app).put(`/api/users/${athleteA}`).set(auth('admin')).send({ coachId: coachA });
+    report = await request(app).get(`/api/reports/coaches/monthly?month=${month}`).set(auth('admin'));
+    a = report.body.data.coaches.find((c) => c.id === coachA);
+    assert.equal(a.newClients, 1, 'No cuenta dos veces un cliente reasignado');
+    assert.equal((await request(app).get('/api/reports/coaches/monthly').set(headers.ca)).status, 403);
+    const pdf = await request(app).get(`/api/reports/coaches/monthly/pdf?month=${month}&coachId=${coachA}&format=base64`).set(auth('admin'));
+    assert.equal(pdf.status, 200, pdf.text);
+    assert.equal(Buffer.from(pdf.body.data.base64, 'base64').subarray(0, 5).toString(), '%PDF-');
+    assert.equal((await request(app).get('/api/reports/coaches/monthly?month=2026-13').set(auth('admin'))).status, 400);
+  });
+  test('cambiar el rol del entrenador libera clientes y cierra sus asignaciones', async () => {
+    const updated = await request(app).put(`/api/users/${coachA}`).set(auth('admin')).send({ role: 'athlete' });
+    assert.equal(updated.status, 200, updated.text);
+    const athlete = await request(app).get(`/api/users/${athleteA}`).set(auth('admin'));
+    assert.equal(athlete.body.data.coachId, null);
+    const [[row]] = await pool.query('SELECT COUNT(*) AS total FROM coach_assignments WHERE coach_id = ? AND ended_at IS NULL', [coachA]);
+    assert.equal(row.total, 0);
+  });
+});

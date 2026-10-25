@@ -31,6 +31,8 @@ export default function AppLayout() {
       <Stack.Screen name="change-password" options={{ title: 'Contraseña', presentation: 'modal' }} />
       <Stack.Screen name="foods" options={{ title: 'Alimentos' }} />
       <Stack.Screen name="food-form" options={{ title: 'Alimento' }} />
+      <Stack.Screen name="nutrition-plans" options={{ title: 'Plan de alimentación' }} />
+      <Stack.Screen name="weekly-reports" options={{ title: 'Informes semanales' }} />
       <Stack.Screen name="pro" options={{ title: 'MacroEntreno Pro' }} />
 
       {/* Atleta: carga su diario y entrena con la cámara */}
@@ -47,12 +49,14 @@ export default function AppLayout() {
 
       {/* Coach y admin */}
       <Stack.Protected guard={isStaff}>
+        <Stack.Screen name="nutrition-plan-form" options={{ title: 'Plan de alimentación' }} />
         <Stack.Screen name="athlete/[id]" options={{ title: 'Atleta' }} />
         <Stack.Screen name="exercise-form" options={{ title: 'Ejercicio' }} />
       </Stack.Protected>
 
       {/* Solo admin */}
       <Stack.Protected guard={role === 'admin'}>
+        <Stack.Screen name="coach-reports" options={{ title: 'Reportes de entrenadores' }} />
         <Stack.Screen name="user-form" options={{ title: 'Usuario' }} />
       </Stack.Protected>
     </Stack>

@@ -76,7 +76,7 @@ router.get('/', validate({ query: progressQuery }), async (req, res) => {
     ),
     query(
       `SELECT workout_date, COUNT(*) AS workouts FROM workouts
-       WHERE user_id = ? AND workout_date BETWEEN ? AND ? GROUP BY workout_date`,
+       WHERE status = 'completed' AND user_id = ? AND workout_date BETWEEN ? AND ? GROUP BY workout_date`,
       [userId, from, to],
     ),
     query(
@@ -88,7 +88,7 @@ router.get('/', validate({ query: progressQuery }), async (req, res) => {
        FROM workouts w
        JOIN workout_exercises we ON we.workout_id = w.id
        JOIN workout_sets ws ON ws.workout_exercise_id = we.id
-       WHERE w.user_id = ? AND w.workout_date BETWEEN ? AND ?`,
+       WHERE w.status = 'completed' AND w.user_id = ? AND w.workout_date BETWEEN ? AND ?`,
       [userId, addDays(to, -(exerciseDays - 1)), to],
     ),
   ]);

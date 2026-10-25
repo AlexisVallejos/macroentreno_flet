@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bcrypt from 'bcryptjs';
 import mysql from 'mysql2/promise';
+import { migrateCoaching } from '../src/config/migrations.js';
 import { env } from '../src/config/env.js';
 import { MICROS, MICRO_COLUMNS } from '../src/modules/nutrition/micros.js';
 
@@ -19,12 +20,15 @@ export const DEMO_PASSWORD = 'Demo1234';
 export async function initDatabase({ seedOnly = false, config = env.db } = {}) {
   const conn = await mysql.createConnection({ ...config, database: undefined, multipleStatements: true });
   try {
+    await conn.query("SET time_zone = '-03:00'");
     await conn.query(
       `CREATE DATABASE IF NOT EXISTS \`${config.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
     );
     await conn.changeUser({ database: config.database });
     if (!seedOnly) await conn.query(await fs.readFile(path.join(root, 'database/schema.sql'), 'utf8'));
+    await migrateCoaching(conn);
     await seed(conn);
+    await migrateCoaching(conn);
   } finally {
     await conn.end();
   }
@@ -33,7 +37,7 @@ export async function initDatabase({ seedOnly = false, config = env.db } = {}) {
 async function seed(conn) {
   const hash = await bcrypt.hash(DEMO_PASSWORD, 10);
   await conn.query('SET FOREIGN_KEY_CHECKS = 0');
-  for (const table of ['workout_sets', 'workout_exercises', 'workouts', 'exercises', 'diary_entries', 'foods', 'subscriptions', 'refresh_tokens', 'social_accounts', 'users']) {
+  for (const table of ['weekly_reports', 'meal_plan_applications', 'meal_plan_items', 'meal_plans', 'coach_assignments', 'workout_sets', 'workout_exercises', 'workouts', 'exercises', 'diary_entries', 'foods', 'subscriptions', 'refresh_tokens', 'social_accounts', 'users']) {
     await conn.query(`TRUNCATE TABLE ${table}`);
   }
   await conn.query('SET FOREIGN_KEY_CHECKS = 1');
@@ -118,6 +122,7 @@ async function seed(conn) {
       ]);
     }
   }
+  await conn.query("UPDATE workouts SET status = 'planned' WHERE created_by <> user_id");
 }
 
 // Ejecución directa por CLI.

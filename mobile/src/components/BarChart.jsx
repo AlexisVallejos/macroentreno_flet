@@ -38,7 +38,7 @@ export function KcalBarChart({ daily, goal, height = 160 }) {
         {daily.map((d) => (
           <View key={d.date} style={styles.col}>
             <Text style={[styles.day, d.date === todayKey && styles.today]}>{shortWeekday(d.date)}</Text>
-            <View style={[styles.dot, d.workouts > 0 && styles.dotOn]} />
+            <View style={[styles.dot, (d.workouts ?? d.sessions ?? 0) > 0 && styles.dotOn]} />
           </View>
         ))}
       </View>

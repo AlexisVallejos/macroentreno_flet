@@ -17,6 +17,6 @@ export async function resolveTargetUser(req, requestedUserId, { coachCan = false
   if (!target) throw notFound('Usuario no encontrado');
 
   if (me.role === 'admin') return targetId;
-  if (me.role === 'coach' && coachCan && target.coach_id === me.id) return targetId;
+  if (me.role === 'coach' && coachCan && target.role === 'athlete' && target.coach_id === me.id) return targetId;
   throw forbidden('No tenés acceso a los datos de este usuario');
 }

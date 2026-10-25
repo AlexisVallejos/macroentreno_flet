@@ -21,6 +21,7 @@ export function WorkoutCard({ workout, onPress }) {
           <Text style={styles.volumeLabel}>kg volumen</Text>
         </View>
       </View>
+      <Text style={styles.coachText}>{workout.status === 'planned' ? 'Pendiente de realizar' : 'Realizada'}</Text>
       {assignedByCoach ? (
         <View style={styles.coach}>
           <Ionicons name="stopwatch-outline" size={14} color={colors.warning} />
