@@ -1,0 +1,7 @@
+$ cd mobile && npm test
+ℹ tests 53
+ℹ suites 5
+ℹ pass 53
+ℹ fail 0
+$ npx expo lint
+(sin errores ni advertencias)

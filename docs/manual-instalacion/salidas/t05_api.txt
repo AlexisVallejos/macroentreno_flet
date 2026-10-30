@@ -1,0 +1,6 @@
+$ npm run dev:memory
+> macroentreno-api@1.0.0 dev:memory
+> node scripts/dev-memory.js
+MySQL temporal en el puerto 11638. Usuarios demo con contraseña Demo1234.
+MacroEntreno API escuchando en http://localhost:3000/api
+Asistente con IA: DESACTIVADO (falta OPENAI_API_KEY) → pegá tu clave en backend/.env → OPENAI_API_KEY y reiniciá la API

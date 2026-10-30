@@ -1,0 +1,10 @@
+$ cd mobile && npx expo start --web
+env: load .env
+env: export EXPO_PUBLIC_API_URL
+Starting project at ~/macroentreno_flet/mobile
+Using src/app as the root directory for Expo Router.
+Metro is running in CI mode, reloads are disabled. Remove CI=true to enable watch mode.
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web Bundled 2108ms node_modules/expo-router/entry.js (1121 modules)

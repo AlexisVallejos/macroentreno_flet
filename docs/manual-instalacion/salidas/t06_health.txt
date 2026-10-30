@@ -1,0 +1,2 @@
+$ curl http://localhost:3000/api/health
+{"data":{"status":"ok","database":"ok","time":"2026-10-30T18:58:45.453Z"}}

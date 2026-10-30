@@ -17,6 +17,7 @@ con series y progreso semanal) sobre una arquitectura cliente-servidor:
 | [docs/INSTALACION.md](docs/INSTALACION.md) | Guía de instalación y configuración: dependencias, variables de entorno, MySQL, redes sociales y **APK** |
 | [docs/MANUAL_USUARIO.md](docs/MANUAL_USUARIO.md) | Manual de usuario por rol: iniciar sesión, navegar y usar cada pantalla |
 | [Manual de usuario (PDF)](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.pdf) · [Word](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.docx) | Versión para imprimir o entregar del manual de usuario, con capturas de pantalla |
+| [Manual de instalación (PDF)](docs/manual-instalacion/Manual_de_Instalacion_MacroEntreno.pdf) · [Word](docs/manual-instalacion/Manual_de_Instalacion_MacroEntreno.docx) | Instalación paso a paso con las salidas reales de cada comando y la publicación en Vercel |
 | [backend/README.md](backend/README.md) | **Documentación de la API**: endpoints, métodos, parámetros, respuestas y códigos de error |
 | [docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md) | Modelo entidad-relación, tablas e **índices** (qué consulta usa cada uno) |
 
@@ -73,7 +74,8 @@ con series y progreso semanal) sobre una arquitectura cliente-servidor:
 |---|---|
 | Código fuente completo (frontend + backend) | ✅ `mobile/` + `backend/` |
 | Manual de usuario | ✅ [PDF](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.pdf) · [Word](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.docx) · [Markdown](docs/MANUAL_USUARIO.md) |
-| Guía de instalación y configuración | ✅ [docs/INSTALACION.md](docs/INSTALACION.md) |
+| Guía de instalación y configuración | ✅ [PDF](docs/manual-instalacion/Manual_de_Instalacion_MacroEntreno.pdf) · [Word](docs/manual-instalacion/Manual_de_Instalacion_MacroEntreno.docx) · [Markdown](docs/INSTALACION.md) |
+| App publicada | ✅ [macroentreno.vercel.app](https://macroentreno.vercel.app) (web + API + MySQL) |
 | Documentación de la API | ✅ [backend/README.md](backend/README.md) |
 | APK | Se genera con `npx eas-cli build -p android --profile preview` → [instrucciones](docs/INSTALACION.md#6-generar-el-apk) |
 | Video de demostración (opcional) | Pendiente: guion sugerido abajo |
@@ -118,6 +120,8 @@ macroentreno_flet/
 │   ├── INSTALACION.md        ← instalación, configuración y APK
 │   ├── MANUAL_USUARIO.md     ← manual de uso por rol
 │   ├── manual-usuario/       ← manual de usuario en PDF y Word (con capturas)
+│   ├── manual-instalacion/   ← manual de instalación en PDF y Word
+│   ├── herramientas/         ← generan los manuales y las capturas
 │   └── BASE_DE_DATOS.md      ← modelo ER e índices
 ├── backend/                  ← API REST (Node.js + Express + MySQL)
 │   ├── README.md             ← documentación de la API

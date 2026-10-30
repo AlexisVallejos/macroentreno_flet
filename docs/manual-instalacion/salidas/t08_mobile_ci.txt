@@ -1,0 +1,3 @@
+$ cd mobile && npm ci
+$ ls node_modules | wc -l
+     521
