@@ -27,7 +27,11 @@ export const env = {
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'macroentreno',
+    // Bases en la nube que exigen conexión cifrada (DB_SSL=true).
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } : undefined,
   },
+  // En Vercel cada instancia abre su propio pool: conviene un límite chico.
+  dbConnectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
 
   jwt: {
     accessSecret: required('JWT_ACCESS_SECRET', 'dev_access_secret_no_usar_en_produccion'),

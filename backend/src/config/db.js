@@ -5,7 +5,7 @@ import { env } from './env.js';
 export const pool = mysql.createPool({
   ...env.db,
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: env.dbConnectionLimit,
   dateStrings: true, // DATE -> 'YYYY-MM-DD' sin conversiones de zona horaria
   decimalNumbers: true, // DECIMAL -> number
   charset: 'utf8mb4',
