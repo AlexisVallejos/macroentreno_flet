@@ -4,13 +4,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { coachingApi, foodsApi } from '../../api/endpoints';
 import { Button, Card, Chips, EmptyState, ErrorState, FormError, ListItem, Loading, Screen, TextField } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { MEALS, mealLabel } from '../../utils/constants';
 import { addDays, today } from '../../utils/dates';
 import { fmt } from '../../utils/format';
 import { WEEKDAYS } from './NutritionPlansScreen';
 
 export default function NutritionPlanFormScreen() {
+  useTheme();
   const router = useRouter();
   const { userId } = useLocalSearchParams();
   const [title, setTitle] = useState('');
@@ -71,4 +72,4 @@ export default function NutritionPlanFormScreen() {
     </Card>
   </Screen>;
 }
-const styles = StyleSheet.create({ row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, alignItems: 'center' }, item: { gap: spacing.sm, paddingVertical: spacing.md }, text: { color: colors.text, fontSize: font.md }, muted: { color: colors.muted, fontSize: font.sm } });
+const styles = createStyles(() => StyleSheet.create({ row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, alignItems: 'center' }, item: { gap: spacing.sm, paddingVertical: spacing.md }, text: { color: colors.text, fontSize: font.md }, muted: { color: colors.muted, fontSize: font.sm } }));

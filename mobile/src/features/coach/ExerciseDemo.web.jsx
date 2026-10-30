@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Chips } from '../../components';
-import { colors, continuous, font, radius, spacing } from '../../theme';
+import { colors, continuous, createStyles, font, radius, spacing, useTheme } from '../../theme';
 import { createDemoScene } from './demoScene';
 import { cuesFor, figureAt, loop } from './pose/demo';
 
@@ -13,6 +13,7 @@ const VIEWS = [
 
 /** Un maniquí 3D que hace el ejercicio con la técnica exacta que el analizador va a dar por buena. */
 export function ExerciseDemo({ rule }) {
+  useTheme();
   const host = useRef(null);
   const [reduced] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
   const [view, setView] = useState('side');
@@ -137,7 +138,7 @@ export function ExerciseDemo({ rule }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   demo: {
     height: 360,
     borderRadius: radius.lg,
@@ -164,4 +165,4 @@ const styles = StyleSheet.create({
   hint: { position: 'absolute', top: 44, right: spacing.md, color: colors.muted, fontSize: font.xs },
   fallback: { gap: spacing.sm, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.card },
   kicker: { color: colors.primary, fontSize: font.xs, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.6 },
-});
+}));

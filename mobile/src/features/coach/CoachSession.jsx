@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card, Screen } from '../../components';
-import { colors, font, spacing, tracking } from '../../theme';
+import { colors, createStyles, font, spacing, tracking, useTheme } from '../../theme';
 import { cuesFor } from './pose/demo';
 
 /**
@@ -10,6 +10,7 @@ import { cuesFor } from './pose/demo';
  * Se explica y se muestran las indicaciones del ejercicio, para que la pantalla no quede en blanco.
  */
 export function CoachSession({ exercise, rule }) {
+  useTheme();
   const router = useRouter();
   const cues = cuesFor(rule.id);
   return (
@@ -36,8 +37,8 @@ export function CoachSession({ exercise, rule }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   icon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   title: { color: colors.text, fontSize: font.xl, fontWeight: '700', letterSpacing: tracking.title },
   text: { color: colors.muted, fontSize: font.md, marginTop: spacing.xs },
-});
+}));

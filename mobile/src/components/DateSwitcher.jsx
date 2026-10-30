@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, continuous, font, radius } from '../theme';
+import { colors, continuous, createStyles, font, radius, useTheme } from '../theme';
 import { addDays, formatDayLabel, today } from '../utils/dates';
 
 /** Navegación día por día (‹ Hoy ›). Tocar el texto vuelve a hoy. */
 export function DateSwitcher({ date, onChange }) {
+  useTheme();
   return (
     <View style={[styles.row, continuous]}>
       <Pressable
@@ -29,7 +30,7 @@ export function DateSwitcher({ date, onChange }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -41,4 +42,4 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center' },
   label: { color: colors.text, fontSize: font.lg, fontWeight: '600' },
   sub: { color: colors.muted, fontSize: font.xs },
-});
+}));

@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, continuous, font, numeric, radius, spacing, tracking } from '../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, tracking, useTheme } from '../theme';
 
 /** Dato destacado al estilo de las tarjetas de Salud: categoría en color arriba y el valor grande abajo. */
 export function StatTile({ icon, label, value, color = colors.primary }) {
+  useTheme();
   return (
     <View style={[styles.tile, continuous]}>
       <View style={styles.head}>
@@ -17,7 +18,7 @@ export function StatTile({ icon, label, value, color = colors.primary }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   tile: {
     flexGrow: 1,
     flexBasis: 140,
@@ -29,4 +30,4 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   label: { fontSize: font.sm, fontWeight: '600', flexShrink: 1 },
   value: { ...numeric, color: colors.text, fontSize: font.xxl + 2, fontWeight: '700', letterSpacing: tracking.title },
-});
+}));

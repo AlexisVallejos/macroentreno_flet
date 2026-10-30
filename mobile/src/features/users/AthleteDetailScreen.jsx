@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { diaryApi, usersApi } from '../../api/endpoints';
 import { Button, Card, Chips, DateSwitcher, ErrorState, Loading, RoleBadge, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing, tracking } from '../../theme';
+import { colors, createStyles, font, spacing, tracking, useTheme } from '../../theme';
 import { today } from '../../utils/dates';
 import { DiaryDay } from '../diary/DiaryDay';
 import { ProgressView } from '../progress/ProgressView';
@@ -14,6 +14,7 @@ import { GoalsForm } from './GoalsForm';
 
 /** Vista del coach (o admin) sobre un atleta: diario (solo lectura), rutinas, progreso y objetivos. */
 export default function AthleteDetailScreen() {
+  useTheme();
   const router = useRouter();
   const { id: idParam } = useLocalSearchParams();
   const id = Number(idParam);
@@ -84,7 +85,7 @@ export default function AthleteDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   avatar: {
     width: 64,
@@ -97,4 +98,4 @@ const styles = StyleSheet.create({
   avatarText: { color: colors.onPrimary, fontSize: font.xxl, fontWeight: '700' },
   name: { color: colors.text, fontSize: font.xl + 2, fontWeight: '700', letterSpacing: tracking.title },
   muted: { color: colors.muted, fontSize: font.sm },
-});
+}));

@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { exercisesApi } from '../../api/endpoints';
 import { Button, Chips, ErrorState, FormError, Loading, Screen, TextField } from '../../components';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 
 const DEFAULT_GROUPS = ['Pecho', 'Espalda', 'Piernas', 'Hombros', 'Biceps', 'Triceps', 'Core'];
 
 /** Alta / edición / baja de un ejercicio del catálogo (coach y admin). */
 export default function ExerciseFormScreen() {
+  useTheme();
   const router = useRouter();
   const { id: idParam } = useLocalSearchParams();
   const id = idParam ? Number(idParam) : null;
@@ -109,7 +110,7 @@ export default function ExerciseFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.md },
   label: { color: colors.muted, fontSize: font.sm, fontWeight: '600' },
-});
+}));

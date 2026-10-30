@@ -27,6 +27,22 @@ router.post('/fatsecret/import', requirePro, validate({ body: schemas.fatSecretI
   res.status(201).json({ data: await service.importFatSecretFood(req.user, req.valid.body.externalId) });
 });
 
+// Bases gratuitas (todos los usuarios): Open Food Facts (productos envasados) y USDA (genéricos).
+router.get('/external/search', validate({ query: schemas.externalSearchQuery }), async (req, res) => {
+  const { source, search, limit } = req.valid.query;
+  res.json({ data: await service.searchExternal(source, search, { limit }) });
+});
+
+router.post('/external/import', validate({ body: schemas.externalImportSchema }), async (req, res) => {
+  const { source, externalId } = req.valid.body;
+  res.status(201).json({ data: await service.importExternal(req.user, source, externalId) });
+});
+
+// Escáner de código de barras de la app.
+router.get('/barcode/:code', validate({ params: schemas.barcodeParam }), async (req, res) => {
+  res.json({ data: await service.findByBarcode(req.user, req.valid.params.code) });
+});
+
 router.get('/:id', validate({ params: idParam }), async (req, res) => {
   res.json({ data: service.toFood(await service.getFood(req.user, req.valid.params.id), { micros: req.user.pro }) });
 });

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, font, numeric, spacing, tracking } from '../theme';
+import { colors, createStyles, font, numeric, spacing, tracking, useTheme } from '../theme';
 import { fmt, round1 } from '../utils/format';
 import { ProgressRing } from './ProgressRing';
 
 /** Anillo chico de un macro contra su objetivo, con el valor debajo. */
 export function MacroRing({ label, value, goal, unit = 'g', color, size = 64 }) {
+  useTheme();
   const pct = goal > 0 ? value / goal : 0;
   const over = goal > 0 && value > goal * 1.1;
   return (
@@ -37,6 +38,7 @@ export function MacroRing({ label, value, goal, unit = 'g', color, size = 64 }) 
  * y no la ventana porque en tablet/escritorio comparte la fila con otras tarjetas.
  */
 export function MacroSummary({ totals, goals }) {
+  useTheme();
   const [width, setWidth] = useState(0);
   const wide = width >= 600;
   const kcal = totals?.kcal ?? 0;
@@ -71,6 +73,7 @@ export function MacroSummary({ totals, goals }) {
 }
 
 export function MacroInline({ kcal, protein, carbs, fat }) {
+  useTheme();
   return (
     <Text style={styles.inline}>
       <Text style={{ color: colors.text }}>{fmt(kcal)} kcal</Text>
@@ -84,7 +87,7 @@ export function MacroInline({ kcal, protein, carbs, fat }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   summary: { gap: spacing.xl, alignItems: 'center' },
   summaryWide: { flexDirection: 'row', justifyContent: 'space-around' },
   hero: { alignItems: 'center', gap: spacing.md },
@@ -99,4 +102,4 @@ const styles = StyleSheet.create({
   macroValue: { ...numeric, color: colors.text, fontSize: font.sm, fontWeight: '600' },
   macroGoal: { color: colors.muted, fontWeight: '400' },
   inline: { color: colors.muted, fontSize: font.sm },
-});
+}));

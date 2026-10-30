@@ -3,6 +3,8 @@ import { forbidden, notFound } from '../../utils/httpError.js';
 import { paginationMeta } from '../../utils/validation.js';
 import { MICRO_COLUMNS, microsOf } from '../nutrition/micros.js';
 import { getFoodDetail } from './fatsecret.js';
+import * as openFoodFacts from './openfoodfacts.js';
+import * as usda from './usda.js';
 
 /** Los micronutrientes y el origen solo se incluyen para quien tiene Pro (`micros: true`). */
 export function toFood(row, { micros = false } = {}) {
@@ -13,6 +15,7 @@ export function toFood(row, { micros = false } = {}) {
     brand: row.brand,
     portionGrams: row.portion_grams,
     portionDescription: row.portion_description,
+    barcode: row.barcode,
     kcal: row.kcal,
     protein: row.protein,
     carbs: row.carbs,
@@ -117,6 +120,7 @@ const COLUMNS = {
   protein: 'protein',
   carbs: 'carbs',
   fat: 'fat',
+  barcode: 'barcode',
 };
 
 export async function createFood(user, data) {
@@ -150,10 +154,20 @@ export async function updateFood(user, id, data) {
  * Si ya se había importado, se actualizan sus valores en lugar de duplicarlo.
  */
 export async function importFatSecretFood(user, externalId) {
-  const food = await getFoodDetail(externalId);
+  return saveExternalFood(user, 'fatsecret', await getFoodDetail(externalId));
+}
+
+const SOURCE_CATEGORY = { fatsecret: 'FatSecret', openfoodfacts: 'Open Food Facts', usda: 'USDA' };
+
+/**
+ * Guarda un alimento de una fuente externa en el catálogo global (los datos son de la fuente, no
+ * del usuario). Si ya se había importado, se actualizan sus valores en lugar de duplicarlo.
+ */
+async function saveExternalFood(user, source, food) {
   const values = {
     name: food.name.slice(0, 150),
-    category: 'FatSecret',
+    category: SOURCE_CATEGORY[source],
+    barcode: food.barcode ?? null,
     brand: food.brand?.slice(0, 80) ?? null,
     portion_grams: food.portionGrams,
     portion_description: food.portionDescription,
@@ -166,12 +180,41 @@ export async function importFatSecretFood(user, externalId) {
   const columns = Object.keys(values);
   await query(
     `INSERT INTO foods (owner_id, external_source, external_id, ${columns.join(', ')})
-     VALUES (NULL, 'fatsecret', ?, ${columns.map(() => '?').join(', ')})
+     VALUES (NULL, ?, ?, ${columns.map(() => '?').join(', ')})
      ON DUPLICATE KEY UPDATE ${columns.map((c) => `${c} = VALUES(${c})`).join(', ')}`,
-    [food.externalId, ...columns.map((c) => values[c])],
+    [source, food.externalId, ...columns.map((c) => values[c])],
   );
-  const [row] = await query("SELECT * FROM foods WHERE external_source = 'fatsecret' AND external_id = ?", [food.externalId]);
+  const [row] = await query('SELECT * FROM foods WHERE external_source = ? AND external_id = ?', [source, food.externalId]);
   return toFood(row, { micros: user.pro });
+}
+
+/** Busca en las bases gratuitas. Los resultados traen macros y micronutrientes cada 100 g. */
+export async function searchExternal(source, search, { limit }) {
+  const foods = source === 'usda' ? await usda.searchFoods(search, { limit }) : await openFoodFacts.searchProducts(search, { limit });
+  return foods.map((food) => ({ ...food, source, microsCount: Object.values(food.micros).filter((v) => v !== null).length }));
+}
+
+/** Importa al catálogo un alimento de Open Food Facts (por código) o de USDA (por fdcId). */
+export async function importExternal(user, source, externalId) {
+  const food = source === 'usda' ? await usda.getFood(externalId) : await openFoodFacts.getProductByBarcode(externalId);
+  if (!food) throw notFound('Ese producto no está en Open Food Facts o no informa sus calorías');
+  return saveExternalFood(user, source, food);
+}
+
+/**
+ * Código de barras escaneado: primero el catálogo (propios del usuario y globales), después Open
+ * Food Facts, que si lo encuentra se guarda para que el próximo escaneo no salga de la app.
+ * `found: false` si no está en ningún lado (la app ofrece cargarlo a mano con ese código).
+ */
+export async function findByBarcode(user, barcode) {
+  const [row] = await query(
+    'SELECT * FROM foods WHERE barcode = ? AND (owner_id IS NULL OR owner_id = ?) ORDER BY owner_id IS NULL, id LIMIT 1',
+    [barcode, user.id],
+  );
+  if (row) return { found: true, source: 'catalog', food: toFood(row, { micros: user.pro }) };
+  const product = await openFoodFacts.getProductByBarcode(barcode);
+  if (!product) return { found: false, barcode };
+  return { found: true, source: 'openfoodfacts', food: await saveExternalFood(user, 'openfoodfacts', product) };
 }
 
 export async function deleteFood(user, id) {

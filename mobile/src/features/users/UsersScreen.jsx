@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { usersApi } from '../../api/endpoints';
 import { Button, Card, Chips, EmptyState, ErrorState, ListItem, Loading, RoleBadge, Screen, TextField } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors } from '../../theme';
+import { colors, useTheme } from '../../theme';
 
 const ROLE_FILTERS = [
   { value: '', label: 'Todos' },
@@ -15,6 +15,7 @@ const ROLE_FILTERS = [
 
 /** ABM de usuarios (solo administrador). */
 export default function UsersScreen() {
+  useTheme();
   const router = useRouter();
   const [role, setRole] = useState('');
   const [search, setSearch] = useState('');

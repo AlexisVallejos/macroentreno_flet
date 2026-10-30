@@ -4,10 +4,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { coachingApi } from '../../api/endpoints';
 import { Button, Card, DateSwitcher, EmptyState, ErrorState, Grid, Loading, Screen, StatTile, TextField } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { formatWeek, mondayOf, today } from '../../utils/dates';
+import { AssistantBanner } from '../assistant/AssistantBanner';
 
 export default function CoachHome() {
+  useTheme();
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [date, setDate] = useState(today());
@@ -15,6 +17,7 @@ export default function CoachHome() {
   const clients = (data?.clients || []).filter((c) => `${c.name} ${c.email}`.toLowerCase().includes(search.trim().toLowerCase()));
   return (
     <Screen onRefresh={reload} refreshing={refreshing}>
+      <AssistantBanner subtitle="Pedile que cargue ejercicios al catálogo o arme rutinas" />
       <Text style={styles.intro}>Tus clientes, sus comidas y sus entrenamientos. Elegí un día para revisar su actividad y abrí cada ficha para el seguimiento completo.</Text>
       <DateSwitcher date={date} onChange={(next) => { setData(null); setDate(next); }} />
       {data && <>
@@ -39,10 +42,10 @@ export default function CoachHome() {
     </Screen>
   );
 }
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   intro: { color: colors.muted, fontSize: font.sm },
   muted: { color: colors.muted, fontSize: font.sm },
   body: { color: colors.text, fontSize: font.md },
   title: { color: colors.text, fontSize: font.lg, fontWeight: '700' },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-});
+}));

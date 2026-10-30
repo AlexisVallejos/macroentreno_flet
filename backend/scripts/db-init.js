@@ -8,7 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import bcrypt from 'bcryptjs';
 import mysql from 'mysql2/promise';
-import { migrateCoaching } from '../src/config/migrations.js';
+import { runMigrations } from '../src/config/migrations.js';
 import { env } from '../src/config/env.js';
 import { MICROS, MICRO_COLUMNS } from '../src/modules/nutrition/micros.js';
 
@@ -26,9 +26,9 @@ export async function initDatabase({ seedOnly = false, config = env.db } = {}) {
     );
     await conn.changeUser({ database: config.database });
     if (!seedOnly) await conn.query(await fs.readFile(path.join(root, 'database/schema.sql'), 'utf8'));
-    await migrateCoaching(conn);
+    await runMigrations(conn);
     await seed(conn);
-    await migrateCoaching(conn);
+    await runMigrations(conn);
   } finally {
     await conn.end();
   }

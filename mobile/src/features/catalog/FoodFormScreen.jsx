@@ -4,7 +4,7 @@ import { StyleSheet, Switch, Text, View } from 'react-native';
 import { foodsApi } from '../../api/endpoints';
 import { Button, Card, ErrorState, FieldRow, FormError, Loading, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 import { toNumber, validateNumbers } from '../../utils/validation';
 
@@ -12,6 +12,7 @@ const EMPTY = { name: '', category: '', brand: '', portionGrams: '100', portionD
 
 /** Alta / edición / baja de un alimento (propio, o global si es coach/admin). */
 export default function FoodFormScreen() {
+  useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const { id: idParam } = useLocalSearchParams();
@@ -141,9 +142,9 @@ export default function FoodFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   switchLabel: { color: colors.text, fontSize: font.md, fontWeight: '600' },
   muted: { color: colors.muted, fontSize: font.sm },
-});
+}));

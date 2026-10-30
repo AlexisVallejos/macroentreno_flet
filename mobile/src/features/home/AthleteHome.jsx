@@ -5,10 +5,12 @@ import { diaryApi, progressApi } from '../../api/endpoints';
 import { Button, Card, ErrorState, Grid, KcalBarChart, Loading, MacroSummary, Screen } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { useResource } from '../../hooks/useResource';
-import { colors, continuous, font, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, radius, spacing, tracking, useTheme } from '../../theme';
 import { today } from '../../utils/dates';
+import { AssistantBanner } from '../assistant/AssistantBanner';
 
 export default function AthleteHome() {
+  useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const date = today();
@@ -21,7 +23,7 @@ export default function AthleteHome() {
   return (
     <Screen onRefresh={reload} refreshing={refreshing}>
       <View>
-        <Text style={styles.hello}>¡Hola, {user.name.split(' ')[0]}! 💪</Text>
+        <Text style={styles.hello}>¡Hola, {user.name.split(' ')[0]}!</Text>
         <Text style={styles.sub}>
           {user.coachName ? `Tu entrenador: ${user.coachName}` : 'Todavía no tenés entrenador asignado'}
         </Text>
@@ -40,6 +42,7 @@ export default function AthleteHome() {
           onPress={() => router.push({ pathname: '/workout-form', params: { date } })}
         />
       </View>
+      <AssistantBanner />
 
       <View style={{ gap: spacing.sm }}>
         <Button title="Mi plan de alimentación" icon="nutrition-outline" variant="tinted" onPress={() => router.push('/nutrition-plans')} />
@@ -69,6 +72,7 @@ export default function AthleteHome() {
 
 /** Acceso rápido en forma de tarjeta: ícono en un círculo y el texto debajo (puede ocupar dos líneas). */
 function QuickAction({ icon, title, onPress, primary }) {
+  useTheme();
   const fg = primary ? colors.onPrimary : colors.text;
   return (
     <Pressable
@@ -84,7 +88,7 @@ function QuickAction({ icon, title, onPress, primary }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   hello: { color: colors.text, fontSize: font.xxl, fontWeight: '700', letterSpacing: tracking.title },
   sub: { color: colors.muted, fontSize: font.sm },
   actions: { flexDirection: 'row', gap: spacing.md },
@@ -101,4 +105,4 @@ const styles = StyleSheet.create({
   actionPressed: { opacity: 0.85, transform: [{ scale: 0.97 }] },
   actionIcon: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   actionText: { fontSize: font.md + 1, fontWeight: '600', letterSpacing: tracking.headline },
-});
+}));

@@ -128,13 +128,15 @@ CREATE TABLE foods (
   vitamin_a            DECIMAL(8,2) NULL,                -- µg
   vitamin_c            DECIMAL(7,2) NULL,                -- mg
   vitamin_d            DECIMAL(6,2) NULL,                -- µg
-  external_source      ENUM('fatsecret') NULL,           -- de dónde se importó
+  barcode              VARCHAR(32) NULL,                 -- EAN/UPC del envase (escáner de la app)
+  external_source      ENUM('fatsecret','openfoodfacts','usda') NULL, -- de dónde se importó
   external_id          VARCHAR(40) NULL,
   created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_foods_owner_name (owner_id, name),        -- listado global/propio ordenado por nombre
   KEY idx_foods_category (category),                -- filtro por categoría
+  KEY idx_foods_barcode (barcode),                  -- búsqueda por código de barras
   FULLTEXT KEY ft_foods_search (name, brand),       -- buscador de alimentos (?search=)
   UNIQUE KEY uq_foods_external (external_source, external_id), -- importar dos veces el mismo de FatSecret lo actualiza
   CONSTRAINT fk_foods_owner FOREIGN KEY (owner_id) REFERENCES users (id) ON DELETE CASCADE

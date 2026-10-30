@@ -63,6 +63,19 @@ JWT_ACCESS_SECRET=<primer valor generado>
 JWT_REFRESH_SECRET=<segundo valor generado>
 ```
 
+Opcionales:
+
+```ini
+# Asistente con IA (chat, fotos de comidas y voz). Clave en https://platform.openai.com/api-keys
+OPENAI_API_KEY=sk-...
+# Bases de alimentos gratuitas
+OFF_USER_AGENT=MacroEntreno/1.0 (tu-email@ejemplo.com)
+USDA_API_KEY=<clave gratis de https://fdc.nal.usda.gov/api-key-signup>
+```
+
+La cámara (escáner de código de barras y fotos) y el micrófono del asistente funcionan en el
+celular y, en la web, solo desde `https://` o `localhost`.
+
 ### 3.3 Crear la base de datos
 
 ```bash

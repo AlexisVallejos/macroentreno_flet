@@ -3,7 +3,7 @@ import { Tabs } from 'expo-router/js-tabs';
 import { Platform, StyleSheet } from 'react-native';
 import { useAuth } from '../../../context/AuthContext';
 import { useResponsive } from '../../../hooks/useResponsive';
-import { colors, font, MAX_CONTENT_WIDTH, spacing, tracking } from '../../../theme';
+import { colors, createStyles, font, MAX_CONTENT_WIDTH, spacing, tracking, useTheme } from '../../../theme';
 
 const SIDEBAR_WIDTH = 260;
 
@@ -21,6 +21,7 @@ const icon = (name) =>
  * En pantallas anchas (tablet, web de escritorio) pasan a una barra lateral, como en iPadOS.
  */
 export default function TabsLayout() {
+  useTheme();
   const { user } = useAuth();
   const { width } = useResponsive();
   const sidebar = width >= 900;
@@ -73,9 +74,9 @@ export default function TabsLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   tabBar: {
-    backgroundColor: 'rgba(18,18,18,0.94)',
+    backgroundColor: colors.tabBar,
     borderTopColor: colors.border,
     borderTopWidth: StyleSheet.hairlineWidth,
     // En web no hay margen seguro inferior: sin esto las etiquetas quedan pegadas al borde
@@ -94,4 +95,4 @@ const styles = StyleSheet.create({
   },
   sidebarItem: { borderRadius: 12, marginVertical: 2, paddingHorizontal: 12, justifyContent: 'flex-start' },
   sidebarLabel: { fontSize: font.md, fontWeight: '600', marginLeft: 12 },
-});
+}));

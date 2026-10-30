@@ -7,7 +7,7 @@ import { Button, Card, Chips, DateSwitcher, ErrorState, FormError, Loading, Scre
 import { useAuth } from '../../context/AuthContext';
 import { requestCoach } from '../coach/bridge';
 import { ruleFor } from '../coach/exercises';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 import { today } from '../../utils/dates';
 import { toNumber } from '../../utils/validation';
@@ -23,6 +23,7 @@ const fromCamera = (prev, counted) =>
 
 /** Crear o editar una sesión: título, fecha, ejercicios y series. El coach puede cargarla a un atleta (?userId). */
 export default function WorkoutFormScreen() {
+  useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user } = useAuth();
@@ -237,7 +238,7 @@ export default function WorkoutFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   footer: { flexDirection: 'row', gap: spacing.md },
   setHeader: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
   setRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
@@ -248,4 +249,4 @@ const styles = StyleSheet.create({
   error: { color: colors.danger, fontSize: font.xs, marginLeft: 28 },
   cardActions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: spacing.sm },
   hint: { color: colors.muted, fontSize: font.xs },
-});
+}));

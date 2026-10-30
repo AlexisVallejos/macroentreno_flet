@@ -1,11 +1,11 @@
-import { migrateCoaching } from './config/migrations.js';
+import { runMigrations } from './config/migrations.js';
 import { generateDueWeeklyReports } from './modules/reports/reports.service.js';
 import { createApp } from './app.js';
 import { env } from './config/env.js';
 import { pool, query } from './config/db.js';
 
 const migrationConnection = await pool.getConnection();
-try { await migrateCoaching(migrationConnection); } finally { migrationConnection.release(); }
+try { await runMigrations(migrationConnection); } finally { migrationConnection.release(); }
 const app = createApp();
 
 // 0.0.0.0 para que el celular pueda llegar a la API por la red local.

@@ -5,7 +5,7 @@ import { Platform, StyleSheet, Text, View } from 'react-native';
 import { billingApi } from '../../api/endpoints';
 import { Button, Card, ErrorState, FormError, Loading, Screen } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, continuous, font, numeric, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, tracking, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 
 const FEATURES = [
@@ -21,6 +21,7 @@ const dateLabel = (value) => (value ? new Date(String(value).replace(' ', 'T')).
 
 /** Suscripción a MacroEntreno Pro con Mercado Pago. Al volver del pago se consulta el estado en el servidor. */
 export default function ProScreen() {
+  useTheme();
   const { user, refreshUser } = useAuth();
   const [info, setInfo] = useState(null);
   const [error, setError] = useState(null);
@@ -156,7 +157,7 @@ export default function ProScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   hero: { alignItems: 'center', gap: spacing.sm, padding: spacing.xl, borderRadius: radius.lg, backgroundColor: colors.card },
   badge: {
     width: 64,
@@ -182,4 +183,4 @@ const styles = StyleSheet.create({
   period: { color: colors.muted, fontSize: font.body, fontWeight: '500' },
   muted: { color: colors.muted, fontSize: font.sm },
   warning: { color: colors.warning, fontSize: font.sm, fontWeight: '600' },
-});
+}));

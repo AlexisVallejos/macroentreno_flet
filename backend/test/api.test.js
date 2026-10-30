@@ -33,6 +33,7 @@ before(async () => {
     MERCADOPAGO_WEBHOOK_SECRET: 'secreto-webhook',
     PUBLIC_APP_URL: 'https://app.macroentreno.test',
     PRO_PRICE: '4999',
+    OPENAI_API_KEY: 'test-openai',
   });
   const { initDatabase } = await import('../scripts/db-init.js');
   const { env } = await import('../src/config/env.js');
@@ -874,5 +875,212 @@ describe('seguimiento, planes e informes por rol', () => {
     assert.equal(athlete.body.data.coachId, null);
     const [[row]] = await pool.query('SELECT COUNT(*) AS total FROM coach_assignments WHERE coach_id = ? AND ended_at IS NULL', [coachA]);
     assert.equal(row.total, 0);
+  });
+});
+
+describe('alimentos: código de barras y bases gratuitas', () => {
+  let off;
+  let usda;
+  const offCalls = [];
+  const polenta = {
+    code: '7790580660000',
+    product_name: 'Polenta Instantánea',
+    brands: 'Arcor, Prestopronta',
+    quantity: '500 g',
+    serving_quantity: 50,
+    nutriments: { 'energy-kcal_100g': 340, proteins_100g: 7, carbohydrates_100g: 78, fat_100g: 0.8, fiber_100g: 2.2, sodium_100g: 0.012 },
+  };
+
+  before(async () => {
+    off = await import('../src/modules/foods/openfoodfacts.js');
+    usda = await import('../src/modules/foods/usda.js');
+    off.setOpenFoodFactsFetch(async (url, init) => {
+      offCalls.push({ url, userAgent: init.headers['User-Agent'] });
+      if (url.includes('/product/7790580660000')) return jsonResponse({ status: 1, product: polenta });
+      if (url.includes('/product/')) return jsonResponse({ status: 0, status_verbose: 'product not found' });
+      return jsonResponse({ hits: [polenta] });
+    });
+    usda.setUsdaFetch(async () =>
+      jsonResponse({
+        foods: [
+          {
+            fdcId: 173944,
+            description: 'Bananas, raw',
+            foodNutrients: [
+              { nutrientNumber: '208', unitName: 'KCAL', value: 89 },
+              { nutrientNumber: '203', unitName: 'G', value: 1.09 },
+              { nutrientNumber: '205', unitName: 'G', value: 22.8 },
+              { nutrientNumber: '204', unitName: 'G', value: 0.33 },
+              { nutrientNumber: '306', unitName: 'MG', value: 358 },
+            ],
+          },
+        ],
+      }),
+    );
+  });
+  after(() => {
+    off.setOpenFoodFactsFetch();
+    usda.setUsdaFetch();
+  });
+
+  test('un código desconocido en Open Food Facts → found: false', async () => {
+    const res = await request(app).get('/api/foods/barcode/0000000000017').set(auth('other'));
+    assert.equal(res.status, 200, res.text);
+    assert.equal(res.body.data.found, false);
+  });
+
+  test('código inválido → 400', async () => {
+    const res = await request(app).get('/api/foods/barcode/abc').set(auth('other'));
+    assert.equal(res.status, 400);
+  });
+
+  test('escanear trae el producto de Open Food Facts, lo guarda y el segundo escaneo no sale de la app', async () => {
+    const first = await request(app).get('/api/foods/barcode/7790580660000').set(auth('other'));
+    assert.equal(first.status, 200, first.text);
+    assert.equal(first.body.data.source, 'openfoodfacts');
+    assert.equal(first.body.data.food.name, 'Polenta Instantánea');
+    assert.equal(first.body.data.food.brand, 'Arcor');
+    assert.equal(first.body.data.food.barcode, '7790580660000');
+    assert.equal(first.body.data.food.kcal, 340);
+    assert.match(offCalls.at(-1).userAgent, /MacroEntreno/);
+
+    const before = offCalls.length;
+    const again = await request(app).get('/api/foods/barcode/7790580660000').set(auth('athlete'));
+    assert.equal(again.body.data.source, 'catalog');
+    assert.equal(again.body.data.food.id, first.body.data.food.id);
+    // Con Pro se ven los micronutrientes convertidos a mg.
+    assert.equal(again.body.data.food.micros.sodium, 12);
+    assert.equal(offCalls.length, before);
+  });
+
+  test('un alimento propio con código de barras se encuentra al escanear', async () => {
+    const created = await request(app)
+      .post('/api/foods')
+      .set(auth('other'))
+      .send({ name: 'Granola casera', portionGrams: 40, kcal: 180, protein: 5, carbs: 24, fat: 7, barcode: '1234567890128' });
+    assert.equal(created.status, 201, created.text);
+    const res = await request(app).get('/api/foods/barcode/1234567890128').set(auth('other'));
+    assert.equal(res.body.data.food.id, created.body.data.id);
+    // Otro usuario no ve el alimento privado.
+    const other = await request(app).get('/api/foods/barcode/1234567890128').set(auth('athlete'));
+    assert.equal(other.body.data.found, false);
+  });
+
+  test('busca en USDA e importa sin duplicar', async () => {
+    const res = await request(app).get('/api/foods/external/search?source=usda&search=banana').set(auth('other'));
+    assert.equal(res.status, 200, res.text);
+    assert.equal(res.body.data[0].name, 'Bananas, raw');
+    assert.equal(res.body.data[0].micros.potassium, 358);
+
+    usda.setUsdaFetch(async () => jsonResponse({ fdcId: 173944, description: 'Bananas, raw', foodNutrients: [{ nutrient: { number: '208', unitName: 'kcal' }, amount: 89 }, { nutrient: { number: '203', unitName: 'g' }, amount: 1.09 }] }));
+    const first = await request(app).post('/api/foods/external/import').set(auth('other')).send({ source: 'usda', externalId: '173944' });
+    assert.equal(first.status, 201, first.text);
+    assert.equal(first.body.data.category, 'USDA');
+    const again = await request(app).post('/api/foods/external/import').set(auth('other')).send({ source: 'usda', externalId: '173944' });
+    assert.equal(again.body.data.id, first.body.data.id);
+  });
+});
+
+describe('asistente con IA', () => {
+  let openai;
+  const requests = [];
+
+  before(async () => {
+    openai = await import('../src/modules/ai/openai.js');
+  });
+  after(() => openai.setOpenAiFetch());
+
+  test('sin sesión → 401', async () => {
+    const res = await request(app).post('/api/ai/chat').send({ messages: [{ role: 'user', text: 'hola' }] });
+    assert.equal(res.status, 401);
+  });
+
+  test('el chat ejecuta herramientas con los permisos del usuario y devuelve los cambios', async () => {
+    let round = 0;
+    openai.setOpenAiFetch(async (url, init) => {
+      const body = JSON.parse(init.body);
+      requests.push({ url, body, authorization: init.headers.Authorization });
+      round++;
+      if (round === 1) {
+        return jsonResponse({
+          id: 'resp_1',
+          output: [
+            {
+              type: 'function_call',
+              call_id: 'call_1',
+              name: 'registrar_comida',
+              arguments: JSON.stringify({ comida: 'almuerzo', fecha: '2026-03-10', items: [{ nombre: 'Milanesa con puré', gramos: 350, kcal: 620, proteinas: 38, carbohidratos: 45, grasas: 30 }] }),
+            },
+            { type: 'function_call', call_id: 'call_2', name: 'crear_ejercicio', arguments: JSON.stringify({ nombre: 'Remo Pendlay', grupo_muscular: 'Espalda' }) },
+          ],
+        });
+      }
+      return jsonResponse({ id: 'resp_2', output: [{ type: 'message', content: [{ type: 'output_text', text: 'Listo, anoté tu milanesa con puré.' }] }] });
+    });
+
+    const res = await request(app)
+      .post('/api/ai/chat')
+      .set(auth('other'))
+      .send({ messages: [{ role: 'user', text: 'Anotá una milanesa con puré en el almuerzo', image: 'data:image/jpeg;base64,/9j/AAAA' }] });
+    assert.equal(res.status, 200, res.text);
+    assert.equal(res.body.data.reply, 'Listo, anoté tu milanesa con puré.');
+    assert.deepEqual(res.body.data.actions.map((a) => a.type), ['diary']);
+
+    // La clave viaja solo del servidor a OpenAI; la imagen se manda como input_image.
+    assert.equal(requests[0].authorization, 'Bearer test-openai');
+    assert.equal(requests[0].body.input[0].content[1].type, 'input_image');
+    // Segunda vuelta: resultados de las herramientas encadenados a la respuesta anterior.
+    assert.equal(requests[1].body.previous_response_id, 'resp_1');
+    const outputs = requests[1].body.input.map((o) => JSON.parse(o.output));
+    assert.equal(outputs[0].ok, true);
+    assert.match(outputs[1].error, /Solo entrenadores/); // un atleta no puede tocar el catálogo de ejercicios
+
+    const day = await request(app).get('/api/diary?date=2026-03-10').set(auth('other'));
+    assert.ok(day.body.data.entries.some((e) => e.name === 'Milanesa con puré' && Number(e.kcal) === 620));
+  });
+
+  test('análisis de foto devuelve los alimentos estimados sin registrar nada', async () => {
+    const analysis = { esComida: true, descripcion: 'Bife con ensalada', confianza: 'media', items: [{ nombre: 'Bife de chorizo', gramos: 250, kcal: 550, proteinas: 60, carbohidratos: 0, grasas: 34 }] };
+    openai.setOpenAiFetch(async (_url, init) => {
+      const body = JSON.parse(init.body);
+      assert.equal(body.text.format.type, 'json_schema');
+      return jsonResponse({ id: 'resp_3', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(analysis) }] }] });
+    });
+    const res = await request(app).post('/api/ai/food-photo').set(auth('other')).send({ image: 'data:image/png;base64,iVBORw0KGgo=' });
+    assert.equal(res.status, 200, res.text);
+    assert.deepEqual(res.body.data, analysis);
+  });
+
+  test('imagen que no es data URL → 400', async () => {
+    const res = await request(app).post('/api/ai/food-photo').set(auth('other')).send({ image: 'https://ejemplo.com/foto.jpg' });
+    assert.equal(res.status, 400);
+  });
+
+  test('voz: transcribe el audio y sintetiza la respuesta', async () => {
+    openai.setOpenAiFetch(async (url, init) => {
+      if (url.endsWith('/audio/transcriptions')) {
+        assert.equal(init.body.get('language'), 'es');
+        return jsonResponse({ text: ' Agregame una banana a la merienda ' });
+      }
+      return { ok: true, status: 200, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer };
+    });
+    const text = await request(app).post('/api/ai/transcribe').set(auth('other')).send({ audio: Buffer.from('audio-falso').toString('base64'), mimeType: 'audio/webm;codecs=opus' });
+    assert.equal(text.status, 200, text.text);
+    assert.equal(text.body.data.text, 'Agregame una banana a la merienda');
+    const speech = await request(app).post('/api/ai/speech').set(auth('other')).send({ text: 'Listo' });
+    assert.equal(speech.body.data.audio, Buffer.from([1, 2, 3]).toString('base64'));
+  });
+
+  test('sin OPENAI_API_KEY → 503 AI_NOT_CONFIGURED', async () => {
+    const { env } = await import('../src/config/env.js');
+    const key = env.openai.apiKey;
+    env.openai.apiKey = '';
+    try {
+      const res = await request(app).post('/api/ai/chat').set(auth('other')).send({ messages: [{ role: 'user', text: 'hola' }] });
+      assert.equal(res.status, 503);
+      assert.equal(res.body.error.code, 'AI_NOT_CONFIGURED');
+    } finally {
+      env.openai.apiKey = key;
+    }
   });
 });

@@ -278,7 +278,43 @@ Las palabras de menos de 3 letras se buscan con `LIKE`.
 ```
 
 **`POST /foods`** body: `name` (2–150), `kcal`, `protein`, `carbs`, `fat` (≥ 0), y opcionales
-`category`, `brand`, `portionGrams` (> 0), `portionDescription`, `isGlobal`.
+`category`, `brand`, `portionGrams` (> 0), `portionDescription`, `barcode` (6–14 dígitos), `isGlobal`.
+
+#### Código de barras y bases gratuitas
+
+| Método y ruta | Roles | Descripción |
+|---|---|---|
+| `GET /foods/barcode/:code` 🔒 | todos | Busca el EAN/UPC en el catálogo (propios y globales) y, si no está, en **Open Food Facts**; lo encontrado afuera se guarda en el catálogo global. Responde `{ found, source, food }` o `{ found: false, barcode }` |
+| `GET /foods/external/search?source=&search=&limit=` 🔒 | todos | `source`: `openfoodfacts` (envasados, prioriza Argentina) o `usda` (genéricos, en inglés). Valores cada 100 g y `microsCount` |
+| `POST /foods/external/import` 🔒 | todos | `{ source, externalId }` → guarda el alimento en el catálogo global sin duplicarlo |
+
+| Fuente | Qué tiene | Clave | Límite |
+|---|---|---|---|
+| [Open Food Facts](https://world.openfoodfacts.org) | ~4 M de productos envasados con código de barras, muchas marcas argentinas. Licencia ODbL | No (pide `User-Agent` propio: `OFF_USER_AGENT`) | ~15 productos y ~10 búsquedas por minuto por IP: la app busca al confirmar, no letra por letra |
+| [USDA FoodData Central](https://fdc.nal.usda.gov) | Alimentos genéricos analizados en laboratorio (Foundation y SR Legacy) | `USDA_API_KEY` gratuita (sin clave usa `DEMO_KEY`) | 1000 consultas por hora |
+| FatSecret | Genéricos y marcas con micronutrientes | Sí (Pro, ver 5.11) | Según el plan |
+
+Los valores de Open Food Facts los cargan voluntarios: los micronutrientes imposibles (por ejemplo,
+mg cargados como g) se descartan al importar.
+
+### 5.5 bis Asistente con IA (OpenAI)
+
+Todas las rutas requieren sesión, aceptan cuerpos de hasta 12 MB (fotos y audio en base64) y
+tienen un tope de 60 llamadas cada 10 minutos por usuario. Sin `OPENAI_API_KEY` responden
+`503 AI_NOT_CONFIGURED`. La clave nunca llega a la app.
+
+| Método y ruta | Body | Respuesta |
+|---|---|---|
+| `POST /ai/chat` 🔒 | `{ messages: [{ role: 'user'\|'assistant', text, image? }] }` (máx. 30; `image` es un data URL JPG/PNG/WebP) | `{ reply, actions: [{ type: 'diary'\|'workout'\|'exercise'\|'food', label }] }` |
+| `POST /ai/food-photo` 🔒 | `{ image, note? }` | `{ esComida, descripcion, confianza, items: [{ nombre, gramos, kcal, proteinas, carbohidratos, grasas }] }`. No registra nada |
+| `POST /ai/transcribe` 🔒 | `{ audio (base64), mimeType }` | `{ text }` |
+| `POST /ai/speech` 🔒 | `{ text }` (máx. 1500) | `{ audio (MP3 en base64), mimeType }` |
+
+En el chat el modelo puede usar estas herramientas, que vuelven a validar con los mismos esquemas
+de la API y respetan los mismos permisos del usuario: `buscar_alimentos`, `registrar_comida`,
+`crear_alimento`, `resumen_del_dia`, `buscar_ejercicios`, `crear_ejercicio` (solo coach/admin) y
+`registrar_entrenamiento`. Los modelos se configuran con `OPENAI_MODEL` (por defecto `gpt-6.1-sol`,
+con visión), `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` y `OPENAI_TTS_VOICE`.
 
 ### 5.6 Diario
 

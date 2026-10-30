@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { reportsApi } from '../../api/endpoints';
 import { Button, Card, EmptyState, ErrorState, FormError, Grid, Loading, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { today } from '../../utils/dates';
 import { savePdf } from '../../utils/savePdf';
 const shiftMonth = (value, amount) => {
@@ -13,6 +13,7 @@ const shiftMonth = (value, amount) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 };
 export default function CoachReportsScreen() {
+  useTheme();
   const router = useRouter();
   const [month, setMonth] = useState(today().slice(0, 7));
   const { data, error, reload, refreshing, setData } = useResource(() => reportsApi.monthly(month), [month]);
@@ -51,4 +52,4 @@ export default function CoachReportsScreen() {
     </>}
   </Screen>;
 }
-const styles = StyleSheet.create({ row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.md }, heading: { color: colors.text, fontSize: font.lg, fontWeight: '600' }, text: { color: colors.text, fontSize: font.md }, muted: { color: colors.muted, fontSize: font.sm } });
+const styles = createStyles(() => StyleSheet.create({ row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.md }, heading: { color: colors.text, fontSize: font.lg, fontWeight: '600' }, text: { color: colors.text, fontSize: font.md }, muted: { color: colors.muted, fontSize: font.sm } }));

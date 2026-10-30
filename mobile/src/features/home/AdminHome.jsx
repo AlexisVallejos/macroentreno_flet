@@ -3,10 +3,12 @@ import { StyleSheet, View } from 'react-native';
 import { adminApi } from '../../api/endpoints';
 import { Button, Card, ErrorState, ListItem, Loading, RoleBadge, Screen, StatTile } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, spacing } from '../../theme';
+import { colors, createStyles, spacing, useTheme } from '../../theme';
+import { AssistantBanner } from '../assistant/AssistantBanner';
 
 /** Panel del administrador con números generales del sistema. */
 export default function AdminHome() {
+  useTheme();
   const router = useRouter();
   const { data, error, loading, refreshing, reload } = useResource(() => adminApi.stats(), []);
 
@@ -15,6 +17,7 @@ export default function AdminHome() {
 
   return (
     <Screen onRefresh={reload} refreshing={refreshing}>
+      <AssistantBanner subtitle="Pedile que cargue ejercicios o alimentos por vos" />
       <Card title="Gestión de entrenadores">
         <Button title="Reportes mensuales" icon="document-text-outline" onPress={() => router.push('/coach-reports')} />
         <Button title="Crear entrenador" icon="person-add-outline" variant="tinted" onPress={() => router.push({ pathname: '/user-form', params: { role: 'coach' } })} />
@@ -45,6 +48,6 @@ export default function AdminHome() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-});
+}));

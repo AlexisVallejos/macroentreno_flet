@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, Card, FormError, StatTile } from '../../components';
-import { colors, font, numeric, spacing, tracking } from '../../theme';
+import { colors, createStyles, font, numeric, spacing, tracking, useTheme } from '../../theme';
 import { quality, sumSets, tempo, worstError } from './pose/session';
 import { RepDots } from './RepDots';
 
@@ -12,6 +12,7 @@ const seconds = (ms) => `${(ms / 1000).toLocaleString('es-AR', { maximumFraction
  * si no, guardarla como una sesión nueva en Entrenos (onSave).
  */
 export function SessionSummary({ exercise, rule, sets, onUse, onSave, saving, saved, error, onAgain, onAdjust, onExit, onOpenWorkouts }) {
+  useTheme();
   const totals = sumSets(sets);
   const worst = worstError(totals.errors);
   const share = quality(totals);
@@ -108,7 +109,7 @@ export function SessionSummary({ exercise, rule, sets, onUse, onSave, saving, sa
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   root: { gap: spacing.lg },
   kicker: { color: colors.primary, fontSize: font.sm, fontWeight: '600' },
   title: { color: colors.text, fontSize: font.display, fontWeight: '700', letterSpacing: tracking.display },
@@ -124,4 +125,4 @@ const styles = StyleSheet.create({
   bold: { fontWeight: '700' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   grow: { flexGrow: 1 },
-});
+}));

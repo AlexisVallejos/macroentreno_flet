@@ -1,9 +1,10 @@
 import { forwardRef, useState } from 'react';
 import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
-import { colors, continuous, font, radius, spacing } from '../theme';
+import { colors, continuous, createStyles, font, radius, spacing, useTheme } from '../theme';
 
 /** Input con etiqueta y mensaje de error debajo. Al enfocarse se marca con el color de acento. */
 export const TextField = forwardRef(function TextField({ label, error, hint, style, onFocus, onBlur, ...props }, ref) {
+  useTheme();
   const [focused, setFocused] = useState(false);
   return (
     <View style={[styles.wrap, style]}>
@@ -36,7 +37,7 @@ export const TextField = forwardRef(function TextField({ label, error, hint, sty
   );
 });
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   wrap: { gap: 6 },
   label: { color: colors.muted, fontSize: font.sm, fontWeight: '500', marginLeft: spacing.xs },
   input: {
@@ -57,4 +58,4 @@ const styles = StyleSheet.create({
   inputError: { borderColor: colors.danger },
   error: { color: colors.danger, fontSize: font.xs, marginLeft: spacing.xs },
   hint: { color: colors.muted, fontSize: font.xs, marginLeft: spacing.xs },
-});
+}));

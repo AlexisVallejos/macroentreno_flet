@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { progressApi } from '../../api/endpoints';
 import { Card, Chips, EmptyState, ErrorState, KcalBarChart, Loading, MicroList, ProTeaser, StatTile } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, numeric, spacing } from '../../theme';
+import { colors, createStyles, font, numeric, spacing, useTheme } from '../../theme';
 import { formatDayLabel, today } from '../../utils/dates';
 import { fmt, signed } from '../../utils/format';
 
@@ -15,6 +15,7 @@ const RANGES = [
 
 /** Progreso nutricional y de fuerza. Con `userId` muestra el de un atleta (coach/admin). */
 export function ProgressView({ userId }) {
+  useTheme();
   const [days, setDays] = useState(7);
   const { data, error, loading, reload } = useResource(
     () => progressApi.get({ days, to: today(), userId }),
@@ -50,7 +51,7 @@ export function ProgressView({ userId }) {
             )}
             <View style={styles.legendRow}>
               <Legend color={colors.primary} label="En la meta (±10 %)" />
-              <Legend color="rgba(48,209,88,0.38)" label="Por debajo" />
+              <Legend color={colors.primaryMuted} label="Por debajo" />
               <Legend color={colors.warning} label="Por encima" />
               <Legend color={colors.secondary} label="Entrenaste" dot />
             </View>
@@ -100,6 +101,7 @@ export function ProgressView({ userId }) {
 }
 
 function Legend({ color, label, dot }) {
+  useTheme();
   return (
     <View style={styles.legendItem}>
       <View style={[dot ? styles.legendDot : styles.legendSwatch, { backgroundColor: color }]} />
@@ -108,7 +110,7 @@ function Legend({ color, label, dot }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   legendRow: { flexDirection: 'row', flexWrap: 'wrap', columnGap: spacing.md, rowGap: spacing.xs },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
@@ -126,4 +128,4 @@ const styles = StyleSheet.create({
   exName: { color: colors.text, fontSize: font.md, fontWeight: '600' },
   exSub: { color: colors.muted, fontSize: font.xs },
   delta: { ...numeric, fontSize: font.md, fontWeight: '700' },
-});
+}));

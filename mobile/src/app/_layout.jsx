@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Loading } from '../components';
 import { AuthProvider, useAuth } from '../context/AuthContext';
-import { colors } from '../theme';
+import { colors, ThemeProvider, useTheme } from '../theme';
 
 /**
  * Navegación raíz:
@@ -13,6 +13,7 @@ import { colors } from '../theme';
  * Stack.Protected redirige solo cuando cambia el estado de la sesión.
  */
 function RootNavigator() {
+  useTheme();
   const { status } = useAuth();
   if (status === 'loading') {
     return (
@@ -36,13 +37,21 @@ function RootNavigator() {
   );
 }
 
+/** La barra de estado se invierte con el tema: íconos claros sobre fondo oscuro y viceversa. */
+function ThemedStatusBar() {
+  const { scheme } = useTheme();
+  return <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />;
+}
+
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ThemedStatusBar />
+          <RootNavigator />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

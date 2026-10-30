@@ -38,12 +38,12 @@ export const setOnSessionExpired = (fn) => {
   onSessionExpired = fn;
 };
 
-async function rawRequest(path, { method = 'GET', body, query, token } = {}) {
+async function rawRequest(path, { method = 'GET', body, query, token, timeout = TIMEOUT_MS } = {}) {
   const qs = query
     ? `?${new URLSearchParams(Object.entries(query).filter(([, v]) => v !== undefined && v !== null && v !== ''))}`
     : '';
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), timeout);
   let res;
   try {
     res = await fetch(`${API_URL}${path}${qs}`, {

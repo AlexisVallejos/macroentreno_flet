@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, continuous, font, numeric, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, tracking, useTheme } from '../../theme';
 import { formatDayLabel } from '../../utils/dates';
 import { fmt } from '../../utils/format';
 
@@ -8,6 +8,7 @@ const volumeOf = (w) => w.exercises.reduce((acc, e) => acc + e.sets.reduce((a, s
 
 /** Resumen de una sesión. Muestra quién la cargó si fue el entrenador. */
 export function WorkoutCard({ workout, onPress }) {
+  useTheme();
   const assignedByCoach = workout.createdBy && workout.createdBy !== workout.userId;
   return (
     <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [styles.card, continuous, pressed && styles.pressed]}>
@@ -41,7 +42,7 @@ export function WorkoutCard({ workout, onPress }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   card: {
     backgroundColor: colors.card,
     borderRadius: radius.lg,
@@ -61,4 +62,4 @@ const styles = StyleSheet.create({
   exName: { color: colors.text, fontSize: font.sm, flex: 1 },
   sets: { ...numeric, color: colors.muted, fontSize: font.sm },
   notes: { color: colors.muted, fontSize: font.sm, fontStyle: 'italic' },
-});
+}));

@@ -3,16 +3,17 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { fetchProviders } from '../../api/socialLogin';
 import { useAuth } from '../../context/AuthContext';
-import { colors, continuous, font, radius, spacing } from '../../theme';
+import { colors, continuous, createStyles, font, radius, spacing, useTheme } from '../../theme';
 
 const PROVIDERS = [
   { id: 'google', label: 'Google', icon: 'logo-google', color: '#EA4335' },
   { id: 'facebook', label: 'Facebook', icon: 'logo-facebook', color: '#1877F2' },
-  { id: 'github', label: 'GitHub', icon: 'logo-github', color: '#FFFFFF' },
+  { id: 'github', label: 'GitHub', icon: 'logo-github', color: null },
 ];
 
 /** Botones de inicio de sesión con redes sociales. Se desactivan los que el servidor no tiene configurados. */
 export function SocialButtons({ onError, disabled }) {
+  useTheme();
   const { socialLogin } = useAuth();
   const [configured, setConfigured] = useState(null); // null = sin info (el servidor no respondió)
   const [busy, setBusy] = useState(null);
@@ -58,7 +59,7 @@ export function SocialButtons({ onError, disabled }) {
               accessibilityLabel={`Iniciar sesión con ${p.label}`}
               style={({ pressed }) => [styles.btn, continuous, off && { opacity: 0.45 }, pressed && styles.pressed]}
             >
-              {busy === p.id ? <ActivityIndicator color={p.color} /> : <Ionicons name={p.icon} size={20} color={p.color} />}
+              {busy === p.id ? <ActivityIndicator color={p.color ?? colors.text} /> : <Ionicons name={p.icon} size={20} color={p.color ?? colors.text} />}
               <Text style={styles.label}>{p.label}</Text>
             </Pressable>
           );
@@ -68,7 +69,7 @@ export function SocialButtons({ onError, disabled }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   wrap: { gap: spacing.md },
   divider: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   line: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: colors.border },
@@ -87,4 +88,4 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.7, transform: [{ scale: 0.97 }] },
   label: { color: colors.text, fontWeight: '600', fontSize: font.sm },
-});
+}));

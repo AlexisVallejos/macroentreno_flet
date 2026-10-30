@@ -4,13 +4,14 @@ import { StyleSheet, Switch, Text, View } from 'react-native';
 import { billingApi, usersApi } from '../../api/endpoints';
 import { Button, Card, Chips, ErrorState, FormError, Loading, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 import { ROLES } from '../../utils/constants';
 import { isEmail, validatePassword } from '../../utils/validation';
 
 /** Alta / edición / baja de usuarios, cambio de rol y asignación de entrenador (admin). */
 export default function UserFormScreen() {
+  useTheme();
   const router = useRouter();
   const { user: me } = useAuth();
   const { id: idParam, role: initialRole } = useLocalSearchParams();
@@ -194,9 +195,9 @@ export default function UserFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.md },
   muted: { color: colors.muted, fontSize: font.sm },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   switchLabel: { color: colors.text, fontSize: font.md, fontWeight: '600' },
-});
+}));

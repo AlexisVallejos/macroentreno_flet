@@ -1,14 +1,23 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { diaryApi, foodsApi } from '../../api/endpoints';
 import { Button, Card, Chips, ErrorState, FieldRow, FormError, ListItem, Loading, MacroInline, Screen, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, continuous, createStyles, font, radius, spacing, useTheme } from '../../theme';
 import { MEALS } from '../../utils/constants';
 import { confirm } from '../../utils/confirm';
 import { round1 } from '../../utils/format';
 import { toNumber, validateNumbers } from '../../utils/validation';
+import { BarcodeScanner } from './BarcodeScanner';
+import { FoodPhotoCard } from './FoodPhotoCard';
+
+/** Bases gratuitas: se busca al confirmar (no letra por letra) para respetar sus límites de uso. */
+const EXTERNAL = {
+  off: { source: 'openfoodfacts', placeholder: 'Producto o marca: yogur ser, galletitas…', hint: 'Open Food Facts: productos envasados de todo el mundo, con muchas marcas argentinas.' },
+  usda: { source: 'usda', placeholder: 'En inglés: chicken breast, oats, banana…', hint: 'USDA: alimentos genéricos analizados en laboratorio. Los nombres están en inglés.' },
+};
 
 /** Vista previa de los micronutrientes que trae el alimento para esos gramos (solo los conocidos). */
 const MICRO_PREVIEW = [
@@ -33,6 +42,7 @@ const scale = (food, grams) => {
 
 /** Alta (desde el catálogo o manual) y edición de un registro del diario. */
 export default function DiaryEntryScreen() {
+  useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user } = useAuth();
@@ -56,6 +66,8 @@ export default function DiaryEntryScreen() {
   const [entryFoodId, setEntryFoodId] = useState(null);
   const [importing, setImporting] = useState(null);
   const [original, setOriginal] = useState(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [lookingUp, setLookingUp] = useState(false);
 
   // Edición: se busca el registro dentro del día.
   useEffect(() => {
@@ -118,12 +130,64 @@ export default function DiaryEntryScreen() {
     return () => clearTimeout(timer);
   }, [search, mode, editingId]);
 
+  const searchExternal = async () => {
+    const term = search.trim();
+    if (term.length < 2) return setSearchError({ message: 'Escribí al menos 2 letras' });
+    setSearching(true);
+    setSearchError(null);
+    try {
+      setResults(await foodsApi.searchExternal(EXTERNAL[mode].source, term));
+    } catch (err) {
+      setSearchError(err);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  /** Guarda el alimento externo en el catálogo y lo deja elegido. */
+  const pickExternal = async (item) => {
+    setImporting(item.externalId);
+    setFormError(null);
+    try {
+      const imported = await foodsApi.importExternal(item.source, item.externalId);
+      setFood(imported);
+      setForm((f) => ({ ...f, grams: String(item.servingGrams || 100) }));
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setImporting(null);
+    }
+  };
+
+  /** Código leído: catálogo → Open Food Facts. Si no aparece, se ofrece la carga manual. */
+  const onScanned = async (code) => {
+    setScannerOpen(false);
+    setLookingUp(true);
+    setFormError(null);
+    try {
+      const res = await foodsApi.barcode(code);
+      if (res.found) {
+        setMode('catalog');
+        setFood(res.food);
+        setForm((f) => ({ ...f, grams: String(res.food.portionGrams) }));
+      } else {
+        setMode('manual');
+        setFormError(`No encontramos el código ${code}. Cargalo a mano con los datos de la etiqueta.`);
+      }
+    } catch (err) {
+      setFormError(err.message);
+    } finally {
+      setLookingUp(false);
+    }
+  };
+
   const changeMode = (next) => {
     if (next === 'fatsecret' && !isPro) {
       router.push('/pro');
       return;
     }
     setResults([]);
+    setSearchError(null);
     setFood(null);
     setMode(next);
   };
@@ -150,13 +214,15 @@ export default function DiaryEntryScreen() {
 
   // En FatSecret, con menos de 2 letras no se muestran resultados viejos.
   const visible = mode === 'fatsecret' && search.trim().length < 2 ? [] : results;
+  const external = EXTERNAL[mode];
+  const searchable = !['manual', 'photo'].includes(mode) && !editingId;
 
   const preview = useMemo(() => (food ? scale(food, toNumber(form.grams)) : null), [food, form.grams]);
 
   const save = async () => {
     setFormError(null);
     let body;
-    if (mode !== 'manual' && !editingId) {
+    if (searchable) {
       if (!food) return setFormError('Elegí un alimento de la lista');
       const found = validateNumbers(form, ['grams'], { positive: ['grams'] });
       setErrors(found);
@@ -219,10 +285,12 @@ export default function DiaryEntryScreen() {
   return (
     <Screen
       footer={
-        <View style={styles.footer}>
-          {editingId ? <Button title="Eliminar" variant="danger" icon="trash-outline" onPress={remove} /> : null}
-          <Button title={editingId ? 'Guardar cambios' : 'Agregar'} onPress={save} loading={saving} style={{ flex: 1 }} />
-        </View>
+        mode === 'photo' ? null : (
+          <View style={styles.footer}>
+            {editingId ? <Button title="Eliminar" variant="danger" icon="trash-outline" onPress={remove} /> : null}
+            <Button title={editingId ? 'Guardar cambios' : 'Agregar'} onPress={save} loading={saving} style={{ flex: 1 }} />
+          </View>
+        )
       }
     >
       <Stack.Screen options={{ title: editingId ? 'Editar registro' : 'Registrar comida' }} />
@@ -233,31 +301,55 @@ export default function DiaryEntryScreen() {
       </View>
 
       {!editingId ? (
-        <Chips
-          options={[
-            { value: 'catalog', label: 'Catálogo' },
-            { value: 'fatsecret', label: isPro ? 'FatSecret · Pro' : 'FatSecret 🔒' },
-            { value: 'manual', label: 'Carga manual' },
-          ]}
-          value={mode}
-          onChange={changeMode}
-        />
+        <View style={styles.quickRow}>
+          <QuickTile icon="barcode-outline" title="Escanear" subtitle="Código de barras" onPress={() => setScannerOpen(true)} />
+          <QuickTile icon="camera-outline" title="Foto con IA" subtitle="Analiza tu plato" active={mode === 'photo'} onPress={() => changeMode('photo')} />
+          <QuickTile icon="sparkles-outline" title="Asistente" subtitle="Contale qué comiste" onPress={() => router.push('/assistant')} />
+        </View>
+      ) : null}
+      {lookingUp ? <Loading label="Buscando el producto…" /> : null}
+
+      {!editingId && mode !== 'photo' ? (
+        <View style={styles.section}>
+          <Text style={styles.label}>Buscar en</Text>
+          <Chips
+            options={[
+              { value: 'catalog', label: 'Mi catálogo' },
+              { value: 'off', label: 'Open Food Facts' },
+              { value: 'usda', label: 'USDA' },
+              { value: 'fatsecret', label: isPro ? 'FatSecret · Pro' : 'FatSecret · Pro (bloqueado)' },
+              { value: 'manual', label: 'Carga manual' },
+            ]}
+            value={mode}
+            onChange={changeMode}
+          />
+        </View>
       ) : null}
 
-      {mode !== 'manual' && !editingId ? (
+      {mode === 'photo' && !editingId ? (
+        <FoodPhotoCard date={date} meal={meal} onDone={() => router.back()} />
+      ) : searchable ? (
         <>
-          <TextField
-            placeholder={mode === 'fatsecret' ? 'Buscar en FatSecret: banana, yogur, oats…' : 'Buscar: pollo, arroz, alfajor…'}
-            value={search}
-            onChangeText={setSearch}
-            autoCorrect={false}
-            returnKeyType="search"
-          />
+          <View style={styles.searchRow}>
+            <TextField
+              label="Buscar alimento"
+              placeholder={external ? external.placeholder : mode === 'fatsecret' ? 'banana, yogur, oats…' : 'pollo, arroz, alfajor…'}
+              value={search}
+              onChangeText={setSearch}
+              autoCorrect={false}
+              returnKeyType="search"
+              onSubmitEditing={external ? searchExternal : undefined}
+              hint={external?.hint}
+              style={{ flex: 1 }}
+            />
+            {external ? <Button title="Buscar" icon="search" onPress={searchExternal} loading={searching} style={styles.searchButton} /> : null}
+          </View>
           {food ? (
-            <Card title={food.name} right={<Button title="Cambiar" variant="ghost" small onPress={() => setFood(null)} />}>
+            <Card title={food.name} right={<Button title="Cambiar" variant="ghost" onPress={() => setFood(null)} />}>
               <Text style={styles.muted}>
                 {food.portionDescription || `Porción de ${food.portionGrams} g`}
                 {food.brand ? ` · ${food.brand}` : ''}
+                {food.barcode ? ` · ${food.barcode}` : ''}
               </Text>
               <TextField
                 label="Cantidad (g)"
@@ -275,21 +367,23 @@ export default function DiaryEntryScreen() {
               {searchError ? <Text style={styles.error}>{searchError.message}</Text> : null}
               {!searching && !searchError && visible.length === 0 ? (
                 <Text style={styles.muted}>
-                  {mode === 'fatsecret' && search.trim().length < 2
-                    ? 'Escribí qué comiste. FatSecret trae vitaminas y minerales; los genéricos suelen estar en inglés (ej. "oats").'
-                    : 'Sin resultados. Probá otra palabra o usá la carga manual.'}
+                  {external
+                    ? 'Escribí qué querés buscar y tocá Buscar.'
+                    : mode === 'fatsecret' && search.trim().length < 2
+                      ? 'Escribí qué comiste. FatSecret trae vitaminas y minerales; los genéricos suelen estar en inglés (ej. "oats").'
+                      : 'Sin resultados. Probá otra palabra, buscá en Open Food Facts o usá la carga manual.'}
                 </Text>
               ) : null}
               {!searching &&
-                mode === 'fatsecret' &&
+                (mode === 'fatsecret' || external) &&
                 visible.map((item) => (
                   <ListItem
-                    key={item.externalId}
-                    icon="leaf-outline"
+                    key={`${item.source ?? 'fatsecret'}-${item.externalId}`}
+                    icon={mode === 'off' ? 'barcode-outline' : 'leaf-outline'}
                     title={item.brand ? `${item.name} · ${item.brand}` : item.name}
-                    subtitle={`${item.kcal} kcal ${item.portionDescription} · ${item.microsCount} micronutrientes`}
+                    subtitle={`${item.kcal} kcal ${item.portionDescription}${item.microsCount ? ` · ${item.microsCount} ${item.microsCount === 1 ? 'micronutriente' : 'micronutrientes'}` : ''}`}
                     right={importing === item.externalId ? <ActivityIndicator color={colors.primary} /> : undefined}
-                    onPress={importing ? undefined : () => pickFatSecret(item)}
+                    onPress={importing ? undefined : () => (external ? pickExternal(item) : pickFatSecret(item))}
                   />
                 ))}
               {!searching &&
@@ -298,8 +392,8 @@ export default function DiaryEntryScreen() {
                   <ListItem
                     key={item.id}
                     icon={item.isGlobal ? 'nutrition-outline' : 'person-outline'}
-                    iconColor={item.isGlobal ? colors.primary : colors.success}
-                    title={item.name}
+                    iconColor={item.isGlobal ? colors.primary : colors.secondary}
+                    title={item.brand ? `${item.name} · ${item.brand}` : item.name}
                     subtitle={`${item.kcal} kcal · ${item.portionDescription || `${item.portionGrams} g`}`}
                     onPress={() => {
                       setFood(item);
@@ -309,6 +403,7 @@ export default function DiaryEntryScreen() {
                 ))}
             </Card>
           )}
+          {external ? <Text style={styles.credit}>Datos de {external.source === 'usda' ? 'USDA FoodData Central' : 'Open Food Facts (ODbL)'}</Text> : null}
         </>
       ) : (
         <Card>
@@ -335,14 +430,50 @@ export default function DiaryEntryScreen() {
           </FieldRow>
         </Card>
       )}
+      {!editingId ? <BarcodeScanner visible={scannerOpen} onClose={() => setScannerOpen(false)} onScanned={onScanned} /> : null}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
+/** Acceso rápido con ícono, como los botones de acción de las apps de Apple. */
+function QuickTile({ icon, title, subtitle, onPress, active }) {
+  useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${title}: ${subtitle}`}
+      accessibilityState={{ selected: Boolean(active) }}
+      style={({ pressed }) => [styles.tile, continuous, active && styles.tileActive, pressed && styles.tilePressed]}
+    >
+      <View style={[styles.tileIcon, continuous, active && styles.tileIconActive]}>
+        <Ionicons name={icon} size={22} color={active ? colors.onPrimary : colors.primary} />
+      </View>
+      <Text style={styles.tileTitle} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={styles.tileSubtitle} numberOfLines={2}>
+        {subtitle}
+      </Text>
+    </Pressable>
+  );
+}
+
+const styles = createStyles(() => StyleSheet.create({
   section: { gap: spacing.sm },
   label: { color: colors.muted, fontSize: font.sm, fontWeight: '600' },
   muted: { color: colors.muted, fontSize: font.sm },
   error: { color: colors.danger, fontSize: font.sm },
   footer: { flexDirection: 'row', gap: spacing.md },
-});
+  quickRow: { flexDirection: 'row', gap: spacing.md },
+  tile: { flex: 1, minHeight: 112, padding: spacing.md, gap: 4, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1.5, borderColor: 'transparent' },
+  tileActive: { borderColor: colors.primary },
+  tilePressed: { opacity: 0.7, transform: [{ scale: 0.98 }] },
+  tileIcon: { width: 40, height: 40, borderRadius: 12, marginBottom: 4, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  tileIconActive: { backgroundColor: colors.primary },
+  tileTitle: { color: colors.text, fontSize: font.md, fontWeight: '600' },
+  tileSubtitle: { color: colors.muted, fontSize: font.xs },
+  searchRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
+  searchButton: { marginTop: 25 },
+  credit: { color: colors.muted, fontSize: font.xs, textAlign: 'center' },
+}));

@@ -1,5 +1,23 @@
 import fs from 'node:fs/promises';
 
+/** Todas las migraciones aditivas, en orden. Se pueden correr varias veces. */
+export async function runMigrations(conn) {
+  await migrateCoaching(conn);
+  await migrateFoodSources(conn);
+}
+
+/** Código de barras y nuevas fuentes externas de alimentos (Open Food Facts, USDA). */
+async function migrateFoodSources(conn) {
+  const [barcode] = await conn.query("SHOW COLUMNS FROM foods LIKE 'barcode'");
+  if (!barcode.length) {
+    await conn.query('ALTER TABLE foods ADD COLUMN barcode VARCHAR(32) NULL AFTER vitamin_d, ADD KEY idx_foods_barcode (barcode)');
+  }
+  const [[source]] = await conn.query("SHOW COLUMNS FROM foods LIKE 'external_source'");
+  if (!source.Type.includes('usda')) {
+    await conn.query("ALTER TABLE foods MODIFY external_source ENUM('fatsecret','openfoodfacts','usda') NULL");
+  }
+}
+
 /** Migración aditiva: conserva usuarios, comidas y sesiones existentes. */
 export async function migrateCoaching(conn) {
   await conn.query("SET time_zone = '-03:00'");

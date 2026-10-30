@@ -4,10 +4,11 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { exercisesApi } from '../../api/endpoints';
 import { Button, Chips, ErrorState, ListItem, Loading, TextField } from '../../components';
-import { colors, font, MAX_CONTENT_WIDTH, spacing } from '../../theme';
+import { colors, createStyles, font, MAX_CONTENT_WIDTH, spacing, useTheme } from '../../theme';
 
 /** Modal para elegir un ejercicio del catálogo (filtrando por grupo muscular) o escribir uno libre. */
 export function ExercisePicker({ visible, onClose, onPick }) {
+  useTheme();
   const [exercises, setExercises] = useState(null);
   const [error, setError] = useState(null);
   const [group, setGroup] = useState('Todos');
@@ -75,10 +76,10 @@ export function ExercisePicker({ visible, onClose, onPick }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   inner: { flex: 1, width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', padding: spacing.lg, gap: spacing.md },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { color: colors.text, fontSize: font.xl, fontWeight: '800' },
   custom: { flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' },
-});
+}));

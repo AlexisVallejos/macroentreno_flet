@@ -32,6 +32,19 @@ export const foodsApi = {
   // MacroEntreno Pro: base de FatSecret con micronutrientes
   searchFatSecret: (search, query) => data(api('/foods/fatsecret/search', { query: { search, ...query } })),
   importFatSecret: (externalId) => data(api('/foods/fatsecret/import', { method: 'POST', body: { externalId } })),
+  // Bases gratuitas: Open Food Facts (envasados) y USDA (genéricos, en inglés)
+  searchExternal: (source, search) => data(api('/foods/external/search', { query: { source, search, limit: 20 }, timeout: 25000 })),
+  importExternal: (source, externalId) => data(api('/foods/external/import', { method: 'POST', body: { source, externalId }, timeout: 25000 })),
+  // Escáner: { found, source, food } o { found: false, barcode }
+  barcode: (code) => data(api(`/foods/barcode/${encodeURIComponent(code)}`, { timeout: 25000 })),
+};
+
+/** Asistente con IA (OpenAI, desde el servidor). Las respuestas pueden tardar: timeouts más largos. */
+export const aiApi = {
+  chat: (messages) => data(api('/ai/chat', { method: 'POST', body: { messages }, timeout: 90000 })),
+  foodPhoto: (image, note) => data(api('/ai/food-photo', { method: 'POST', body: { image, note }, timeout: 90000 })),
+  transcribe: (audio, mimeType) => data(api('/ai/transcribe', { method: 'POST', body: { audio, mimeType }, timeout: 60000 })),
+  speech: (text) => data(api('/ai/speech', { method: 'POST', body: { text }, timeout: 60000 })),
 };
 
 export const diaryApi = {

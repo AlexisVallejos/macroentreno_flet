@@ -3,11 +3,12 @@ import { StyleSheet, Text, View } from 'react-native';
 import { reportsApi } from '../../api/endpoints';
 import { Button, Card, ErrorState, KcalBarChart, ListItem, Loading, StatTile } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { addDays, formatDayLabel, formatWeek, mondayOf, today } from '../../utils/dates';
 import { fmt } from '../../utils/format';
 
 export function WeeklyReview({ userId, onSelectDate }) {
+  useTheme();
   const [week, setWeek] = useState(mondayOf(today()));
   const { data, error, loading, reload, setData } = useResource(() => reportsApi.weeklyPreview(week, userId), [week, userId]);
   const change = (next) => { setData(null); setWeek(next); };
@@ -43,7 +44,7 @@ export function WeeklyReview({ userId, onSelectDate }) {
     </>}
   </>;
 }
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   nav: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, alignItems: 'center' },
   text: { color: colors.text, fontSize: font.md }, muted: { color: colors.muted, fontSize: font.sm },
-});
+}));

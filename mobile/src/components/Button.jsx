@@ -1,19 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import { colors, continuous, font, radius, spacing } from '../theme';
+import { colors, continuous, createStyles, font, radius, spacing, useTheme } from '../theme';
 
-const VARIANTS = {
+const variants = () => ({
   primary: { bg: colors.primary, fg: colors.onPrimary, border: colors.primary },
   secondary: { bg: colors.cardAlt, fg: colors.text, border: colors.cardAlt },
   tinted: { bg: colors.primarySoft, fg: colors.primary, border: 'transparent' },
   outline: { bg: 'transparent', fg: colors.text, border: colors.border },
-  danger: { bg: 'rgba(255,69,58,0.14)', fg: colors.danger, border: 'transparent' },
+  danger: { bg: colors.dangerSoft, fg: colors.danger, border: 'transparent' },
   ghost: { bg: 'transparent', fg: colors.primary, border: 'transparent' },
-};
+});
 
 /** Botón en forma de cápsula. Responde al tocar (no al soltar) achicándose levemente. */
 export function Button({ title, onPress, variant = 'primary', icon, loading = false, disabled = false, style, small }) {
-  const v = VARIANTS[variant];
+  useTheme();
+  const v = variants()[variant];
   const isDisabled = disabled || loading;
   return (
     <Pressable
@@ -46,7 +47,7 @@ export function Button({ title, onPress, variant = 'primary', icon, loading = fa
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   base: {
     minHeight: 50,
     paddingHorizontal: spacing.xl,
@@ -61,4 +62,4 @@ const styles = StyleSheet.create({
   small: { minHeight: 34, paddingHorizontal: spacing.md },
   text: { fontSize: font.body, fontWeight: '600', letterSpacing: -0.2 },
   smallText: { fontSize: font.md },
-});
+}));

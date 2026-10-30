@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card, EmptyState, ListItem, MacroInline, MacroSummary, MicroList, ProTeaser } from '../../components';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { MEALS } from '../../utils/constants';
 import { fmt } from '../../utils/format';
 
@@ -10,6 +10,7 @@ import { fmt } from '../../utils/format';
  * y en el detalle de atleta del coach (solo lectura).
  */
 export function DiaryDay({ day, onAdd, onEdit, onDelete, readOnly = false }) {
+  useTheme();
   const byMeal = MEALS.map((meal) => ({ ...meal, entries: day.entries.filter((e) => e.meal === meal.key) }));
   const visible = readOnly ? byMeal.filter((m) => m.entries.length) : byMeal;
 
@@ -75,9 +76,9 @@ export function DiaryDay({ day, onAdd, onEdit, onDelete, readOnly = false }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   mealRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   mealKcal: { color: colors.muted, fontSize: font.sm, fontWeight: '600' },
   add: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   empty: { color: colors.muted, fontSize: font.sm },
-});
+}));

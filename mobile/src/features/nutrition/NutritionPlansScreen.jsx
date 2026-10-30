@@ -5,7 +5,7 @@ import { coachingApi } from '../../api/endpoints';
 import { Button, Card, DateSwitcher, EmptyState, ErrorState, FormError, Loading, Screen } from '../../components';
 import { useAuth } from '../../context/AuthContext';
 import { useResource } from '../../hooks/useResource';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { confirm, notify } from '../../utils/confirm';
 import { mealLabel } from '../../utils/constants';
 import { today } from '../../utils/dates';
@@ -13,6 +13,7 @@ import { fmt } from '../../utils/format';
 import { savePdf } from '../../utils/savePdf';
 export const WEEKDAYS = ['Todos los días', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 export default function NutritionPlansScreen() {
+  useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const { userId: param } = useLocalSearchParams();
@@ -62,4 +63,4 @@ export default function NutritionPlansScreen() {
     })}
   </Screen>;
 }
-const styles = StyleSheet.create({ muted: { color: colors.muted, fontSize: font.sm }, text: { color: colors.text, fontSize: font.md }, heading: { color: colors.text, fontSize: font.lg, fontWeight: '600' }, item: { gap: 4, paddingVertical: spacing.sm } });
+const styles = createStyles(() => StyleSheet.create({ muted: { color: colors.muted, fontSize: font.sm }, text: { color: colors.text, fontSize: font.md }, heading: { color: colors.text, fontSize: font.lg, fontWeight: '600' }, item: { gap: 4, paddingVertical: spacing.sm } }));

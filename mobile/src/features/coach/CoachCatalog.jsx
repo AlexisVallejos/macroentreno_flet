@@ -2,12 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Grid, Screen } from '../../components';
-import { colors, continuous, font, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, radius, spacing, tracking, useTheme } from '../../theme';
 import { COACH_EXERCISES } from './exercises';
 import { RULES } from './pose/rules';
 
 /** Elegir un ejercicio para entrenar con la cámara. */
 export default function CoachCatalog() {
+  useTheme();
   const router = useRouter();
   return (
     <Screen>
@@ -52,7 +53,7 @@ export default function CoachCatalog() {
                 <Ionicons name={rule.mode === 'reps' ? 'repeat' : 'timer-outline'} size={12} color={rule.mode === 'reps' ? colors.primary : colors.secondary} />
                 <Text style={[styles.badgeText, rule.mode === 'hold' && { color: colors.secondary }]}>{rule.mode === 'reps' ? 'Reps' : 'Tiempo'}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={17} color="rgba(235,235,245,0.3)" />
+              <Ionicons name="chevron-forward" size={17} color={colors.chevron} />
             </Pressable>
           );
         })}
@@ -61,7 +62,7 @@ export default function CoachCatalog() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   hero: { gap: spacing.sm, padding: spacing.xl, borderRadius: radius.lg, backgroundColor: colors.card },
   heroIcon: {
     width: 56,
@@ -85,4 +86,4 @@ const styles = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill, backgroundColor: colors.primarySoft },
   badgeHold: { backgroundColor: 'rgba(100,210,255,0.16)' },
   badgeText: { color: colors.primary, fontSize: font.xs, fontWeight: '700' },
-});
+}));

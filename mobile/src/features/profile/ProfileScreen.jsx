@@ -2,13 +2,14 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { API_URL } from '../../api/client';
-import { Button, Card, FormError, Grid, ListItem, RoleBadge, Screen, TextField } from '../../components';
+import { Button, Card, FormError, Grid, ListItem, RoleBadge, Screen, TextField, ThemeSwitch } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing, tracking } from '../../theme';
+import { colors, createStyles, font, spacing, tracking, useTheme } from '../../theme';
 import { confirm } from '../../utils/confirm';
 import { GoalsForm } from '../users/GoalsForm';
 
 export default function ProfileScreen() {
+  useTheme();
   const router = useRouter();
   const { user, updateProfile, logout } = useAuth();
   const [name, setName] = useState(user.name);
@@ -48,6 +49,19 @@ export default function ProfileScreen() {
           <RoleBadge role={user.role} />
         </View>
       </View>
+
+      <Card title="Opciones">
+        <View style={{ gap: 8 }}>
+          <Text style={styles.muted}>Apariencia: modo claro, oscuro o el del teléfono</Text>
+          <ThemeSwitch />
+        </View>
+        <ListItem
+          icon="sparkles"
+          title="Asistente con IA"
+          subtitle="Por voz o texto: anota comidas, analiza fotos y arma rutinas"
+          onPress={() => router.push('/assistant')}
+        />
+      </Card>
 
       <Grid>
         <Card title="Datos personales">
@@ -94,7 +108,7 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   avatar: {
     width: 72,
@@ -108,4 +122,4 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontSize: font.xl + 2, fontWeight: '700', letterSpacing: tracking.title },
   muted: { color: colors.muted, fontSize: font.sm },
   footer: { color: colors.muted, fontSize: font.xs, textAlign: 'center' },
-});
+}));

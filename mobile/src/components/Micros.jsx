@@ -1,13 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { colors, continuous, font, numeric, radius, spacing } from '../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, useTheme } from '../theme';
 import { fmt } from '../utils/format';
 
 /** Color de la barra: las metas se ponen verdes al cumplirse; los límites, naranja cerca y rojo pasados. */
 function barColor(n) {
   if (n.kind === 'limit') return n.percent > 100 ? colors.danger : n.percent >= 80 ? colors.warning : colors.secondary;
-  return n.percent >= 100 ? colors.primary : 'rgba(48,209,88,0.55)';
+  return n.percent >= 100 ? colors.primary : colors.primaryMuted;
 }
 
 /**
@@ -15,6 +15,7 @@ function barColor(n) {
  * `nutrients` viene de la API (resumen del día o promedio del período).
  */
 export function MicroList({ nutrients, note }) {
+  useTheme();
   const withData = nutrients.filter((n) => n.value !== null);
   const partial = nutrients.some((n) => n.value !== null && n.known < n.entries);
   if (!withData.length) {
@@ -49,6 +50,7 @@ export function MicroList({ nutrients, note }) {
 
 /** Lo que ve el plan gratis en lugar de una función Pro. */
 export function ProTeaser({ title = 'Micronutrientes', text = 'Vitaminas, minerales, fibra y sodio de cada comida, con MacroEntreno Pro.' }) {
+  useTheme();
   const router = useRouter();
   return (
     <Pressable onPress={() => router.push('/pro')} accessibilityRole="button" style={({ pressed }) => [styles.teaser, continuous, pressed && { opacity: 0.85 }]}>
@@ -64,7 +66,7 @@ export function ProTeaser({ title = 'Micronutrientes', text = 'Vitaminas, minera
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   list: { gap: spacing.md },
   row: { gap: 6 },
   head: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.sm },
@@ -76,9 +78,9 @@ const styles = StyleSheet.create({
   fill: { height: '100%', borderRadius: radius.pill },
   note: { color: colors.muted, fontSize: font.xs },
   empty: { color: colors.muted, fontSize: font.sm },
-  teaser: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: 'rgba(48,209,88,0.35)' },
+  teaser: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.lg, borderRadius: radius.lg, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primaryMuted },
   lock: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   teaserTitle: { color: colors.text, fontSize: font.md + 1, fontWeight: '600' },
   teaserText: { color: colors.muted, fontSize: font.sm },
   teaserCta: { color: colors.primary, fontSize: font.md, fontWeight: '600' },
-});
+}));

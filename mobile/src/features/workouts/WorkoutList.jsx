@@ -5,12 +5,13 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { workoutsApi } from '../../api/endpoints';
 import { Button, EmptyState, ErrorState, Grid, Loading } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, continuous, font, radius } from '../../theme';
+import { colors, continuous, createStyles, font, radius, useTheme } from '../../theme';
 import { addDays, formatWeek, mondayOf, today } from '../../utils/dates';
 import { WorkoutCard } from './WorkoutCard';
 
 /** Sesiones de una semana. Con `userId` muestra las de un atleta (vista del coach). */
 export function WorkoutList({ userId, addLabel = 'Nueva sesión' }) {
+  useTheme();
   const router = useRouter();
   const [monday, setMonday] = useState(mondayOf(today()));
   const { data, error, loading, reload } = useResource(
@@ -51,7 +52,7 @@ export function WorkoutList({ userId, addLabel = 'Nueva sesión' }) {
             <Text style={styles.coachTitle}>Entrenar con cámara</Text>
             <Text style={styles.weekSub}>Cuenta tus repeticiones y te corrige la técnica en vivo.</Text>
           </View>
-          <Ionicons name="chevron-forward" size={17} color="rgba(235,235,245,0.3)" />
+          <Ionicons name="chevron-forward" size={17} color={colors.chevron} />
         </Pressable>
       ) : null}
 
@@ -72,7 +73,7 @@ export function WorkoutList({ userId, addLabel = 'Nueva sesión' }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   week: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -86,4 +87,4 @@ const styles = StyleSheet.create({
   coachPressed: { opacity: 0.85, transform: [{ scale: 0.985 }] },
   coachIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   coachTitle: { color: colors.text, fontSize: font.md + 1, fontWeight: '600' },
-});
+}));

@@ -51,6 +51,23 @@ export const env = {
     language: process.env.FATSECRET_LANGUAGE || '',
   },
 
+  // Bases de alimentos gratuitas: Open Food Facts (sin clave) y USDA FoodData Central.
+  foodSources: {
+    // Open Food Facts pide identificar la app en el User-Agent.
+    userAgent: process.env.OFF_USER_AGENT || 'MacroEntreno/1.0 (https://github.com/AlexisVallejos)',
+    // Clave gratuita en https://fdc.nal.usda.gov/api-key-signup; DEMO_KEY sirve para probar (pocas consultas).
+    usdaApiKey: process.env.USDA_API_KEY || 'DEMO_KEY',
+  },
+
+  // Asistente con IA (OpenAI): chat, fotos de comidas y voz.
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY || '',
+    model: process.env.OPENAI_MODEL || 'gpt-6.1-sol',
+    transcribeModel: process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-transcribe',
+    ttsModel: process.env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts',
+    ttsVoice: process.env.OPENAI_TTS_VOICE || 'coral',
+  },
+
   // MacroEntreno Pro: suscripción mensual con Mercado Pago.
   billing: {
     mpAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',

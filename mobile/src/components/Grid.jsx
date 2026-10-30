@@ -1,10 +1,11 @@
 import { Children } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useResponsive } from '../hooks/useResponsive';
-import { spacing } from '../theme';
+import { createStyles, spacing, useTheme } from '../theme';
 
 /** Grilla responsiva: 1 columna en teléfono vertical, 2-3 en horizontal/tablet. */
 export function Grid({ children, min = 1 }) {
+  useTheme();
   const { columns } = useResponsive();
   const cols = Math.max(columns, min);
   return (
@@ -18,6 +19,6 @@ export function Grid({ children, min = 1 }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg },
-});
+}));

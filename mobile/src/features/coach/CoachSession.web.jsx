@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { workoutsApi } from '../../api/endpoints';
 import { Button, Card, Screen } from '../../components';
 import { useResponsive } from '../../hooks/useResponsive';
-import { colors, continuous, font, numeric, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, tracking, useTheme } from '../../theme';
 import { today } from '../../utils/dates';
 import { hasCoachRequest, resolveCoach } from './bridge';
 import { loadLandmarker } from './landmarker';
@@ -47,17 +47,18 @@ const hasActivity = (state) => !!state && (state.reps + state.badReps > 0 || sta
 /** Lo que se anota en cada serie de la sesión: repeticiones bien hechas, o segundos sostenidos en las planchas. */
 const countOf = (rule, set) => (rule.mode === 'reps' ? set.reps : Math.round(set.holdMs / 1000));
 
-const TONES = {
-  ok: { color: colors.primary, background: 'rgba(48,209,88,0.14)' },
-  warn: { color: colors.danger, background: 'rgba(255,69,58,0.16)' },
-  info: { color: colors.text, background: 'rgba(118,118,128,0.24)' },
-};
+const tones = () => ({
+  ok: { color: colors.primary, background: colors.primarySoft },
+  warn: { color: colors.danger, background: colors.dangerSoft },
+  info: { color: colors.text, background: colors.fill },
+});
 
 /**
  * Entrenador con cámara (web): preparación → cámara en vivo con conteo y correcciones → resumen.
  * `request` llega cuando lo abre el formulario de una sesión, para devolverle las series contadas.
  */
 export function CoachSession({ exercise, rule: baseRule, preset, request }) {
+  useTheme();
   const router = useRouter();
   const { width } = useResponsive();
   const wide = width >= 900;
@@ -588,7 +589,7 @@ export function CoachSession({ exercise, rule: baseRule, preset, request }) {
 
           {restLeft === 0 && !paused && !compact ? (
             <View style={styles.bannerWrap} pointerEvents="none">
-              <Text style={[styles.banner, { color: TONES[tone].color }, fullscreen && styles.bannerFull]}>{message}</Text>
+              <Text style={[styles.banner, { color: tones()[tone].color }, fullscreen && styles.bannerFull]}>{message}</Text>
             </View>
           ) : null}
 
@@ -646,8 +647,8 @@ export function CoachSession({ exercise, rule: baseRule, preset, request }) {
           <View style={styles.track}>
             <View style={[styles.trackFill, { width: `${Math.round(fill * 100)}%`, backgroundColor: fill >= 1 ? colors.primary : colors.warning }]} />
           </View>
-          <View style={[styles.message, { backgroundColor: TONES[tone].background }]}>
-            <Text style={[styles.messageText, { color: TONES[tone].color }]} accessibilityLiveRegion="polite">
+          <View style={[styles.message, { backgroundColor: tones()[tone].background }]}>
+            <Text style={[styles.messageText, { color: tones()[tone].color }]} accessibilityLiveRegion="polite">
               {message}
             </Text>
           </View>
@@ -716,6 +717,7 @@ export function CoachSession({ exercise, rule: baseRule, preset, request }) {
 }
 
 function RoundButton({ icon, label, onPress }) {
+  useTheme();
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label} style={({ pressed }) => [styles.round, pressed && styles.roundPressed]}>
       <Ionicons name={icon} size={20} color={colors.text} />
@@ -733,7 +735,7 @@ const canvasStyle = { ...fillBox, pointerEvents: 'none' };
 
 const overlayBox = { backgroundColor: 'rgba(0,0,0,0.62)' };
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   // La cámara y la demo 3D necesitan más ancho que las pantallas de formularios.
   roomy: { maxWidth: 1200 },
   stage: { gap: spacing.lg },
@@ -815,4 +817,4 @@ const styles = StyleSheet.create({
   debugText: { color: colors.muted, fontSize: font.xs, fontFamily: 'ui-monospace, Menlo, monospace' },
   problemIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,69,58,0.14)', alignItems: 'center', justifyContent: 'center' },
   problemTitle: { color: colors.text, fontSize: font.xl, fontWeight: '700', letterSpacing: tracking.title },
-});
+}));

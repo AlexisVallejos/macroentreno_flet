@@ -1,11 +1,12 @@
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { colors, MAX_CONTENT_WIDTH, spacing } from '../theme';
+import { colors, createStyles, MAX_CONTENT_WIDTH, spacing, useTheme } from '../theme';
 
 /**
  * Contenedor base de cada pantalla: scroll, pull-to-refresh y ancho máximo
  * centrado para que en tablets u horizontal el contenido no se estire.
  */
 export function Screen({ children, onRefresh, refreshing = false, scroll = true, style, footer }) {
+  useTheme();
   const content = <View style={[styles.inner, style]}>{children}</View>;
   return (
     <View style={styles.root}>
@@ -30,7 +31,7 @@ export function Screen({ children, onRefresh, refreshing = false, scroll = true,
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
   scroll: { flexGrow: 1, paddingBottom: spacing.xxl },
   inner: { width: '100%', maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', padding: spacing.lg, gap: spacing.lg, flexGrow: 1 },
@@ -43,4 +44,4 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     backgroundColor: colors.background,
   },
-});
+}));

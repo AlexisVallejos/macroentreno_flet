@@ -3,12 +3,13 @@ import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, FormError, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { validateLogin } from '../../utils/validation';
 import { AuthLayout } from './AuthLayout';
 import { SocialButtons } from './SocialButtons';
 
 export default function LoginScreen() {
+  useTheme();
   const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -79,9 +80,9 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   footer: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xs },
   muted: { color: colors.muted, fontSize: font.md },
   link: { color: colors.primary, fontSize: font.md, fontWeight: '600' },
   demo: { color: colors.muted, fontSize: font.xs, textAlign: 'center' },
-});
+}));

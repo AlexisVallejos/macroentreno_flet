@@ -1,8 +1,9 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
-import { colors, font, radius, spacing } from '../theme';
+import { colors, createStyles, font, radius, spacing, useTheme } from '../theme';
 
 /** Selector de una opción entre varias (filtros, comidas, roles…). */
 export function Chips({ options, value, onChange, scroll = true }) {
+  useTheme();
   const chips = options.map((opt) => {
     const selected = opt.value === value;
     return (
@@ -25,7 +26,7 @@ export function Chips({ options, value, onChange, scroll = true }) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   scroll: { flexGrow: 0 },
   row: { gap: spacing.sm, paddingVertical: 2 },
   chip: {
@@ -39,4 +40,4 @@ const styles = StyleSheet.create({
   pressed: { transform: [{ scale: 0.96 }] },
   text: { color: colors.text, fontSize: font.md, fontWeight: '500' },
   selectedText: { color: colors.onPrimary, fontWeight: '600' },
-});
+}));

@@ -2,12 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Card } from '../../components';
 import { useResponsive } from '../../hooks/useResponsive';
-import { colors, continuous, font, numeric, radius, spacing, tracking } from '../../theme';
+import { colors, continuous, createStyles, font, numeric, radius, spacing, tracking, useTheme } from '../../theme';
 import { ExerciseDemo } from './ExerciseDemo';
 import { LIMITS, targetRange } from './pose/session';
 
 /** Selector − valor + al estilo del UIStepper de iOS. */
 function Stepper({ label, value, unit, min, max, step, onChange }) {
+  useTheme();
   const button = (icon, next, disabled, a11y) => (
     <Pressable
       onPress={() => onChange(next)}
@@ -50,6 +51,7 @@ const CHECKS = [
 ];
 
 export function SessionSetup({ exercise, rule, config, starting, voice, onConfig, onStart, onBack }) {
+  useTheme();
   const { width } = useResponsive();
   const wide = width >= 900;
   const range = targetRange(rule);
@@ -120,7 +122,7 @@ export function SessionSetup({ exercise, rule, config, starting, voice, onConfig
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   root: { gap: spacing.lg },
   rootWide: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xl },
   demoSlot: {},
@@ -151,4 +153,4 @@ const styles = StyleSheet.create({
   tip: { color: colors.muted, fontSize: font.sm, fontStyle: 'italic' },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   grow: { flexGrow: 1 },
-});
+}));

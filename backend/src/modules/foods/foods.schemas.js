@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { pagination } from '../../utils/validation.js';
 
+/** EAN-8, EAN-13, UPC-A/E o ITF-14: solo dígitos. */
+export const barcode = z.string().trim().regex(/^\d{6,14}$/, 'Código de barras inválido');
+
 const macro = z.coerce.number().min(0, 'No puede ser negativo').max(5000);
 
 export const listFoodsQuery = z.object({
@@ -20,6 +23,7 @@ export const foodSchema = z.object({
   protein: macro,
   carbs: macro,
   fat: macro,
+  barcode: barcode.nullable().optional(),
   // Solo coach/admin pueden crear alimentos del catálogo global.
   isGlobal: z.boolean().default(false),
 });
@@ -35,3 +39,16 @@ export const fatSecretSearchQuery = z.object({
 export const fatSecretImportSchema = z.object({
   externalId: z.string().trim().regex(/^\d{1,20}$/, 'Id de FatSecret inválido'),
 });
+
+export const externalSearchQuery = z.object({
+  source: z.enum(['openfoodfacts', 'usda']),
+  search: z.string().trim().min(2, 'Escribí al menos 2 letras').max(100),
+  limit: z.coerce.number().int().min(1).max(30).default(20),
+});
+
+export const externalImportSchema = z.object({
+  source: z.enum(['openfoodfacts', 'usda']),
+  externalId: z.string().trim().regex(/^\d{1,20}$/, 'Id inválido'),
+});
+
+export const barcodeParam = z.object({ code: barcode });

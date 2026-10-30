@@ -4,7 +4,7 @@ import { Text } from 'react-native';
 import { foodsApi } from '../../api/endpoints';
 import { Button, Card, Chips, EmptyState, ErrorState, ListItem, Loading, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors } from '../../theme';
+import { colors, useTheme } from '../../theme';
 
 const SCOPES = [
   { value: 'all', label: 'Todos' },
@@ -18,6 +18,7 @@ const SCOPES = [
  * Coach/admin: además editan el catálogo global.
  */
 export function FoodList({ initialScope = 'all' }) {
+  useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const isStaff = user.role !== 'athlete';

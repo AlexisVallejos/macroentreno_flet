@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import { colors } from '../../theme';
+import { colors, useTheme } from '../../theme';
 
 /**
  * Pantallas de la sesión iniciada. Cada grupo de rutas se protege por rol:
@@ -10,6 +10,7 @@ import { colors } from '../../theme';
 export const unstable_settings = { anchor: '(tabs)' };
 
 export default function AppLayout() {
+  useTheme();
   const { user } = useAuth();
   const role = user?.role;
   const isAthlete = role === 'athlete';
@@ -34,6 +35,7 @@ export default function AppLayout() {
       <Stack.Screen name="nutrition-plans" options={{ title: 'Plan de alimentación' }} />
       <Stack.Screen name="weekly-reports" options={{ title: 'Informes semanales' }} />
       <Stack.Screen name="pro" options={{ title: 'MacroEntreno Pro' }} />
+      <Stack.Screen name="assistant" options={{ title: 'Asistente' }} />
 
       {/* Atleta: carga su diario y entrena con la cámara */}
       <Stack.Protected guard={isAthlete}>

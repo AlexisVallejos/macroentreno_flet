@@ -4,12 +4,13 @@ import { StyleSheet, Text } from 'react-native';
 import { reportsApi } from '../../api/endpoints';
 import { Button, Card, EmptyState, ErrorState, FormError, ListItem, Loading, Screen } from '../../components';
 import { useResource } from '../../hooks/useResource';
-import { colors, font } from '../../theme';
+import { colors, createStyles, font, useTheme } from '../../theme';
 import { addDays, formatWeek } from '../../utils/dates';
 import { fmt } from '../../utils/format';
 import { savePdf } from '../../utils/savePdf';
 
 export default function WeeklyReportsScreen() {
+  useTheme();
   const { userId: param } = useLocalSearchParams();
   const userId = param ? Number(param) : undefined;
   const { data, error, reload, refreshing } = useResource(() => reportsApi.weeklyList(userId), [userId]);
@@ -35,4 +36,4 @@ export default function WeeklyReportsScreen() {
     </Card>}
   </Screen>;
 }
-const styles = StyleSheet.create({ muted: { color: colors.muted, fontSize: font.sm }, text: { color: colors.text, fontSize: font.md } });
+const styles = createStyles(() => StyleSheet.create({ muted: { color: colors.muted, fontSize: font.sm }, text: { color: colors.text, fontSize: font.md } }));

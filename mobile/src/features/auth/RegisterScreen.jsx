@@ -3,12 +3,13 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button, FormError, TextField } from '../../components';
 import { useAuth } from '../../context/AuthContext';
-import { colors, font, spacing } from '../../theme';
+import { colors, createStyles, font, spacing, useTheme } from '../../theme';
 import { validateRegister } from '../../utils/validation';
 import { AuthLayout } from './AuthLayout';
 import { SocialButtons } from './SocialButtons';
 
 export default function RegisterScreen() {
+  useTheme();
   const { register } = useAuth();
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' });
   const [errors, setErrors] = useState({});
@@ -78,8 +79,8 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = createStyles(() => StyleSheet.create({
   footer: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xs },
   muted: { color: colors.muted, fontSize: font.md },
   link: { color: colors.primary, fontSize: font.md, fontWeight: '700' },
-});
+}));
