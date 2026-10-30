@@ -8,8 +8,9 @@
 4. [App móvil (React Native + Expo)](#4-app-móvil-react-native--expo)
 5. [Inicio de sesión con Google, Facebook y GitHub](#5-inicio-de-sesión-con-google-facebook-y-github)
 6. [Generar el APK](#6-generar-el-apk)
-7. [Variables de entorno (referencia)](#7-variables-de-entorno-referencia)
-8. [Problemas frecuentes](#8-problemas-frecuentes)
+7. [Publicar en Vercel](#7-publicar-en-vercel)
+8. [Variables de entorno (referencia)](#8-variables-de-entorno-referencia)
+9. [Problemas frecuentes](#9-problemas-frecuentes)
 
 ---
 
@@ -103,7 +104,7 @@ la app funciona igual y el asistente avisa que falta configurarlo.
 
 También se puede consultar `GET /api/ai/status` (con sesión iniciada) → `{ configured, model, warning? }`.
 Los modelos se cambian con `OPENAI_MODEL`, `OPENAI_TRANSCRIBE_MODEL`, `OPENAI_TTS_MODEL` y
-`OPENAI_TTS_VOICE` (ver la [referencia](#7-variables-de-entorno-referencia)).
+`OPENAI_TTS_VOICE` (ver la [referencia](#8-variables-de-entorno-referencia)).
 
 La cámara (escáner de código de barras y fotos) y el micrófono del asistente funcionan en el
 celular y, en la web, solo desde `https://` o `localhost`.
@@ -315,7 +316,65 @@ cd android
 
 En este caso, `EXPO_PUBLIC_API_URL` se toma del `.env` en el momento del build.
 
-## 7. Variables de entorno (referencia)
+## 7. Publicar en Vercel
+
+La versión web de la app y la API se publican juntas en un solo proyecto de Vercel:
+**https://macroentreno.vercel.app**. La configuración está en [`vercel.json`](../vercel.json):
+
+| Parte | Qué hace Vercel |
+|---|---|
+| App | Instala `backend/` y `mobile/`, exporta la app de Expo para web (`npx expo export -p web`) con `EXPO_PUBLIC_API_URL=/api` y publica `mobile/dist` |
+| API | [`api/index.mjs`](../api/index.mjs) es una función serverless que usa la misma app de Express; todo `/api/*` llega ahí |
+| Navegación | Cualquier otra ruta (`/login`, `/diary`…) devuelve `index.html` para que la resuelva Expo Router |
+| Tareas diarias | El cron de Vercel llama a `/api/cron/diario` una vez por día: informes semanales y limpieza de tokens vencidos |
+
+### 7.1 Base de datos
+
+Vercel no aloja MySQL: la base tiene que estar en un servidor accesible desde internet (por ejemplo, un
+MySQL en EasyPanel con el puerto expuesto). Para cargar las tablas y los datos de ejemplo desde tu computadora:
+
+```bash
+cd backend
+DB_HOST=<ip-del-servidor> DB_PORT=<puerto-expuesto> DB_USER=<usuario> DB_PASSWORD=<contraseña> DB_NAME=<base> \
+  npm run db:init -- --yes
+```
+
+`--yes` es obligatorio cuando la base no es local, porque el script vacía las tablas. Las migraciones
+posteriores las corre la propia API la primera vez que arranca cada instancia.
+
+### 7.2 Variables de entorno en Vercel
+
+Se cargan en el proyecto (Settings → Environment Variables) o con la CLI:
+
+```bash
+npx vercel login
+npx vercel link --project macroentreno
+printf %s "valor" | npx vercel env add NOMBRE production
+```
+
+| Variable | Valor |
+|---|---|
+| `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` | Secretos largos y distintos (`openssl rand -hex 48`) |
+| `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Datos públicos de la base MySQL |
+| `DB_CONNECTION_LIMIT` | `3` (cada instancia abre su propio pool) |
+| `DB_SSL` | `true` si el servidor MySQL exige SSL |
+| `CORS_ORIGIN` | `*` (la app y la API comparten dominio) |
+| `CRON_SECRET` | Secreto que Vercel envía al llamar al cron |
+| `OPENAI_API_KEY` | Opcional: activa el asistente con IA |
+
+### 7.3 Publicar
+
+```bash
+npx vercel deploy --prod
+```
+
+Para comprobar que todo responde: `https://macroentreno.vercel.app/api/health` devuelve
+`{"data":{"status":"ok","database":"ok",…}}`. Si devuelve `503 DATABASE_UNAVAILABLE`, la API funciona
+pero no llega a la base: revisá host, puerto expuesto y contraseña.
+
+---
+
+## 8. Variables de entorno (referencia)
 
 ### `backend/.env`
 
@@ -327,6 +386,9 @@ En este caso, `EXPO_PUBLIC_API_URL` se toma del `.env` en el momento del build.
 | `DB_HOST` / `DB_PORT` | sí | `localhost` / `3306` | Servidor MySQL |
 | `DB_USER` / `DB_PASSWORD` | sí | `root` / `…` | Credenciales MySQL |
 | `DB_NAME` | sí | `macroentreno` | Nombre de la base |
+| `DB_SSL` | no | `false` | `true` si el MySQL exige conexión cifrada |
+| `DB_CONNECTION_LIMIT` | no | `10` | Conexiones del pool (en Vercel conviene `3`) |
+| `CRON_SECRET` | solo en Vercel | 64 caracteres hex | Protege `/api/cron/diario` |
 | `JWT_ACCESS_SECRET` | sí | 96 caracteres hex | Firma de los tokens de acceso |
 | `JWT_REFRESH_SECRET` | sí | otro distinto | Firma de los tokens de renovación |
 | `JWT_ACCESS_EXPIRES_IN` | no | `15m` | Vida del token de acceso |
@@ -347,7 +409,7 @@ En este caso, `EXPO_PUBLIC_API_URL` se toma del `.env` en el momento del build.
 |---|---|---|
 | `EXPO_PUBLIC_API_URL` | `http://192.168.0.10:3000/api` | URL base de la API (con `/api`). El puerto debe coincidir con `PORT` del backend |
 
-## 8. Problemas frecuentes
+## 9. Problemas frecuentes
 
 | Síntoma | Causa probable | Solución |
 |---|---|---|
