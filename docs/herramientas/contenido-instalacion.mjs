@@ -4,13 +4,13 @@ import fs from 'node:fs';
 const out = (file) => fs.readFileSync(new URL(`../manual-instalacion/salidas/${file}.txt`, import.meta.url), 'utf8').trimEnd().split('\n');
 
 export const meta = {
-  institution: '[Institución]',
+  institution: 'E.E.S.T. N° 5',
   title: 'Manual de instalación de MacroEntreno',
   subtitle: 'Instalación, configuración y publicación de la app y la API',
   student: 'Alexis Vallejos',
-  subject: '[Materia]',
-  teacher: '[Docente]',
-  course: '[Curso]',
+  subject: 'Proyecto, Diseño e Implementación de Sistemas Computacionales',
+  teacher: 'Martín A. Estanga Schulze',
+  course: '7° 4° GB',
   date: '30 de octubre de 2026',
   sigla: 'MacroEntreno',
   fileName: 'Manual_de_Instalacion_MacroEntreno',

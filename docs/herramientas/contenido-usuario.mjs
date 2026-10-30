@@ -1,12 +1,12 @@
 // Contenido del manual de usuario. Marcas: **negrita**, *cursiva*, `código`.
 export const meta = {
-  institution: '[Institución]',
+  institution: 'E.E.S.T. N° 5',
   title: 'Manual de usuario de MacroEntreno',
   subtitle: 'Cuenta, registro de comidas y plan de alimentación',
   student: 'Alexis Vallejos',
-  subject: '[Materia]',
-  teacher: '[Docente]',
-  course: '[Curso]',
+  subject: 'Proyecto, Diseño e Implementación de Sistemas Computacionales',
+  teacher: 'Martín A. Estanga Schulze',
+  course: '7° 4° GB',
   date: '30 de octubre de 2026',
   sigla: 'MacroEntreno',
   fileName: 'Manual_de_Usuario_MacroEntreno',
