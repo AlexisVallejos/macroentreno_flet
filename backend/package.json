@@ -1,0 +1,37 @@
+{
+  "name": "macroentreno-api",
+  "version": "1.0.0",
+  "description": "API REST de MacroEntreno: autenticación JWT, roles, diario de comidas y entrenamientos sobre MySQL.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:init": "node scripts/db-init.js",
+    "db:seed": "node scripts/db-init.js --seed-only",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "dev:memory": "node scripts/dev-memory.js",
+    "reports:weekly": "node scripts/generate-reports.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.8",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.12.1",
+    "mysql2": "^3.24.6",
+    "pdfkit": "^0.20.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mysql-memory-server": "^1.17.0",
+    "supertest": "^7.3.1"
+  }
+}

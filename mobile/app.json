@@ -1,0 +1,62 @@
+{
+  "expo": {
+    "name": "MacroEntreno",
+    "slug": "macroentreno",
+    "version": "1.0.0",
+    "scheme": "macroentreno",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0A0A0A",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.macroentreno.app"
+    },
+    "android": {
+      "package": "com.macroentreno.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A0A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "MacroEntreno usa la cámara para escanear el código de barras de los alimentos y sacar fotos de tus comidas.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "MacroEntreno accede a tus fotos para que la IA analice tus comidas.",
+          "cameraPermission": "MacroEntreno usa la cámara para sacar fotos de tus comidas."
+        }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "MacroEntreno usa el micrófono para que le hables al asistente."
+        }
+      ]
+    ]
+  }
+}

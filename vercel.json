@@ -1,0 +1,28 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm ci --prefix backend && npm ci --prefix mobile",
+  "buildCommand": "cd mobile && EXPO_PUBLIC_API_URL=/api npx expo export -p web --output-dir dist",
+  "outputDirectory": "mobile/dist",
+  "functions": {
+    "api/index.mjs": {
+      "maxDuration": 60,
+      "includeFiles": "{backend/database/**,backend/node_modules/pdfkit/js/data/**}"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index.mjs"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/diario",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

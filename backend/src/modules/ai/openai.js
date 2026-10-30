@@ -1,0 +1,147 @@
+import { env } from '../../config/env.js';
+import { HttpError, badGateway, unavailable } from '../../utils/httpError.js';
+
+/**
+ * Cliente mínimo de la API de OpenAI (https://developers.openai.com/api): Responses API para el
+ * chat con imágenes y herramientas, transcripción de audio y texto a voz. La clave vive solo en el
+ * servidor: la app nunca la ve.
+ */
+const URL = 'https://api.openai.com/v1';
+/** Tope por llamada. El chat puede encadenar varias llamadas y pasa un tope menor (ver ai.service). */
+export const TIMEOUT_MS = 45_000;
+/** Pausa antes del único reintento ante errores pasajeros (5xx, límite por minuto, red caída). */
+const RETRY_DELAY_MS = env.nodeEnv === 'test' ? 0 : 1_000;
+
+/** Dónde se configura la clave: se repite en el log de arranque, en los errores y en la app. */
+export const SETUP_HINT = 'pegá tu clave en backend/.env → OPENAI_API_KEY y reiniciá la API';
+
+let fetcher = (...args) => fetch(...args);
+/** Para las pruebas: reemplaza el fetch real por uno simulado (sin argumento vuelve al real). */
+export function setOpenAiFetch(fn) {
+  fetcher = fn ?? ((...args) => fetch(...args));
+}
+
+export const openAiConfigured = () => Boolean(env.openai.apiKey);
+/** Chequeo liviano del formato: las claves de OpenAI empiezan con "sk-" (sk-proj-…, sk-svcacct-…). */
+export const keyLooksValid = () => env.openai.apiKey.startsWith('sk-');
+
+/** Estado del asistente para la app y el log de arranque. Nunca incluye la clave. */
+export function aiStatus() {
+  const configured = openAiConfigured();
+  return {
+    configured,
+    model: env.openai.model,
+    ...(configured && !keyLooksValid() ? { warning: 'La clave de OPENAI_API_KEY no tiene el formato esperado (debería empezar con "sk-")' } : {}),
+  };
+}
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Traduce un error HTTP de OpenAI a un error de la API con un mensaje que se puede mostrar. */
+function toHttpError(status, detail) {
+  const code = detail?.error?.code;
+  const message = detail?.error?.message;
+  if (status === 401) return unavailable('AI_INVALID_KEY', 'La clave de OpenAI es inválida: revisá OPENAI_API_KEY en backend/.env y reiniciá la API');
+  if (status === 429 && code === 'insufficient_quota') {
+    return unavailable('AI_QUOTA', 'La cuenta de OpenAI se quedó sin saldo: cargá crédito en platform.openai.com/settings/organization/billing');
+  }
+  if (status === 429) return new HttpError(429, 'AI_RATE_LIMIT', 'El asistente está saturado, probá de nuevo en unos segundos');
+  if (status === 403) return unavailable('AI_FORBIDDEN', `La cuenta de OpenAI no tiene acceso a este servicio o al modelo ${env.openai.model}`);
+  if (status === 404) return unavailable('AI_MODEL_NOT_FOUND', `OpenAI no encontró el modelo configurado (${env.openai.model}): revisá OPENAI_MODEL en backend/.env`);
+  if (status >= 500) return badGateway('AI_UNAVAILABLE', 'OpenAI está con problemas en este momento, probá de nuevo en unos minutos');
+  return badGateway('AI_ERROR', `El asistente no pudo responder${message ? `: ${message}` : ''}`);
+}
+
+/** Errores pasajeros que vale la pena reintentar una vez. La falta de saldo no se arregla sola. */
+const retryable = (status, detail) => status >= 500 || (status === 429 && detail?.error?.code !== 'insufficient_quota');
+
+async function call(path, { json, form, binary = false, timeoutMs = TIMEOUT_MS }) {
+  if (!openAiConfigured()) throw unavailable('AI_NOT_CONFIGURED', `El asistente con IA no está configurado: ${SETUP_HINT}`);
+  const deadline = Date.now() + timeoutMs;
+  for (let attempt = 0; ; attempt++) {
+    const last = attempt > 0;
+    let res;
+    try {
+      res = await fetcher(`${URL}${path}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${env.openai.apiKey}`, ...(json ? { 'Content-Type': 'application/json' } : {}) },
+        body: json ? JSON.stringify(json) : form,
+        signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
+      });
+    } catch (err) {
+      const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+      if (timedOut) throw new HttpError(504, 'AI_TIMEOUT', 'El asistente tardó demasiado en responder, probá de nuevo');
+      if (!last && deadline - Date.now() > RETRY_DELAY_MS) {
+        await sleep(RETRY_DELAY_MS);
+        continue;
+      }
+      throw badGateway('AI_UNREACHABLE', 'No se pudo conectar con OpenAI: revisá la conexión a internet del servidor');
+    }
+    if (res.ok) return binary ? Buffer.from(await res.arrayBuffer()) : res.json();
+
+    const detail = await res.json().catch(() => null);
+    if (!last && retryable(res.status, detail) && deadline - Date.now() > RETRY_DELAY_MS) {
+      await sleep(RETRY_DELAY_MS);
+      continue;
+    }
+    // Para el administrador: el detalle de OpenAI queda en el log (nunca la clave).
+    if (env.nodeEnv !== 'test') console.warn(`[ia] OpenAI ${path} respondió ${res.status}: ${detail?.error?.message ?? 'sin detalle'}`);
+    throw toHttpError(res.status, detail);
+  }
+}
+
+/**
+ * Una vuelta de la Responses API. `previousResponseId` encadena la respuesta anterior (con sus
+ * llamadas a herramientas y razonamiento) para devolverle solo los resultados.
+ */
+export function createResponse({ instructions, input, tools, previousResponseId, schema, timeoutMs }) {
+  return call('/responses', {
+    timeoutMs,
+    json: {
+      model: env.openai.model,
+      instructions,
+      input,
+      ...(tools?.length ? { tools } : {}),
+      ...(previousResponseId ? { previous_response_id: previousResponseId } : {}),
+      ...(schema ? { text: { format: { type: 'json_schema', name: schema.name, schema: schema.schema, strict: true } } } : {}),
+    },
+  });
+}
+
+/** Texto final de una respuesta (une todos los bloques output_text de los mensajes). */
+export function outputText(response) {
+  return (response.output ?? [])
+    .filter((item) => item.type === 'message')
+    .flatMap((item) => item.content ?? [])
+    .filter((c) => c.type === 'output_text')
+    .map((c) => c.text)
+    .join('')
+    .trim();
+}
+
+export const functionCalls = (response) => (response.output ?? []).filter((item) => item.type === 'function_call');
+
+/** Audio (buffer) → texto en castellano. */
+export async function transcribe(buffer, mimeType) {
+  const ext = mimeType.includes('webm') ? 'webm' : mimeType.includes('mp4') || mimeType.includes('m4a') ? 'm4a' : mimeType.includes('ogg') ? 'ogg' : mimeType.includes('wav') ? 'wav' : 'mp3';
+  const form = new FormData();
+  form.append('file', new Blob([buffer], { type: mimeType }), `audio.${ext}`);
+  form.append('model', env.openai.transcribeModel);
+  form.append('language', 'es');
+  const json = await call('/audio/transcriptions', { form });
+  return (json.text ?? '').trim();
+}
+
+/** Texto → audio MP3 con voz natural en castellano rioplatense. */
+export function speak(text) {
+  return call('/audio/speech', {
+    json: {
+      model: env.openai.ttsModel,
+      voice: env.openai.ttsVoice,
+      input: text,
+      instructions: 'Hablá en español rioplatense (Argentina), con tono cercano, claro y motivador, como un entrenador.',
+      response_format: 'mp3',
+    },
+    binary: true,
+  });
+}

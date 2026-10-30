@@ -1,0 +1,94 @@
+import 'dotenv/config';
+
+/** Lee una variable obligatoria; en producción falla al arrancar si falta. */
+function required(name, devFallback) {
+  const value = process.env[name];
+  if (value) return value;
+  if (process.env.NODE_ENV === 'production' || devFallback === undefined) {
+    throw new Error(`Falta la variable de entorno ${name}`);
+  }
+  return devFallback;
+}
+
+const list = (value) =>
+  (value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+export const env = {
+  nodeEnv: process.env.NODE_ENV || 'development',
+  port: Number(process.env.PORT || 3000),
+  corsOrigin: process.env.CORS_ORIGIN || '*',
+
+  db: {
+    host: process.env.DB_HOST || 'localhost',
+    port: Number(process.env.DB_PORT || 3306),
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    database: process.env.DB_NAME || 'macroentreno',
+    // Bases en la nube que exigen conexión cifrada (DB_SSL=true).
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== 'false' } : undefined,
+  },
+  // En Vercel cada instancia abre su propio pool: conviene un límite chico.
+  dbConnectionLimit: Number(process.env.DB_CONNECTION_LIMIT || 10),
+
+  jwt: {
+    accessSecret: required('JWT_ACCESS_SECRET', 'dev_access_secret_no_usar_en_produccion'),
+    refreshSecret: required('JWT_REFRESH_SECRET', 'dev_refresh_secret_no_usar_en_produccion'),
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    refreshExpiresDays: Number(process.env.JWT_REFRESH_EXPIRES_DAYS || 30),
+  },
+
+  oauth: {
+    // URL pública de esta API (ej. https://xxxx.ngrok-free.app). Se usa para armar el callback.
+    publicApiUrl: (process.env.PUBLIC_API_URL || '').replace(/\/$/, ''),
+    // Esquemas a los que se permite volver después del login social.
+    appSchemes: list(process.env.APP_REDIRECT_SCHEMES || 'macroentreno,exp,exps'),
+  },
+
+  // Búsqueda de alimentos con micronutrientes (OAuth 1.0: no depende de la IP habilitada en FatSecret).
+  fatsecret: {
+    consumerKey: process.env.FATSECRET_CONSUMER_KEY || '',
+    consumerSecret: process.env.FATSECRET_CONSUMER_SECRET || '',
+    region: process.env.FATSECRET_REGION || '',
+    language: process.env.FATSECRET_LANGUAGE || '',
+  },
+
+  // Bases de alimentos gratuitas: Open Food Facts (sin clave) y USDA FoodData Central.
+  foodSources: {
+    // Open Food Facts pide identificar la app en el User-Agent.
+    userAgent: process.env.OFF_USER_AGENT || 'MacroEntreno/1.0 (https://github.com/AlexisVallejos)',
+    // Clave gratuita en https://fdc.nal.usda.gov/api-key-signup; DEMO_KEY sirve para probar (pocas consultas).
+    usdaApiKey: process.env.USDA_API_KEY || 'DEMO_KEY',
+  },
+
+  // Asistente con IA (OpenAI): chat, fotos de comidas y voz.
+  openai: {
+    // Se recorta por si se pegó con espacios o un salto de línea de Windows.
+    apiKey: (process.env.OPENAI_API_KEY || '').trim(),
+    model: process.env.OPENAI_MODEL || 'gpt-6.1-sol',
+    transcribeModel: process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-transcribe',
+    ttsModel: process.env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts',
+    ttsVoice: process.env.OPENAI_TTS_VOICE || 'coral',
+  },
+
+  // MacroEntreno Pro: suscripción mensual con Mercado Pago.
+  billing: {
+    mpAccessToken: process.env.MERCADOPAGO_ACCESS_TOKEN || '',
+    mpWebhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET || '',
+    price: Number(process.env.PRO_PRICE || 4999),
+    currency: process.env.PRO_CURRENCY || 'ARS',
+    // Adónde vuelve el navegador después de pagar (la app web, ej. https://app.midominio.com).
+    appUrl: (process.env.PUBLIC_APP_URL || '').replace(/\/$/, ''),
+  },
+
+  social: {
+    googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    facebookAppId: process.env.FACEBOOK_APP_ID || '',
+    facebookAppSecret: process.env.FACEBOOK_APP_SECRET || '',
+    githubClientId: process.env.GITHUB_CLIENT_ID || '',
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+  },
+};
