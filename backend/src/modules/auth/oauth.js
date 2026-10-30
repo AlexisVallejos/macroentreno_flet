@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import { env } from '../../config/env.js';
 import { HttpError, badRequest, unauthorized } from '../../utils/httpError.js';
 import { socialProviders } from './socialProviders.js';
+import { JWT_ALGORITHMS } from './tokens.js';
 
 /**
  * Flujo de login social:
@@ -54,7 +55,7 @@ export const signState = (data) => jwt.sign({ ...data, type: 'oauth_state' }, en
 
 export function verifyState(state) {
   try {
-    const payload = jwt.verify(state, env.jwt.accessSecret);
+    const payload = jwt.verify(state, env.jwt.accessSecret, { algorithms: JWT_ALGORITHMS });
     if (payload.type !== 'oauth_state') throw new Error('tipo');
     return payload;
   } catch {

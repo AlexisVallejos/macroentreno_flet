@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { query } from '../config/db.js';
+import { JWT_ALGORITHMS } from '../modules/auth/tokens.js';
 import { forbidden, paymentRequired, unauthorized } from '../utils/httpError.js';
 
 /** Exige un token de acceso válido en "Authorization: Bearer <token>". */
@@ -11,7 +12,7 @@ export async function authenticate(req, _res, next) {
 
   let payload;
   try {
-    payload = jwt.verify(token, env.jwt.accessSecret);
+    payload = jwt.verify(token, env.jwt.accessSecret, { algorithms: JWT_ALGORITHMS });
   } catch (err) {
     if (err.name === 'TokenExpiredError') throw unauthorized('El token de acceso venció', 'TOKEN_EXPIRED');
     throw unauthorized('Token de acceso inválido', 'TOKEN_INVALID');

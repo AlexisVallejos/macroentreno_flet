@@ -1,25 +1,20 @@
 import { z } from 'zod';
+import { emailField as email, loginPasswordField, nameField as name, passwordField as password } from '../../utils/validation.js';
 
-const password = z
-  .string()
-  .min(8, 'La contraseña debe tener al menos 8 caracteres')
-  .max(72, 'La contraseña no puede superar 72 caracteres')
-  .regex(/[A-Za-z]/, 'La contraseña debe incluir al menos una letra')
-  .regex(/\d/, 'La contraseña debe incluir al menos un número');
-
-export const registerSchema = z.object({
-  name: z.string().trim().min(2, 'El nombre debe tener al menos 2 caracteres').max(100),
-  email: z.email('Email inválido').trim().toLowerCase(),
-  password,
-});
+// z.object descarta las claves desconocidas: un "role" o "isActive" en el cuerpo nunca llega al servicio.
+export const registerSchema = z.object({ name, email, password });
 
 export const loginSchema = z.object({
-  email: z.email('Email inválido').trim().toLowerCase(),
-  password: z.string().min(1, 'Ingresá la contraseña'),
+  email,
+  password: loginPasswordField,
 });
 
 export const refreshSchema = z.object({
-  refreshToken: z.string().min(1, 'Falta refreshToken'),
+  refreshToken: z.string({ error: 'Falta refreshToken' }).min(1, 'Falta refreshToken').max(2000),
+});
+
+export const logoutSchema = z.object({
+  refreshToken: z.string().max(2000).optional(),
 });
 
 export const oauthParams = z.object({
@@ -35,7 +30,8 @@ export const oauthExchangeSchema = z.object({
   code: z.string().min(1, 'Falta code'),
   codeVerifier: z.string().min(43, 'code_verifier inválido').max(128),
 });
+
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().optional(),
+  currentPassword: loginPasswordField.optional(),
   newPassword: password,
 });

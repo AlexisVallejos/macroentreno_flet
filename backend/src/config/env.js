@@ -61,7 +61,8 @@ export const env = {
 
   // Asistente con IA (OpenAI): chat, fotos de comidas y voz.
   openai: {
-    apiKey: process.env.OPENAI_API_KEY || '',
+    // Se recorta por si se pegó con espacios o un salto de línea de Windows.
+    apiKey: (process.env.OPENAI_API_KEY || '').trim(),
     model: process.env.OPENAI_MODEL || 'gpt-6.1-sol',
     transcribeModel: process.env.OPENAI_TRANSCRIBE_MODEL || 'gpt-transcribe',
     ttsModel: process.env.OPENAI_TTS_MODEL || 'gpt-4o-mini-tts',

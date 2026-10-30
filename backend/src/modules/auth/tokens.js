@@ -6,6 +6,9 @@ import { unauthorized } from '../../utils/httpError.js';
 
 const sha256 = (value) => crypto.createHash('sha256').update(value).digest('hex');
 
+// Se fija el algoritmo: un token con otro "alg" (incluido "none") se rechaza aunque la firma cierre.
+export const JWT_ALGORITHMS = ['HS256'];
+
 export function signAccessToken(user) {
   return jwt.sign({ sub: user.id, role: user.role, type: 'access' }, env.jwt.accessSecret, {
     expiresIn: env.jwt.accessExpiresIn,
@@ -44,7 +47,7 @@ export async function issueTokens(user) {
 export async function consumeRefreshToken(token) {
   let payload;
   try {
-    payload = jwt.verify(token, env.jwt.refreshSecret);
+    payload = jwt.verify(token, env.jwt.refreshSecret, { algorithms: JWT_ALGORITHMS });
   } catch {
     throw unauthorized('Token de renovación inválido o vencido', 'REFRESH_INVALID');
   }

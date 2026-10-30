@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { query, transaction } from '../../config/db.js';
 import { HttpError, badRequest, conflict, forbidden, unauthorized } from '../../utils/httpError.js';
+import { EMAIL_MAX } from '../../utils/validation.js';
 import { USER_COLUMNS, USER_FROM, toPublicUser } from '../users/users.mapper.js';
 import { consumeRefreshToken, issueTokens, revokeAllForUser, revokeRefreshToken } from './tokens.js';
 
@@ -65,6 +66,9 @@ export async function logout(refreshToken, { allDevices = false, userId } = {}) 
  */
 export async function linkSocialAccount(provider, profile) {
   if (!profile.providerUserId) throw badRequest('El proveedor no devolvió un identificador de usuario');
+  // El email del proveedor se normaliza igual que en el registro; si no entra en la columna, se ignora.
+  const email = String(profile.email || '').trim().toLowerCase();
+  profile = { ...profile, email: email && email.length <= EMAIL_MAX ? email : null };
 
   const userId = await transaction(async (conn) => {
     const [[linked]] = await conn.query(

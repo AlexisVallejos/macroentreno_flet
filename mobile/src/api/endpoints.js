@@ -41,6 +41,8 @@ export const foodsApi = {
 
 /** Asistente con IA (OpenAI, desde el servidor). Las respuestas pueden tardar: timeouts más largos. */
 export const aiApi = {
+  /** { configured, model, warning? }: si el servidor tiene la clave de OpenAI. */
+  status: () => data(api('/ai/status')),
   chat: (messages) => data(api('/ai/chat', { method: 'POST', body: { messages }, timeout: 90000 })),
   foodPhoto: (image, note) => data(api('/ai/food-photo', { method: 'POST', body: { image, note }, timeout: 90000 })),
   transcribe: (audio, mimeType) => data(api('/ai/transcribe', { method: 'POST', body: { audio, mimeType }, timeout: 60000 })),

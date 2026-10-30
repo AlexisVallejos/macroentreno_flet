@@ -5,11 +5,17 @@ import { env } from '../../config/env.js';
 import { authenticate } from '../../middlewares/auth.js';
 import { validate } from '../../middlewares/validate.js';
 import * as service from './ai.service.js';
+import { aiStatus } from './openai.js';
 
 const router = Router();
 // Las fotos y audios llegan en base64: este módulo acepta cuerpos más grandes que el resto de la API.
 router.use(express.json({ limit: '12mb' }));
 router.use(authenticate);
+
+// Antes del límite de uso: no llama a OpenAI, solo dice si hay clave (la app lo consulta al abrir el chat).
+router.get('/status', (_req, res) => {
+  res.json({ data: aiStatus() });
+});
 
 // Cada llamada cuesta dinero en OpenAI: tope por usuario.
 router.use(
@@ -29,19 +35,24 @@ const image = z
   .max(MAX_IMAGE, 'La foto es demasiado grande')
   .regex(/^data:image\/(jpeg|jpg|png|webp|heic|heif);base64,/, 'La imagen debe ser JPG, PNG o WebP');
 
+/** Largo máximo de un mensaje (la app usa el mismo tope en el campo de texto). */
+const MAX_MESSAGE_CHARS = 4000;
+/** Mensajes de historial que acepta el servidor; después se recortan por tamaño (ver trimHistory). */
+const MAX_MESSAGES = 30;
+
 const chatSchema = z.object({
   messages: z
     .array(
       z.object({
         role: z.enum(['user', 'assistant']),
-        text: z.string().trim().max(4000).default(''),
+        text: z.string().trim().max(MAX_MESSAGE_CHARS, `El mensaje es demasiado largo (máximo ${MAX_MESSAGE_CHARS} caracteres)`).default(''),
         image: image.optional(),
       }),
     )
-    .min(1)
-    .max(30)
-    .refine((m) => m.at(-1).role === 'user' && (m.at(-1).text || m.at(-1).image), {
-      message: 'El último mensaje debe ser del usuario',
+    .min(1, 'Escribí un mensaje')
+    .max(MAX_MESSAGES, `La conversación es muy larga: mandá como máximo ${MAX_MESSAGES} mensajes`)
+    .refine((m) => m.at(-1)?.role === 'user' && Boolean(m.at(-1).text || m.at(-1).image), {
+      message: 'El último mensaje debe ser del usuario y tener texto o una foto',
     }),
 });
 

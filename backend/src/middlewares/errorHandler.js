@@ -23,6 +23,9 @@ export function errorHandler(err, req, res, _next) {
   if (err.type === 'entity.parse.failed') {
     return res.status(400).json({ error: { code: 'INVALID_JSON', message: 'El cuerpo no es un JSON válido' } });
   }
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'El cuerpo de la solicitud es demasiado grande' } });
+  }
   if (err.code === 'ER_DUP_ENTRY') {
     return res.status(409).json({ error: { code: 'CONFLICT', message: 'Ya existe un registro con esos datos' } });
   }

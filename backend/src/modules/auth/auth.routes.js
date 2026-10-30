@@ -81,8 +81,8 @@ router.post('/refresh', validate({ body: schemas.refreshSchema }), async (req, r
   res.json({ data: await service.refresh(req.valid.body.refreshToken) });
 });
 
-router.post('/logout', async (req, res) => {
-  await service.logout(req.body?.refreshToken);
+router.post('/logout', validate({ body: schemas.logoutSchema }), async (req, res) => {
+  await service.logout(req.valid.body.refreshToken);
   res.status(204).end();
 });
 
@@ -95,7 +95,8 @@ router.get('/me', authenticate, async (req, res) => {
   res.json({ data: toPublicUser(await service.findUserById(req.user.id)) });
 });
 
-router.put('/password', authenticate, validate({ body: schemas.changePasswordSchema }), async (req, res) => {
+// También con límite: frena a quien tenga un token robado y quiera adivinar la contraseña actual.
+router.put('/password', authLimiter, authenticate, validate({ body: schemas.changePasswordSchema }), async (req, res) => {
   await service.changePassword(req.user.id, req.valid.body);
   // Se revocaron todas las sesiones: se entrega un par nuevo para este dispositivo.
   res.json({ data: { tokens: await issueTokens(req.user) } });

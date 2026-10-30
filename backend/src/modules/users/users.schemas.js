@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pagination } from '../../utils/validation.js';
+import { emailField, nameField, pagination, passwordField } from '../../utils/validation.js';
 
 const goals = z
   .object({
@@ -20,7 +20,7 @@ export const listUsersQuery = z.object({
 
 export const updateMeSchema = z
   .object({
-    name: z.string().trim().min(2).max(100),
+    name: nameField,
     avatarUrl: z.url('URL inválida').max(500).nullable(),
     goals,
   })
@@ -29,17 +29,18 @@ export const updateMeSchema = z
 export const goalsSchema = z.object({ goals });
 
 export const createUserSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  email: z.email('Email inválido').trim().toLowerCase(),
-  password: z.string().min(8, 'La contraseña debe tener al menos 8 caracteres').max(72),
+  // Mismas reglas que el registro público: un admin tampoco puede crear cuentas con datos inválidos.
+  name: nameField,
+  email: emailField,
+  password: passwordField,
   role: roleEnum.default('athlete'),
   coachId: z.coerce.number().int().positive().nullable().optional(),
 });
 
 export const updateUserSchema = z
   .object({
-    name: z.string().trim().min(2).max(100),
-    email: z.email('Email inválido').trim().toLowerCase(),
+    name: nameField,
+    email: emailField,
     role: roleEnum,
     coachId: z.coerce.number().int().positive().nullable(),
     isActive: z.boolean(),
