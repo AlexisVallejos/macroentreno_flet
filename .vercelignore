@@ -1,0 +1,9 @@
+# Lo que no hace falta subir a Vercel
+docs/
+**/node_modules
+mobile/dist
+mobile/android
+mobile/ios
+backend/.env
+mobile/.env*
+!mobile/.env.example

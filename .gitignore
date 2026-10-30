@@ -25,3 +25,6 @@ mobile/.claude/
 Thumbs.db
 .vscode/
 .idea/
+
+# Vercel (proyecto vinculado localmente)
+.vercel/
