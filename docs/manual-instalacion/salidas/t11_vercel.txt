@@ -1,0 +1,4 @@
+$ curl https://macroentreno.vercel.app/api/health
+{"data":{"status":"ok","database":"ok","time":"2026-10-30T19:01:47.413Z"}}
+$ curl -X POST https://macroentreno.vercel.app/api/auth/login -d {"email":"atleta@…","password":"…"}
+{"data":{"user":{"id":3,"name":"Alexis Atleta","email":"atleta@macroentreno.com","role":"a…

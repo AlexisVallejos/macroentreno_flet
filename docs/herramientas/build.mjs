@@ -37,7 +37,7 @@ async function makeFigure(fig) {
   } else if (fig.terminal) {
     const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
     const lines = fig.terminal.map((l) => `<div>${esc(l).replace(/✔/g, '<span style="color:#3ad35a">✔</span>').replace(/^(\$ .*)$/, '<span style="color:#9cdcfe">$1</span>')}</div>`).join('');
-    const html = `<style>body{margin:0}#root{display:inline-block;background:#1e1e1e;color:#e6e6e6;font:13px/1.45 Menlo,monospace;padding:14px 18px;border-radius:6px;width:${fig.termWidth ?? 640}px;white-space:pre}</style><div id="root">${lines}</div>`;
+    const html = `<style>body{margin:0}#root{display:inline-block;background:#1e1e1e;color:#e6e6e6;font:13px/1.45 Menlo,monospace;padding:14px 18px;border-radius:6px;width:${fig.termWidth ?? 640}px;white-space:pre-wrap;overflow-wrap:anywhere}</style><div id="root">${lines}</div>`;
     fig.size = await renderHtml(html, out, 1000);
   }
   fig.file = out;

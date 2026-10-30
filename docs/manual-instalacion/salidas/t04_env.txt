@@ -1,0 +1,14 @@
+$ cp .env.example .env
+$ grep -E "^(PORT|DB_|JWT_)" .env
+PORT=3000
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=macroentreno
+DB_SSL=false
+DB_CONNECTION_LIMIT=10
+JWT_ACCESS_SECRET=cambiar_por_un_secreto_largo_de_acceso
+JWT_REFRESH_SECRET=cambiar_por_otro_secreto_largo_de_renovacion
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_DAYS=30

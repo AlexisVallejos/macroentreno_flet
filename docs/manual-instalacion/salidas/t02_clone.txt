@@ -1,0 +1,9 @@
+$ git clone -b reestructuracion-react-native https://github.com/AlexisVallejos/macroentreno_flet.git
+Cloning into 'macroentreno_flet'...
+$ cd macroentreno_flet && ls
+README.md
+api
+backend
+docs
+mobile
+vercel.json

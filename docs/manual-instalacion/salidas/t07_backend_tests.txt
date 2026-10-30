@@ -1,0 +1,30 @@
+$ cd backend && npm test
+✔ asistente con IA: estado de la configuración
+✔ asistente con IA: errores de OpenAI
+✔ asistente con IA: mensajes e historial
+✔ salud y errores generales
+✔ autenticación
+✔ login social (flujo OAuth con proveedor simulado)
+✔ roles y permisos
+✔ alimentos
+✔ diario
+✔ ejercicios y entrenamientos
+✔ progreso
+✔ índices
+✔ MacroEntreno Pro: micronutrientes
+✔ MacroEntreno Pro: FatSecret
+✔ MacroEntreno Pro: suscripción con Mercado Pago
+✔ seguimiento, planes e informes por rol
+✔ alimentos: código de barras y bases gratuitas
+✔ asistente con IA
+✔ registro: alta exitosa
+✔ registro: validaciones por campo
+✔ registro: email duplicado
+✔ login: credenciales correctas
+✔ login: credenciales incorrectas
+✔ flujo completo: registro, login, refresh, logout y cambio de contraseña
+✔ seguridad: intentos de saltear la validación
+ℹ tests 184
+ℹ suites 25
+ℹ pass 184
+ℹ fail 0
