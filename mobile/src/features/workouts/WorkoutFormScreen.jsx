@@ -83,8 +83,10 @@ export default function WorkoutFormScreen() {
     router.push({ pathname: '/coach/[rule]', params: { rule: rule.id, name: exercise.name, sets: String(exercise.sets.length), ...target, request } });
   };
 
-  const updateSet = (exIndex, setIndex, key, value) =>
+  const updateSet = (exIndex, setIndex, key, value) => {
     updateExercise(exIndex, (e) => ({ sets: e.sets.map((s, i) => (i === setIndex ? { ...s, [key]: value } : s)) }));
+    setErrors((e) => ({ ...e, [`${exIndex}.${setIndex}`]: undefined }));
+  };
 
   const validate = () => {
     const found = {};
@@ -106,7 +108,7 @@ export default function WorkoutFormScreen() {
   const save = async () => {
     const found = validate();
     setErrors(found);
-    setFormError(Object.keys(found).length ? 'Revisá los campos marcados' : null);
+    setFormError(null);
     if (Object.keys(found).length) return;
     const body = {
       date,
@@ -155,14 +157,23 @@ export default function WorkoutFormScreen() {
       }
     >
       <Stack.Screen options={{ title: id ? 'Editar sesión' : ownerId ? 'Asignar rutina' : 'Nueva sesión' }} />
-      <FormError message={formError} />
+      <FormError message={formError ?? (Object.values(errors).some(Boolean) ? 'Revisá los campos marcados' : null)} />
       <DateSwitcher date={date} onChange={(next) => { setDate(next); if (next > today()) setStatus('planned'); }} />
       {user.role === 'athlete' && (!ownerId || ownerId === user.id) ? <Card title="Estado de la sesión">
         <Chips options={[{ value: 'planned', label: 'Pendiente' }, { value: 'completed', label: 'Realizada' }]} value={status} onChange={setStatus} />
         <Text style={{ color: colors.muted }}>Marcá Realizada y ajustá los pesos y las repeticiones cuando termines de entrenar.</Text>
       </Card> : <Text style={{ color: colors.muted }}>Esta rutina queda pendiente hasta que el atleta confirme que la realizó.</Text>}
 
-      <TextField label="Título" value={title} onChangeText={setTitle} error={errors.title} placeholder="Ej. Pierna pesada" />
+      <TextField
+        label="Título"
+        value={title}
+        onChangeText={(value) => {
+          setTitle(value);
+          setErrors((e) => ({ ...e, title: undefined }));
+        }}
+        error={errors.title}
+        placeholder="Ej. Pierna pesada"
+      />
       <TextField label="Notas (opcional)" value={notes} onChangeText={setNotes} multiline />
 
       {exercises.map((exercise, i) => {

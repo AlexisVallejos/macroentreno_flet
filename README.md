@@ -16,6 +16,7 @@ con series y progreso semanal) sobre una arquitectura cliente-servidor:
 | **Este README** | Resumen, cumplimiento de la consigna, arquitectura, estructura y arranque rápido |
 | [docs/INSTALACION.md](docs/INSTALACION.md) | Guía de instalación y configuración: dependencias, variables de entorno, MySQL, redes sociales y **APK** |
 | [docs/MANUAL_USUARIO.md](docs/MANUAL_USUARIO.md) | Manual de usuario por rol: iniciar sesión, navegar y usar cada pantalla |
+| [Manual de usuario (PDF)](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.pdf) · [Word](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.docx) | Versión para imprimir o entregar del manual de usuario, con capturas de pantalla |
 | [backend/README.md](backend/README.md) | **Documentación de la API**: endpoints, métodos, parámetros, respuestas y códigos de error |
 | [docs/BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md) | Modelo entidad-relación, tablas e **índices** (qué consulta usa cada uno) |
 
@@ -52,7 +53,7 @@ con series y progreso semanal) sobre una arquitectura cliente-servidor:
 
 | Requisito | Cómo se cumple |
 |---|---|
-| API REST (login, registro, obtención y actualización de datos) | Express 5 con 43 endpoints organizados por módulo |
+| API REST (login, registro, obtención y actualización de datos) | Express 5 con 73 endpoints organizados por módulo |
 | JWT con tokens de acceso y renovación | Acceso de 15 min + renovación de 30 días con **rotación** y detección de reutilización |
 | Base de datos MySQL bien estructurada | 9 tablas normalizadas, claves foráneas con reglas de borrado e **índices por consulta** → [BASE_DE_DATOS.md](docs/BASE_DE_DATOS.md) |
 | Gestión de roles y endpoints protegidos | `authenticate` + `authorize(...roles)` + control de "solo mis atletas" |
@@ -71,7 +72,7 @@ con series y progreso semanal) sobre una arquitectura cliente-servidor:
 | Entregable | Estado |
 |---|---|
 | Código fuente completo (frontend + backend) | ✅ `mobile/` + `backend/` |
-| Manual de usuario | ✅ [docs/MANUAL_USUARIO.md](docs/MANUAL_USUARIO.md) |
+| Manual de usuario | ✅ [PDF](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.pdf) · [Word](docs/manual-usuario/Manual_de_Usuario_MacroEntreno.docx) · [Markdown](docs/MANUAL_USUARIO.md) |
 | Guía de instalación y configuración | ✅ [docs/INSTALACION.md](docs/INSTALACION.md) |
 | Documentación de la API | ✅ [backend/README.md](backend/README.md) |
 | APK | Se genera con `npx eas-cli build -p android --profile preview` → [instrucciones](docs/INSTALACION.md#6-generar-el-apk) |
@@ -116,6 +117,7 @@ macroentreno_flet/
 ├── docs/
 │   ├── INSTALACION.md        ← instalación, configuración y APK
 │   ├── MANUAL_USUARIO.md     ← manual de uso por rol
+│   ├── manual-usuario/       ← manual de usuario en PDF y Word (con capturas)
 │   └── BASE_DE_DATOS.md      ← modelo ER e índices
 ├── backend/                  ← API REST (Node.js + Express + MySQL)
 │   ├── README.md             ← documentación de la API
@@ -125,9 +127,10 @@ macroentreno_flet/
 │   ├── src/
 │   │   ├── config/  middlewares/  utils/
 │   │   └── modules/{auth,users,foods,diary,exercises,workouts,progress,admin}/
-│   └── test/api.test.js      ← 41 pruebas de integración
+│   └── test/                 ← 184 pruebas de integración (api, auth, ai)
 └── mobile/                   ← App React Native (Expo SDK 58)
     ├── app.json · eas.json   ← configuración de la app y del APK
+    ├── test/                 ← 53 pruebas de las validaciones de formularios (node:test)
     └── src/
         ├── app/              ← rutas (Expo Router): login/register y (app)/(tabs) por rol
         ├── features/         ← pantallas por dominio: auth, home, diary, workouts, progress, catalog, users, profile
@@ -159,7 +162,8 @@ Usuarios demo (contraseña `Demo1234`): `admin@macroentreno.com` · `coach@macro
 
 | Verificación | Comando | Resultado |
 |---|---|---|
-| Pruebas de integración de la API (MySQL real) | `cd backend && npm test` | 41/41 ✅ |
+| Pruebas de integración de la API (MySQL real): endpoints y permisos, login/registro, asistente con IA | `cd backend && npm test` | 184/184 ✅ (72 + 93 + 19) |
+| Pruebas de las validaciones de la app (node:test) | `cd mobile && npm test` | 53/53 ✅ |
 | Lint de la app | `cd mobile && npx expo lint` | sin errores ni advertencias ✅ |
 | Diagnóstico de Expo | `cd mobile && npx expo-doctor` | 20/20 ✅ |
 | Compilación del bundle Android | `cd mobile && npx expo export -p android` | ✅ |

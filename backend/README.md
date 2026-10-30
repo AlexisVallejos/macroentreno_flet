@@ -29,6 +29,8 @@ el CRUD de alimentos, diario de comidas, ejercicios y entrenamientos.
 |---|---|
 | URL base | `http://<host>:3000/api` |
 | Formato | JSON (`Content-Type: application/json`), UTF-8 |
+| Tamaño del body | Hasta 100 kB (más → `413 PAYLOAD_TOO_LARGE`). Solo `/ai/*` acepta hasta 12 MB (fotos y audio) |
+| Campos desconocidos | Se descartan: un `role` o `isActive` de más en el body nunca llega al servicio |
 | Respuesta exitosa | `{ "data": ... }`. Los listados paginados agregan `meta`. |
 | Paginación | `?page=1&limit=20` (máx. 100) → `meta: { page, limit, total, totalPages }` |
 | Fechas | `AAAA-MM-DD` (fecha local del usuario) |
@@ -51,6 +53,9 @@ Authorization: Bearer <accessToken>
 **Rotación:** cada `POST /auth/refresh` revoca el refresh token usado y entrega un par nuevo.
 Si alguien reutiliza un refresh token ya revocado (posible robo), la API revoca **todas** las
 sesiones de ese usuario y responde `401 REFRESH_REUSED`.
+
+Los dos tokens se verifican **solo con HS256**: un token firmado con otro algoritmo (por ejemplo
+`none`) se rechaza con `401 TOKEN_INVALID` (o `REFRESH_INVALID`).
 
 La app renueva el token automáticamente cuando recibe un `401` y reintenta la petición una vez.
 
@@ -99,7 +104,7 @@ Todas las respuestas de error tienen la misma forma:
 | 400 | `BAD_REQUEST` / `INVALID_PASSWORD` | Regla de negocio (ej. un admin no puede quitarse su rol) |
 | 401 | `UNAUTHORIZED` | Falta el header `Authorization` |
 | 401 | `TOKEN_EXPIRED` | El access token venció → llamar a `/auth/refresh` |
-| 401 | `TOKEN_INVALID` | Token mal formado, firmado con otra clave o usuario inexistente |
+| 401 | `TOKEN_INVALID` | Token mal formado, firmado con otra clave o con un algoritmo distinto de HS256, o usuario inexistente |
 | 401 | `INVALID_CREDENTIALS` | Email o contraseña incorrectos |
 | 401 | `SOCIAL_ACCOUNT` | La cuenta solo tiene login social (no tiene contraseña) |
 | 401 | `REFRESH_INVALID` / `REFRESH_REUSED` | Refresh token inválido, vencido, revocado o reutilizado |
@@ -107,10 +112,12 @@ Todas las respuestas de error tienen la misma forma:
 | 403 | `FORBIDDEN` | El rol no tiene permiso o la cuenta está desactivada |
 | 404 | `NOT_FOUND` | El recurso o la ruta no existen (o no son visibles para el usuario) |
 | 409 | `CONFLICT` | Registro duplicado (email, nombre de ejercicio) |
-| 429 | `TOO_MANY_REQUESTS` | Más de 50 intentos de login/registro en 15 minutos |
+| 413 | `PAYLOAD_TOO_LARGE` | El body supera los 100 kB (12 MB en `/ai/*`) |
+| 429 | `TOO_MANY_REQUESTS` | Más de 50 solicitudes en 15 minutos desde la misma IP sumando registro, login, login social y cambio de contraseña. En el asistente: más de 60 llamadas en 10 minutos por usuario |
 | 501 | `PROVIDER_NOT_CONFIGURED` | El proveedor social no tiene credenciales en `.env` |
 | 502 | `PROVIDER_UNAVAILABLE` | No se pudo contactar a Google/Facebook/GitHub |
 | 503 | `DB_UNAVAILABLE` | MySQL caído o mal configurado |
+| 429 · 502 · 503 · 504 | `AI_*` | Errores del asistente con IA (clave, saldo, modelo, conexión con OpenAI): ver [tabla del asistente](#55-bis-asistente-con-ia-openai) |
 | 500 | `INTERNAL_ERROR` | Error inesperado (se registra en consola) |
 
 ## 5. Endpoints
@@ -124,13 +131,22 @@ Verifica la API y la conexión a MySQL.
 ### 5.2 Auth
 
 #### `POST /auth/register`
-Crea una cuenta con rol `athlete`.
+Crea una cuenta con rol `athlete` (un `role` enviado en el body se ignora).
 
 | Campo | Tipo | Reglas |
 |---|---|---|
-| `name` | string | 2–100 caracteres |
-| `email` | string | email válido, se guarda en minúsculas |
-| `password` | string | 8–72 caracteres, al menos una letra y un número |
+| `name` | string | Se recortan los espacios de los extremos. 2–100 caracteres, al menos una letra (de cualquier alfabeto) y sin caracteres de control ni invisibles (saltos de línea, `\0`, espacios de ancho cero) |
+| `email` | string | Primero se recorta y se pasa a minúsculas, después se valida el formato. Máximo 190 caracteres. `"  Ana@Mail.COM "` se guarda como `ana@mail.com` |
+| `password` | string | 8–72 caracteres **y** como máximo 72 bytes en UTF-8 (las tildes, la ñ y los emojis ocupan más de un byte; bcrypt ignora lo que pasa de 72 bytes). Al menos una letra (`a–z`/`A–Z`) y un número |
+
+Estas mismas reglas se aplican en el alta y la edición de usuarios por un admin
+(`POST /users`, `PUT /users/:id`), en `PATCH /users/me` (nombre) y en la nueva contraseña de
+`PUT /auth/password`. Cada error vuelve en `details` con el campo y un mensaje en castellano:
+
+```json
+{ "error": { "code": "VALIDATION_ERROR", "message": "Hay datos inválidos en la solicitud",
+  "details": [{ "field": "password", "message": "La contraseña debe incluir al menos un número" }] } }
+```
 
 `201` → sesión:
 ```json
@@ -146,18 +162,25 @@ Crea una cuenta con rol `athlete`.
   }
 }
 ```
-Errores: `400 VALIDATION_ERROR`, `409 CONFLICT` (email ya registrado), `429`.
+Errores: `400 VALIDATION_ERROR`, `409 CONFLICT` (email ya registrado, aunque se escriba con
+mayúsculas o espacios), `413`, `429`.
 
 #### `POST /auth/login`
-Body `{ "email", "password" }`. `200` → misma sesión que el registro.
-Errores: `400`, `401 INVALID_CREDENTIALS`, `401 SOCIAL_ACCOUNT`, `403` (cuenta desactivada), `429`.
+Body `{ "email", "password" }`. El email se normaliza igual que en el registro (recorte +
+minúsculas). A la contraseña no se le exigen las reglas de fortaleza, pero sí que no esté vacía y
+que no supere los 72 bytes (si no, "clave de 72 caracteres + cualquier cosa" también entraría).
+`200` → misma sesión que el registro.
+Errores: `400`, `401 INVALID_CREDENTIALS` (mismo mensaje para email o contraseña incorrectos),
+`401 SOCIAL_ACCOUNT`, `403` (cuenta desactivada), `413`, `429`.
 
 #### `POST /auth/refresh`
-Body `{ "refreshToken" }`. `200` → sesión nueva (rota el refresh token).
+Body `{ "refreshToken" }` (string de 1 a 2000 caracteres). `200` → sesión nueva (rota el refresh token).
 Errores: `400`, `401 REFRESH_INVALID`, `401 REFRESH_REUSED`.
 
 #### `POST /auth/logout`
-Body `{ "refreshToken" }`. Revoca ese refresh token. `204`.
+Body `{ "refreshToken"? }`: opcional, pero si viene tiene que ser un string de hasta 2000
+caracteres. Revoca ese refresh token; sin él responde igual `204` sin revocar nada.
+Errores: `400 VALIDATION_ERROR` (por ejemplo, `refreshToken` numérico).
 
 #### `POST /auth/logout-all` 🔒
 Cierra la sesión en todos los dispositivos. `204`.
@@ -167,9 +190,11 @@ Usuario actual (incluye `coachName` si tiene entrenador). `200 { data: user }`.
 
 #### `PUT /auth/password` 🔒
 Body `{ "currentPassword"?, "newPassword" }`. `currentPassword` es obligatorio si la cuenta ya
-tenía contraseña (una cuenta solo social puede crear una). Revoca todas las sesiones y devuelve
-un par nuevo para el dispositivo actual: `200 { data: { tokens } }`.
-Errores: `400 VALIDATION_ERROR`, `400 INVALID_PASSWORD`.
+tenía contraseña (una cuenta solo social puede crear una). `newPassword` sigue las mismas reglas
+que en el registro; `currentPassword`, las del login. Tiene el mismo límite de intentos que el
+login (frena a quien tenga un token robado y quiera adivinar la contraseña actual). Revoca todas
+las sesiones y devuelve un par nuevo para el dispositivo actual: `200 { data: { tokens } }`.
+Errores: `400 VALIDATION_ERROR`, `400 INVALID_PASSWORD`, `401`, `429`.
 
 ### 5.3 Login social (OAuth)
 
@@ -240,9 +265,11 @@ Rangos: `kcal` 800–10000, `protein`/`fat` 0–1000, `carbs` 0–2000.
 
 **`PUT /users/:id/goals`** body `{ "goals": { … } }` (mismo formato).
 
-**`POST /users`** body `{ name, email, password (mín. 8), role = "athlete", coachId? }` → `201`.
+**`POST /users`** body `{ name, email, password, role = "athlete", coachId? }` → `201`. `name`,
+`email` y `password` siguen las [mismas reglas que el registro](#post-authregister).
 
 **`PUT /users/:id`** body (todos opcionales): `{ name, email, role, coachId, isActive, goals }`.
+`name` y `email` se validan y normalizan igual que en el registro.
 - `coachId` debe ser un usuario con rol `coach`. Si el rol final no es `athlete`, se borra.
 - Desactivar una cuenta o cambiarle el rol revoca sus sesiones.
 - Un admin no puede quitarse el rol ni desactivarse (`400`).
@@ -299,16 +326,40 @@ mg cargados como g) se descartan al importar.
 
 ### 5.5 bis Asistente con IA (OpenAI)
 
-Todas las rutas requieren sesión, aceptan cuerpos de hasta 12 MB (fotos y audio en base64) y
-tienen un tope de 60 llamadas cada 10 minutos por usuario. Sin `OPENAI_API_KEY` responden
-`503 AI_NOT_CONFIGURED`. La clave nunca llega a la app.
+Todas las rutas requieren sesión y aceptan cuerpos de hasta 12 MB (fotos y audio en base64).
+Salvo `/ai/status`, tienen un tope de 60 llamadas cada 10 minutos por usuario
+(`429 TOO_MANY_REQUESTS`) y sin `OPENAI_API_KEY` responden `503 AI_NOT_CONFIGURED`.
+La clave nunca llega a la app.
 
 | Método y ruta | Body | Respuesta |
 |---|---|---|
-| `POST /ai/chat` 🔒 | `{ messages: [{ role: 'user'\|'assistant', text, image? }] }` (máx. 30; `image` es un data URL JPG/PNG/WebP) | `{ reply, actions: [{ type: 'diary'\|'workout'\|'exercise'\|'food', label }] }` |
-| `POST /ai/food-photo` 🔒 | `{ image, note? }` | `{ esComida, descripcion, confianza, items: [{ nombre, gramos, kcal, proteinas, carbohidratos, grasas }] }`. No registra nada |
-| `POST /ai/transcribe` 🔒 | `{ audio (base64), mimeType }` | `{ text }` |
-| `POST /ai/speech` 🔒 | `{ text }` (máx. 1500) | `{ audio (MP3 en base64), mimeType }` |
+| `GET /ai/status` 🔒 | — | `{ configured, model, warning? }`. No llama a OpenAI ni cuenta para el tope: la app lo consulta al abrir el chat. `warning` aparece si la clave no empieza con `sk-`. Nunca incluye la clave |
+| `POST /ai/chat` 🔒 | `{ messages: [{ role: 'user'\|'assistant', text, image? }] }`: 1–30 mensajes, `text` de hasta 4000 caracteres; el último tiene que ser del usuario y tener texto o foto | `{ reply, actions: [{ type: 'diary'\|'workout'\|'exercise'\|'food', label }] }` |
+| `POST /ai/food-photo` 🔒 | `{ image, note? }` (`note` hasta 300 caracteres) | `{ esComida, descripcion, confianza, items: [{ nombre, gramos, kcal, proteinas, carbohidratos, grasas }] }`. No registra nada |
+| `POST /ai/transcribe` 🔒 | `{ audio (base64), mimeType }` (`mimeType` del tipo `audio/…`) | `{ text }` |
+| `POST /ai/speech` 🔒 | `{ text }` (1–1500 caracteres) | `{ audio (MP3 en base64), mimeType }` |
+
+`image` es un data URL (`data:image/jpeg;base64,…`, también PNG, WebP o HEIC) de hasta ~6,5 MB
+de imagen (9 MB en base64); el audio tiene el mismo tope.
+
+Ejemplo de `GET /ai/status`: `200` → `{ "data": { "configured": true, "model": "gpt-6.1-sol" } }`.
+
+**Errores del asistente.** Ante un error pasajero de OpenAI (5xx, límite por minuto o red caída)
+la API reintenta una vez después de 1 segundo. Si igual falla, responde con un mensaje que la
+app muestra tal cual:
+
+| HTTP | `code` | Cuándo |
+|---|---|---|
+| 503 | `AI_NOT_CONFIGURED` | Falta `OPENAI_API_KEY` en `backend/.env` |
+| 503 | `AI_INVALID_KEY` | OpenAI rechazó la clave (401): revisar `OPENAI_API_KEY` y reiniciar la API |
+| 503 | `AI_QUOTA` | La cuenta de OpenAI se quedó sin saldo (429 `insufficient_quota`): no se reintenta |
+| 503 | `AI_FORBIDDEN` | La cuenta no tiene acceso al servicio o al modelo configurado (403) |
+| 503 | `AI_MODEL_NOT_FOUND` | OpenAI no encontró el modelo de `OPENAI_MODEL` (404) |
+| 429 | `AI_RATE_LIMIT` | OpenAI está saturado (429 por límite de uso) |
+| 502 | `AI_UNAVAILABLE` | OpenAI respondió con un error 5xx |
+| 502 | `AI_UNREACHABLE` | No se pudo conectar con OpenAI (sin internet en el servidor) |
+| 502 | `AI_EMPTY` / `AI_ERROR` | El modelo no devolvió respuesta, o devolvió otro error / un análisis de foto que no se pudo leer |
+| 504 | `AI_TIMEOUT` | Una llamada a OpenAI tardó más de 45 s (el chat completo, con sus herramientas, tiene 80 s) |
 
 En el chat el modelo puede usar estas herramientas, que vuelven a validar con los mismos esquemas
 de la API y respetan los mismos permisos del usuario: `buscar_alimentos`, `registrar_comida`,
@@ -452,11 +503,15 @@ Una suscripción autorizada deja Pro activo hasta la fecha del próximo cobro m�
 | `npm run db:init` | Crea la base, aplica `database/schema.sql` y carga los datos demo (**borra todo**) |
 | `npm run db:seed` | Recarga solo los datos demo |
 | `npm run dev:memory` | API + MySQL temporal descargado automáticamente (no hace falta instalar MySQL) |
-| `npm test` | 41 pruebas de integración contra un MySQL real temporal |
+| `npm test` | 184 pruebas de integración contra un MySQL real temporal (no toca tu base) |
 
-Las pruebas (`test/api.test.js`) cubren registro, login, rotación y reutilización de tokens,
-el flujo OAuth completo con un proveedor simulado, los permisos de cada rol, el CRUD de todos
-los recursos, las validaciones y, con `EXPLAIN`, que las consultas principales usen sus índices.
+| Archivo | Pruebas | Qué cubre |
+|---|---|---|
+| `test/api.test.js` | 72 | Rotación y reutilización de tokens, el flujo OAuth completo con un proveedor simulado, los permisos de cada rol, el CRUD de todos los recursos, las validaciones y, con `EXPLAIN`, que las consultas principales usen sus índices |
+| `test/auth.test.js` | 93 | Registro, login, refresh, logout, cambio de contraseña y `/auth/me`: límites exactos de cada campo, normalización del email, mensajes de error, tokens con otro algoritmo, body de más de 100 kB e intentos de saltear la validación (también en el alta de usuarios por un admin) |
+| `test/ai.test.js` | 19 | Asistente con IA con OpenAI simulado (nunca se llama de verdad): `/ai/status`, validación de mensajes (largo, cantidad, último mensaje), reintentos y la traducción de los errores de OpenAI (`AI_NOT_CONFIGURED`, `AI_INVALID_KEY`, `AI_QUOTA`, `AI_RATE_LIMIT`, `AI_UNAVAILABLE`, `AI_MODEL_NOT_FOUND`, `AI_UNREACHABLE`, `AI_TIMEOUT`) |
+
+Resultado actual: **184/184** ✅.
 
 Ejemplo rápido con `curl`:
 
@@ -483,8 +538,8 @@ backend/
 │   ├── middlewares/          # auth (JWT + roles) · validate (zod) · errorHandler
 │   ├── utils/                # errores HTTP, fechas, validaciones, control de acceso
 │   └── modules/              # un módulo por recurso: *.routes.js · *.service.js · *.schemas.js
-│       ├── auth/  users/  foods/  diary/  exercises/  workouts/  progress/  admin/
-└── test/api.test.js
+│       ├── auth/  users/  foods/  diary/  exercises/  workouts/  progress/  admin/  ai/ …
+└── test/                     # api.test.js · auth.test.js · ai.test.js
 ```
 
 ## Seguimiento, planes e informes
