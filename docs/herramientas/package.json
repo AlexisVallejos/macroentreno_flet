@@ -1,0 +1,15 @@
+{
+  "name": "macroentreno-manuales",
+  "private": true,
+  "type": "module",
+  "description": "Genera los manuales (Word y PDF) y las capturas de la app.",
+  "scripts": {
+    "manual:usuario": "node build.mjs contenido-usuario.mjs ../manual-usuario/capturas ../manual-usuario",
+    "manual:instalacion": "node build.mjs contenido-instalacion.mjs ../manual-instalacion/capturas ../manual-instalacion"
+  },
+  "dependencies": {
+    "docx": "^9.15.0",
+    "pdfjs-dist": "^4.10.38",
+    "playwright-core": "^1.64.1"
+  }
+}
