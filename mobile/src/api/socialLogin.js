@@ -26,7 +26,9 @@ export async function socialLogin(provider) {
   });
   // En el APK: macroentreno://oauth-callback · En Expo Go: exp://<ip>:8081/--/oauth-callback
   const redirectUri = Linking.createURL('oauth-callback');
-  const startUrl = `${API_URL}/auth/oauth/${provider}/start?${new URLSearchParams({
+  // En la web publicada la API es relativa (/api): el navegador de login necesita la URL completa.
+  const apiBase = API_URL.startsWith('/') ? `${globalThis.location?.origin ?? ''}${API_URL}` : API_URL;
+  const startUrl = `${apiBase}/auth/oauth/${provider}/start?${new URLSearchParams({
     redirect_uri: redirectUri,
     code_challenge: challenge,
   })}`;
