@@ -2,6 +2,7 @@
  * Crea la base de datos, aplica database/schema.sql y carga los datos iniciales.
  *   npm run db:init     -> borra y recrea todo
  *   npm run db:seed     -> solo vuelve a cargar los datos de ejemplo (tablas existentes)
+ * Con una base que no es local (DB_HOST distinto de localhost) hay que agregar --yes.
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -128,6 +129,13 @@ async function seed(conn) {
 // Ejecución directa por CLI.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const seedOnly = process.argv.includes('--seed-only');
+  // El script vacía las tablas: en una base que no es local hay que confirmarlo a propósito.
+  const local = ['localhost', '127.0.0.1', '::1'].includes(env.db.host);
+  if (!local && !process.argv.includes('--yes')) {
+    console.error(`La base "${env.db.database}" está en ${env.db.host}: este script borra y recarga sus tablas.`);
+    console.error('Si es lo que querés, repetí el comando agregando --yes (ej. npm run db:init -- --yes).');
+    process.exit(1);
+  }
   initDatabase({ seedOnly })
     .then(() => {
       console.log(`Base "${env.db.database}" lista. Usuarios demo (contraseña ${DEMO_PASSWORD}):`);
